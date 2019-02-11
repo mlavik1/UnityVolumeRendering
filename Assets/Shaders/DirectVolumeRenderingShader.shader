@@ -2,9 +2,12 @@
 {
 	Properties
 	{
-		_DataTex ("Data Texture", 3D) = "" {}
-        _NoiseTex("Noise Texture", 2D) = "white" {}
-	}
+		_DataTex ("Data Texture (Generated)", 3D) = "" {}
+        _NoiseTex("Noise Texture (Generated)", 2D) = "white" {}
+        _TFTex("Transfer Function Texture (Generated)", 2D) = "white" {}
+        _MinVal("Min val", Range(0.0, 1.0)) = 0.0
+        _MaxVal("Max val", Range(0.0, 1.0)) = 1.0
+    }
 	SubShader
 	{
 		Tags { "Queue" = "Transparent" "RenderType" = "Transparent" }
@@ -40,6 +43,10 @@
 
 			sampler3D _DataTex;
             sampler2D _NoiseTex;
+            sampler2D _TFTex;
+
+            float _MinVal;
+            float _MaxVal;
 
 			v2f vert (appdata v)
 			{
@@ -76,12 +83,13 @@
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         break;
                     
-                    float dataValue = tex3D(_DataTex, currPos).r / 4095.0f;
-                    if (dataValue > maxDensity)
-                        maxDensity = dataValue;
+                    float density = tex3D(_DataTex, currPos).r / 4095.0f;
 
-                    float4 src = float4(dataValue, dataValue, dataValue, dataValue);
-                    
+                    float4 src = tex2D(_TFTex, float2(density, 0.0f));
+
+                    if (density < _MinVal || density > _MaxVal)
+                        src.a = 0.0f;
+
                     col.rgb = src.a * src.rgb + (1.0f - src.a)*col.rgb;
                     col.a = src.a + (1.0f - src.a)*col.a;
                     

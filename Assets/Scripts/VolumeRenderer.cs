@@ -48,12 +48,30 @@ public class VolumeRenderer : MonoBehaviour
             }
         }
 
+        const int tfDimX = 1024;
+        const int tfDimY = 1024;
+
+        Texture2D tfTexture = new Texture2D(tfDimX, tfDimY, TextureFormat.RGBAFloat, false);
+        Color[] tfCols = new Color[tfDimX * tfDimY];
+        for (int iX = 0; iX < tfDimX; iX++)
+        {
+            float t = (float)iX / tfDimX;
+            Color col = t > 0.28f ? Color.white : (t > 0.026f && t < 0.103f ? Color.green : Color.red);
+            float alpha = Mathf.Lerp(0.0f, 1.0f, t > 0.01f ? t : 0.0f);
+            Color tfVal = new Color(col.r, col.g, col.b, alpha);
+            for (int iY = 0; iY < tfDimY; iY++)
+            {
+                tfCols[iX + iY * tfDimX] = tfVal;
+            }
+        }
+
         // Copy the pixel data to the texture and load it into the GPU.
-        noiseTexture.SetPixels(noiseCols);
-        noiseTexture.Apply();
+        tfTexture.SetPixels(tfCols);
+        tfTexture.Apply();
 
         GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_DataTex", tex);
         GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_NoiseTex", noiseTexture);
+        GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_TFTex", tfTexture);
 
     }
 }
