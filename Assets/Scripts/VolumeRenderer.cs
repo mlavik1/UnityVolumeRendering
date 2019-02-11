@@ -66,6 +66,7 @@ public class VolumeRenderer : MonoBehaviour
         }
 
         // Copy the pixel data to the texture and load it into the GPU.
+        tfTexture.wrapMode = TextureWrapMode.Clamp;
         tfTexture.SetPixels(tfCols);
         tfTexture.Apply();
 
