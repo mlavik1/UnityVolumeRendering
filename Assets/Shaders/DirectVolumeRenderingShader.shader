@@ -2,7 +2,8 @@
 {
 	Properties
 	{
-		_MainTex ("Data", 3D) = "white" {}
+		_DataTex ("Data Texture", 3D) = "" {}
+        _NoiseTex("Noise Texture", 2D) = "white" {}
 	}
 	SubShader
 	{
@@ -26,27 +27,26 @@
 			{
 				float4 vertex : POSITION;
                 float4 normal : NORMAL;
-                float2 uv : TEXCOORD0;
 			};
 
 			struct v2f
 			{
-				float2 uv : TEXCOORD0;
 				UNITY_FOG_COORDS(1)
 				float4 vertex : SV_POSITION;
-                float3 vertexLocal : TEXCOORD1;
+                float3 vertexLocal : TEXCOORD0;
                 float3 normal : NORMAL;
+                //float3 screenPos : TEXCOORD1;
 			};
 
-			sampler3D _MainTex;
-			float4 _MainTex_ST;
-			
+			sampler3D _DataTex;
+            sampler2D _NoiseTex;
+
 			v2f vert (appdata v)
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
+                //o.screenPos = ComputeScreenPos(o.vertex);
                 o.vertexLocal = v.vertex;
-				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.normal = UnityObjectToWorldNormal(v.normal);
 				UNITY_TRANSFER_FOG(o,o.vertex);
 				return o;
@@ -54,7 +54,8 @@
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-                #define NUM_STEPS 20
+                #define NUM_STEPS 40//200
+                const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
                 float4 col = float4(i.vertexLocal.x, i.vertexLocal.y, i.vertexLocal.z, 1.0f);
 
@@ -62,17 +63,20 @@
                 float3 rayDir = ObjSpaceViewDir(float4(i.vertexLocal, 0.0f));
                 rayDir = normalize(rayDir);
 
+                // Create a small random offset in order to remove artifacts
+                //rayStartPos = rayStartPos + (rayDir / NUM_STEPS) * tex2D(_NoiseTex, float2(rayStartPos.x, rayStartPos.x * rayStartPos.y)).r;
+
                 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
                 float maxDensity = 0.0f;
                 [unroll]
                 for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
                 {
-                    const float t = iStep / (NUM_STEPS - 1.0f);
+                    const float t = iStep * stepSize + stepSize * 0.5f;
                     const float3 currPos = rayStartPos + rayDir * t;
-                    if (currPos.x < 0.0f || currPos.x > 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
+                    if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         break;
                     
-                    float dataValue = tex3D(_MainTex, currPos).r / 4095.0f;
+                    float dataValue = tex3D(_DataTex, currPos).r / 4095.0f;
                     if (dataValue > maxDensity)
                         maxDensity = dataValue;
 
@@ -85,7 +89,7 @@
                 }
                 // Maximum intensity projection
                 //col = float4(maxDensity, 0.0f, 0.0f, 1.0f);
-
+                
                 return col;
 			}
 			ENDCG
