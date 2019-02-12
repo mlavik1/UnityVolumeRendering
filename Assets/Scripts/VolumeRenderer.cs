@@ -47,28 +47,20 @@ public class VolumeRenderer : MonoBehaviour
                 noiseCols[iX + iY * noiseDimX] = new Color(pixVal, pixVal, pixVal);
             }
         }
+        
+        TransferFunction tf = new TransferFunction();
+        tf.AddControlPoint(new TFColourControlPoint(0.0f, Color.black));
+        tf.AddControlPoint(new TFColourControlPoint(0.055f, Color.yellow));
+        tf.AddControlPoint(new TFColourControlPoint(0.11f, Color.red));
+        tf.AddControlPoint(new TFColourControlPoint(1.0f, Color.white));
 
-        const int tfDimX = 1024;
-        const int tfDimY = 1024;
+        tf.AddControlPoint(new TFAlphaControlPoint(0.0f, 0.0f));
+        tf.AddControlPoint(new TFAlphaControlPoint(0.01f, 0.0f));
+        tf.AddControlPoint(new TFAlphaControlPoint(0.6f, 0.2f));
+        tf.AddControlPoint(new TFAlphaControlPoint(1.0f, 1.0f));
 
-        Texture2D tfTexture = new Texture2D(tfDimX, tfDimY, TextureFormat.RGBAFloat, false);
-        Color[] tfCols = new Color[tfDimX * tfDimY];
-        for (int iX = 0; iX < tfDimX; iX++)
-        {
-            float t = (float)iX / tfDimX;
-            Color col = t > 0.28f ? Color.white : (t > 0.026f && t < 0.103f ? Color.green : Color.red);
-            float alpha = Mathf.Lerp(0.0f, 1.0f, t > 0.01f ? t : 0.0f);
-            Color tfVal = new Color(col.r, col.g, col.b, alpha);
-            for (int iY = 0; iY < tfDimY; iY++)
-            {
-                tfCols[iX + iY * tfDimX] = tfVal;
-            }
-        }
+        Texture2D tfTexture = tf.GetTexture();
 
-        // Copy the pixel data to the texture and load it into the GPU.
-        tfTexture.wrapMode = TextureWrapMode.Clamp;
-        tfTexture.SetPixels(tfCols);
-        tfTexture.Apply();
 
         GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_DataTex", tex);
         GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_NoiseTex", noiseTexture);

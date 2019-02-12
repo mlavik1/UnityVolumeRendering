@@ -23,7 +23,7 @@
 			#pragma fragment frag
 			// make fog work
 			#pragma multi_compile_fog
-			
+
 			#include "UnityCG.cginc"
 
 			struct appdata
@@ -61,7 +61,7 @@
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-                #define NUM_STEPS 40//200
+                #define NUM_STEPS 500//200
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
                 float4 col = float4(i.vertexLocal.x, i.vertexLocal.y, i.vertexLocal.z, 1.0f);
@@ -75,7 +75,7 @@
 
                 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
                 float maxDensity = 0.0f;
-                [unroll]
+                //[unroll(NUM_STEPS)]
                 for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
                 {
                     const float t = iStep * stepSize + stepSize * 0.5f;
@@ -83,9 +83,10 @@
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         break;
                     
-                    float density = tex3D(_DataTex, currPos).r / 4095.0f;
+                    //const float density = tex3D(_DataTex, currPos).r / 4095.0f;
+                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).r / 4095.0f;
 
-                    float4 src = tex2D(_TFTex, float2(density, 0.0f));
+                    float4 src = tex2Dlod(_TFTex, float4(density, 0.0f, 0.0f, 0.0f));// tex2D(_TFTex, float2(density, 0.0f));
 
                     if (density < _MinVal || density > _MaxVal)
                         src.a = 0.0f;
