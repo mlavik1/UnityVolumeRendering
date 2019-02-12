@@ -61,7 +61,7 @@
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-                #define NUM_STEPS 500//200
+                #define NUM_STEPS 1000//200
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
                 float4 col = float4(i.vertexLocal.x, i.vertexLocal.y, i.vertexLocal.z, 1.0f);
