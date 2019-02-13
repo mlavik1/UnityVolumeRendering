@@ -138,10 +138,11 @@
                         break;
 
                     const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).r / 4095.0f;
-                    maxDensity = max(density, maxDensity);
+                    if (density > _MinVal && density < _MaxVal)
+                        maxDensity = max(density, maxDensity);
                 }
                 // Maximum intensity projection
-                float4 col = float4(maxDensity, 0.0f, 0.0f, maxDensity);
+                float4 col = float4(maxDensity, maxDensity, maxDensity, maxDensity);
 
                 return col;
             }
