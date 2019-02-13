@@ -30,7 +30,6 @@ public class VolumeRenderer : MonoBehaviour
             cols[i] = new Color(val, 0.0f, 0.0f);
         }
         Debug.Log(minVal + "  -  " + maxVal);
-
         tex.SetPixels(cols);
         tex.Apply();
 
@@ -47,7 +46,10 @@ public class VolumeRenderer : MonoBehaviour
                 noiseCols[iX + iY * noiseDimX] = new Color(pixVal, pixVal, pixVal);
             }
         }
-        
+
+        noiseTexture.SetPixels(noiseCols);
+        noiseTexture.Apply();
+
         TransferFunction tf = new TransferFunction();
         tf.AddControlPoint(new TFColourControlPoint(0.0f, Color.black));
         tf.AddControlPoint(new TFColourControlPoint(0.055f, Color.yellow));
@@ -61,10 +63,34 @@ public class VolumeRenderer : MonoBehaviour
 
         Texture2D tfTexture = tf.GetTexture();
 
-
         GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_DataTex", tex);
         GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_NoiseTex", noiseTexture);
         GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_TFTex", tfTexture);
 
+        GetComponent<MeshRenderer>().sharedMaterial.EnableKeyword("MODE_DVR");
+        GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_MIP");
+        GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_SURF");
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            GetComponent<MeshRenderer>().sharedMaterial.EnableKeyword("MODE_DVR");
+            GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_MIP");
+            GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_SURF");
+        }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_DVR");
+            GetComponent<MeshRenderer>().sharedMaterial.EnableKeyword("MODE_MIP");
+            GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_SURF");
+        }
+        else if (Input.GetKeyDown(KeyCode.D))
+        {
+            GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_DVR");
+            GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_MIP");
+            GetComponent<MeshRenderer>().sharedMaterial.EnableKeyword("MODE_SURF");
+        }
     }
 }

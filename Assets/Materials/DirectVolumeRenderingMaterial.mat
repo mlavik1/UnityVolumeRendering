@@ -8,13 +8,14 @@ Material:
   m_PrefabInternal: {fileID: 0}
   m_Name: DirectVolumeRenderingMaterial
   m_Shader: {fileID: 4800000, guid: f9df7f8cb5dda3a48a945ab37d6b0d83, type: 3}
-  m_ShaderKeywords: 
+  m_ShaderKeywords: MODE_SURF _MODE_DVR _MODE_MIP
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
-  disabledShaderPasses: []
+  disabledShaderPasses:
+  - pass0
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
