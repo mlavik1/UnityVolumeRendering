@@ -78,6 +78,7 @@
 				return o;
 			}
 
+            // Direct Volume Rendering
 			fixed4 frag_dvr (v2f i)
 			{
                 #define NUM_STEPS 2048//200
@@ -113,12 +114,13 @@
 
                     if (col.a > 1.0f) break;
                 }
-                
+
                 col.rgb = col.rgb;
 
                 return col;
 			}
 
+            // Maximum Intensity Projection mode
             fixed4 frag_mip(v2f i)
             {
                 #define NUM_STEPS 1024//200
@@ -147,6 +149,9 @@
                 return col;
             }
 
+            // Surface rendering mode
+            // Draws the first point (closest to camera) with a density within the user-defined thresholds.
+            // TODO: Cast ray FROM the camera instead, since this is a waste of performance
             fixed4 frag_surf(v2f i)
             {
                 #define NUM_STEPS 2048//200
