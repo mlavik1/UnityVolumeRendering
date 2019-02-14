@@ -9,7 +9,7 @@ public class VolumeRenderer : MonoBehaviour
 
     private void Start()
     {
-        FileStream fs = new FileStream("DataFiles//manix2.dat", FileMode.Open);
+        FileStream fs = new FileStream("DataFiles//manix.dat", FileMode.Open);
         BinaryReader reader = new BinaryReader(fs);
 
         ushort dimX = reader.ReadUInt16();
