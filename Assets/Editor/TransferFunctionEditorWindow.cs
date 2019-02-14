@@ -9,6 +9,8 @@ public class TransferFunctionEditorWindow : EditorWindow
     private int movingColPointIndex = -1;
     private int movingAlphaPointIndex = -1;
 
+    private int selectedColPointIndex = -1;
+
     [MenuItem("Volume Rendering/Transfer Function")]
     static void ShowWindow()
     {
@@ -31,19 +33,15 @@ public class TransferFunctionEditorWindow : EditorWindow
         }
         histogramTexture.SetPixels(histCols);
         histogramTexture.Apply();
-
-        tf = new TransferFunction();
-        tf.AddControlPoint(new TFColourControlPoint(0.0f, Color.black));
-        tf.AddControlPoint(new TFColourControlPoint(0.5f, Color.red));
-        tf.AddControlPoint(new TFColourControlPoint(1.0f, Color.white));
-
-        tf.AddControlPoint(new TFAlphaControlPoint(0.0f, 0.0f));
-        tf.AddControlPoint(new TFAlphaControlPoint(0.5f, 0.5f));
-        tf.AddControlPoint(new TFAlphaControlPoint(1.0f, 1.0f));
     }
 
     private void OnGUI()
     {
+        VolumeRenderer volRend = FindObjectOfType<VolumeRenderer>();
+        if (volRend == null)
+            return;
+        tf = volRend.tf;
+
         Color oldColour = GUI.color;
         float bgWidth = Mathf.Min(this.position.width - 20.0f, (this.position.height - 50.0f) * 2.0f);
         Rect bgRect = new Rect(0.0f, 0.0f, bgWidth, bgWidth * 0.5f);
@@ -67,6 +65,7 @@ public class TransferFunctionEditorWindow : EditorWindow
             if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && ctrlBox.Contains(new Vector2(Event.current.mousePosition.x, Event.current.mousePosition.y)))
             {
                 movingColPointIndex = iCol;
+                selectedColPointIndex = iCol;
             }
             else if(movingColPointIndex == iCol)
             {
@@ -107,16 +106,20 @@ public class TransferFunctionEditorWindow : EditorWindow
                 tf.alphaControlPoints.Add(new TFAlphaControlPoint(Mathf.Clamp((Event.current.mousePosition.x - bgRect.x) / bgRect.width, 0.0f, 1.0f), Mathf.Clamp(1.0f - (Event.current.mousePosition.y - bgRect.y) / bgRect.height, 0.0f, 1.0f)));
             else
                 tf.colourControlPoints.Add(new TFColourControlPoint(Mathf.Clamp((Event.current.mousePosition.x - bgRect.x) / bgRect.width, 0.0f, 1.0f), Random.ColorHSV()));
+            selectedColPointIndex = -1;
+        }
+
+        if(selectedColPointIndex != -1)
+        {
+            TFColourControlPoint colPoint = tf.colourControlPoints[selectedColPointIndex];
+            colPoint.colourValue = EditorGUI.ColorField(new Rect(bgRect.x, bgRect.y + bgRect.height + 50, 100.0f, 40.0f), colPoint.colourValue);
+            tf.colourControlPoints[selectedColPointIndex] = colPoint;
         }
 
         if(Application.isPlaying)
         {
-            // TEST!!!
-            VolumeRenderer volRend = FindObjectOfType<VolumeRenderer>();
-            if(volRend != null)
-            {
-                volRend.GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_TFTex", tfTexture);
-            }
+            // TEST!!! TODO
+            volRend.GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_TFTex", tfTexture);
         }
         GUI.color = oldColour;
     }

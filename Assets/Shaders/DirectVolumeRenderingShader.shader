@@ -4,7 +4,7 @@
 	{
 		_DataTex ("Data Texture (Generated)", 3D) = "" {}
         _NoiseTex("Noise Texture (Generated)", 2D) = "white" {}
-        _TFTex("Transfer Function Texture (Generated)", 2D) = "white" {}
+        _TFTex("Transfer Function Texture (Generated)", 2D) = "" {}
         _MinVal("Min val", Range(0.0, 1.0)) = 0.0
         _MaxVal("Max val", Range(0.0, 1.0)) = 1.0
     }

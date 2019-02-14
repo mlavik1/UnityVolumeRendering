@@ -5,9 +5,11 @@ using UnityEngine;
 
 public class VolumeRenderer : MonoBehaviour
 {
+    public TransferFunction tf = null;
+
     private void Start()
     {
-        FileStream fs = new FileStream("DataFiles//manix.dat", FileMode.Open);
+        FileStream fs = new FileStream("DataFiles//manix2.dat", FileMode.Open);
         BinaryReader reader = new BinaryReader(fs);
 
         ushort dimX = reader.ReadUInt16();
@@ -50,16 +52,17 @@ public class VolumeRenderer : MonoBehaviour
         noiseTexture.SetPixels(noiseCols);
         noiseTexture.Apply();
 
-        TransferFunction tf = new TransferFunction();
-        tf.AddControlPoint(new TFColourControlPoint(0.0f, Color.black));
-        tf.AddControlPoint(new TFColourControlPoint(0.055f, Color.yellow));
-        tf.AddControlPoint(new TFColourControlPoint(0.11f, Color.red));
-        tf.AddControlPoint(new TFColourControlPoint(1.0f, Color.white));
+        tf = new TransferFunction();
+        tf.AddControlPoint(new TFColourControlPoint(0.0f, new Color(0.11f, 0.14f, 0.13f, 1.0f)));
+        tf.AddControlPoint(new TFColourControlPoint(0.2415f, new Color(0.469f, 0.354f, 0.223f, 1.0f)));
+        tf.AddControlPoint(new TFColourControlPoint(0.3253f, new Color(1.0f, 1.0f, 1.0f, 1.0f)));
 
         tf.AddControlPoint(new TFAlphaControlPoint(0.0f, 0.0f));
-        tf.AddControlPoint(new TFAlphaControlPoint(0.01f, 0.0f));
-        tf.AddControlPoint(new TFAlphaControlPoint(0.6f, 0.2f));
-        tf.AddControlPoint(new TFAlphaControlPoint(1.0f, 1.0f));
+        tf.AddControlPoint(new TFAlphaControlPoint(0.1787f, 0.0f));
+        tf.AddControlPoint(new TFAlphaControlPoint(0.2f, 0.024f));
+        tf.AddControlPoint(new TFAlphaControlPoint(0.28f, 0.03f));
+        tf.AddControlPoint(new TFAlphaControlPoint(0.4f, 0.546f));
+        tf.AddControlPoint(new TFAlphaControlPoint(0.547f, 0.5266f));
 
         Texture2D tfTexture = tf.GetTexture();
 
