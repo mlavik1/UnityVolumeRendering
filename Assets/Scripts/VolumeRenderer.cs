@@ -16,41 +16,21 @@ public class VolumeRenderer : MonoBehaviour
         ushort dimY = reader.ReadUInt16();
         ushort dimZ = reader.ReadUInt16();
 
+        reader.Close();
+        fs.Close();
+
         Debug.Log(dimX + ", " + dimY + ", " + dimZ);
 
         int uDimension = dimX * dimY * dimZ;
 
-        Texture3D tex = new Texture3D(dimX, dimY, dimZ, TextureFormat.RGBAFloat, false);
-        Color[] cols = new Color[uDimension];
-        float minVal = float.PositiveInfinity;
-        float maxVal = float.NegativeInfinity;
-        for(int i = 0; i < uDimension; i++)
-        {
-            float val = (float)reader.ReadInt16();
-            minVal = Mathf.Min(minVal, val);
-            maxVal = Mathf.Max(maxVal, val);
-            cols[i] = new Color(val, 0.0f, 0.0f);
-        }
-        Debug.Log(minVal + "  -  " + maxVal);
-        tex.SetPixels(cols);
-        tex.Apply();
+        RawDatasetImporter importer = new RawDatasetImporter("DataFiles//manix.dat", dimX, dimY, dimZ, DataContentFormat.Int16);
+        VolumeDataset dataset = importer.Import();
+
+        Texture3D tex = dataset.texture;
 
         const int noiseDimX = 512;
         const int noiseDimY = 512;
-
-        Texture2D noiseTexture = new Texture2D(noiseDimX, noiseDimY);
-        Color[] noiseCols = new Color[noiseDimX * noiseDimY];
-        for(int iY = 0; iY < noiseDimY; iY++)
-        {
-            for (int iX = 0; iX < noiseDimX; iX++)
-            {
-                float pixVal = Random.Range(0.0f, 1.0f);
-                noiseCols[iX + iY * noiseDimX] = new Color(pixVal, pixVal, pixVal);
-            }
-        }
-
-        noiseTexture.SetPixels(noiseCols);
-        noiseTexture.Apply();
+        Texture2D noiseTexture = NoiseTextureGenerator.GenerateNoiseTexture(noiseDimX, noiseDimY);
 
         tf = new TransferFunction();
         tf.AddControlPoint(new TFColourControlPoint(0.0f, new Color(0.11f, 0.14f, 0.13f, 1.0f)));
