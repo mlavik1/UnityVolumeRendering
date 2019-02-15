@@ -38,43 +38,43 @@ public class RawDatasetImporter
 
         int uDimension = dimX * dimY * dimZ;
         dataset.texture = new Texture3D(dimX, dimY, dimZ, TextureFormat.RGBAFloat, false);
-        dataset.colours = new Color[uDimension];
+        dataset.data = new int[uDimension];
 
-        float minVal = float.PositiveInfinity;
-        float maxVal = float.NegativeInfinity;
-        float val = 0.0f;
+        int minVal = int.MaxValue;
+        int maxVal = int.MinValue;
+        int val = 0;
         for (int i = 0; i < uDimension; i++)
         {
             switch(contentFormat)
             {
                 case DataContentFormat.Int8:
-                    val = (float)reader.ReadByte();
+                    val = (int)reader.ReadByte();
                     break;
                 case DataContentFormat.Int16:
-                    val = (float)reader.ReadInt16();
+                    val = (int)reader.ReadInt16();
                     break;
                 case DataContentFormat.Int32:
-                    val = (float)reader.ReadInt32();
+                    val = (int)reader.ReadInt32();
                     break;
                 case DataContentFormat.Uint8:
-                    val = (float)reader.ReadByte();
+                    val = (int)reader.ReadByte();
                     break;
                 case DataContentFormat.Uint16:
-                    val = (float)reader.ReadUInt16();
+                    val = (int)reader.ReadUInt16();
                     break;
                 case DataContentFormat.Uint32:
-                    val = (float)reader.ReadUInt32();
+                    val = (int)reader.ReadUInt32();
                     break;
             }
-            minVal = Mathf.Min(minVal, val);
-            maxVal = Mathf.Max(maxVal, val);
-            dataset.colours[i] = new Color(val, 0.0f, 0.0f);
+            minVal = Math.Min(minVal, val);
+            maxVal = Math.Max(maxVal, val);
+            dataset.data[i] = val;
         }
         Debug.Log("Loaded dataset in range: " + minVal + "  -  " + maxVal);
         Debug.Log(minVal + "  -  " + maxVal);
 
-        dataset.texture.SetPixels(dataset.colours);
-        dataset.texture.Apply();
+        dataset.minDataValue = minVal;
+        dataset.maxDataValue = maxVal;
 
         return dataset;
     }

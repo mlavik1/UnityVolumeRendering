@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class VolumeDataset
 {
-    public Color[] colours = null;
+    public int[] data = null;
     public Texture3D texture = null;
+    public int minDataValue;
+    public int maxDataValue;
 }

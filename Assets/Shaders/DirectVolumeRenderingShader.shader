@@ -102,7 +102,7 @@
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         break;
                     
-                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).r / 4095.0f;
+                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).r;
 
                     float4 src = tex2Dlod(_TFTex, float4(density, 0.0f, 0.0f, 0.0f));// tex2D(_TFTex, float2(density, 0.0f));
 
@@ -139,7 +139,7 @@
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         break;
 
-                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).r / 4095.0f;
+                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).r;
                     if (density > _MinVal && density < _MaxVal)
                         maxDensity = max(density, maxDensity);
                 }
@@ -174,7 +174,7 @@
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         break;
 
-                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).r / 4095.0f;
+                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).r;
                     if (density > max(_MinVal, 0.1f)/*TODO*/ && density < _MaxVal) // TEMP TEST
                     {
                         lastDensity = density;
@@ -186,7 +186,7 @@
                 normal = normalize(normal);
                 //float lightReflection = dot(normal, normalize(float3(0.1f, 0.1f, 0.1f)));
                 float lightReflection = dot(normal, rayDir);
-                lightReflection = lerp(0.25f, 1.0f, lightReflection);
+                lightReflection = lerp(0.0f, 1.5f, lightReflection);
                 
                 // Maximum intensity projection
                 float4 col = float4(lastDensity, 0.0f, 0.0f, lastDensity > 0.1f ? 1.0f : 0.0f);

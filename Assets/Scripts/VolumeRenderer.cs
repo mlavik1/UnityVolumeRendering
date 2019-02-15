@@ -26,6 +26,15 @@ public class VolumeRenderer : MonoBehaviour
         RawDatasetImporter importer = new RawDatasetImporter("DataFiles//manix.dat", dimX, dimY, dimZ, DataContentFormat.Int16);
         VolumeDataset dataset = importer.Import();
 
+        Color[] cols = new Color[dataset.data.Length];
+        for(int iData = 0; iData < dataset.data.Length; iData++)
+        {
+            cols[iData] = new Color((float)dataset.data[iData] / (float)dataset.maxDataValue, 0.0f, 0.0f);
+        }
+
+        dataset.texture.SetPixels(cols);
+        dataset.texture.Apply();
+
         Texture3D tex = dataset.texture;
 
         const int noiseDimX = 512;

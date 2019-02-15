@@ -4,7 +4,6 @@ using UnityEditor;
 public class TransferFunctionEditorWindow : EditorWindow
 {
     private TransferFunction tf = null;
-    private Texture2D histogramTexture = null;
 
     private int movingColPointIndex = -1;
     private int movingAlphaPointIndex = -1;
@@ -18,23 +17,6 @@ public class TransferFunctionEditorWindow : EditorWindow
         wnd.Show();
     }
 
-    private void OnEnable()
-    {
-        const int HIST_WIDTH = 800;
-        const int HIST_HEIGHT = 600;
-        histogramTexture = new Texture2D(HIST_WIDTH, HIST_HEIGHT, TextureFormat.RGBAFloat, false);
-        Color[] histCols = new Color[HIST_WIDTH * HIST_HEIGHT];
-        for (int iY = 0; iY < HIST_HEIGHT; iY++)
-        {
-            for (int iX = 0; iX < HIST_WIDTH; iX++)
-            {
-                histCols[iX + iY * HIST_WIDTH] = new Color(iX / (float)HIST_WIDTH, iY / (float)HIST_HEIGHT, 0.0f, 1.0f);
-            }
-        }
-        histogramTexture.SetPixels(histCols);
-        histogramTexture.Apply();
-    }
-
     private void OnGUI()
     {
         VolumeRenderer volRend = FindObjectOfType<VolumeRenderer>();
@@ -46,7 +28,6 @@ public class TransferFunctionEditorWindow : EditorWindow
         float bgWidth = Mathf.Min(this.position.width - 20.0f, (this.position.height - 50.0f) * 2.0f);
         Rect bgRect = new Rect(0.0f, 0.0f, bgWidth, bgWidth * 0.5f);
 
-        //GUI.DrawTexture(bgRect, histogramTexture);
         tf.GenerateTexture();
         Texture2D tfTexture = tf.GetTexture();
         GUI.DrawTexture(bgRect, tfTexture);
