@@ -6,6 +6,8 @@ public class TransferFunction
     public List<TFColourControlPoint> colourControlPoints = new List<TFColourControlPoint>();
     public List<TFAlphaControlPoint> alphaControlPoints = new List<TFAlphaControlPoint>();
 
+    public Texture2D histogramTexture = null;
+
     private Texture2D texture = null;
     Color[] tfCols;
 

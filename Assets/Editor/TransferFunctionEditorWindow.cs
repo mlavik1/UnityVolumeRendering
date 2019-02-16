@@ -17,8 +17,20 @@ public class TransferFunctionEditorWindow : EditorWindow
         wnd.Show();
     }
 
+    private Material tfGUIMat = null;
+    private Material tfPaletteGUIMat = null;
+
+    private void OnEnable()
+    {
+        tfGUIMat = Resources.Load<Material>("TransferFunctionGUIMat");
+        tfPaletteGUIMat = Resources.Load<Material>("TransferFunctionPaletteGUIMat");
+    }
+
     private void OnGUI()
     {
+        if (!Application.isPlaying)
+            return;
+
         VolumeRenderer volRend = FindObjectOfType<VolumeRenderer>();
         if (volRend == null)
             return;
@@ -29,18 +41,22 @@ public class TransferFunctionEditorWindow : EditorWindow
         Rect bgRect = new Rect(0.0f, 0.0f, bgWidth, bgWidth * 0.5f);
 
         tf.GenerateTexture();
-        Texture2D tfTexture = tf.GetTexture();
-        GUI.DrawTexture(bgRect, tfTexture);
 
-        GUI.color = Color.white;
-        GUI.Box(new Rect(bgRect.x, bgRect.y + bgRect.height + 20, bgRect.width, 20.0f), "");
+        tfGUIMat.SetTexture("_TFTex", tf.GetTexture());
+        tfGUIMat.SetTexture("_HistTex", tf.histogramTexture);
+        Graphics.DrawTexture(bgRect, tf.GetTexture(), tfGUIMat);
+
+        Texture2D tfTexture = tf.GetTexture();
+
+        tfPaletteGUIMat.SetTexture("_TFTex", tf.GetTexture());
+        Graphics.DrawTexture(new Rect(bgRect.x, bgRect.y + bgRect.height + 20, bgRect.width, 20.0f), tfTexture, tfPaletteGUIMat);
 
         // Colour control points
         for (int iCol = 0; iCol < tf.colourControlPoints.Count; iCol++)
         {
             TFColourControlPoint colPoint = tf.colourControlPoints[iCol];
             Rect ctrlBox = new Rect(bgRect.x + bgRect.width * colPoint.dataValue, bgRect.y + bgRect.height + 20, 10, 20);
-            GUI.color = colPoint.colourValue;
+            GUI.color = Color.red;
             GUI.skin.box.fontSize = 8;
             GUI.Box(ctrlBox, "|");
             if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && ctrlBox.Contains(new Vector2(Event.current.mousePosition.x, Event.current.mousePosition.y)))

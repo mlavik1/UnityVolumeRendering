@@ -55,6 +55,8 @@ public class VolumeRenderer : MonoBehaviour
 
         Texture2D tfTexture = tf.GetTexture();
 
+        tf.histogramTexture = HistogramTextureGenerator.GenerateHistogramTexture(dataset);
+
         GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_DataTex", tex);
         GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_NoiseTex", noiseTexture);
         GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_TFTex", tfTexture);
