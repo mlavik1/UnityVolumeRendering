@@ -24,4 +24,61 @@ public class HistogramTextureGenerator
 
         return texture;
     }
+    /*
+    float3 getGradient(float3 pos, float gradientStep)
+    {
+        float3 stepX = float3(gradientStep, 0.0f, 0.0f);
+        float3 stepY = float3(0.0f, gradientStep, 0.0f);
+        float3 stepZ = float3(0.0f, 0.0f, gradientStep);
+
+        float x1 = tex3Dlod(_DataTex, float4(pos + stepX, 0.0f)).x;
+        float x2 = tex3Dlod(_DataTex, float4(pos - stepX, 0.0f)).x;
+        float y1 = tex3Dlod(_DataTex, float4(pos + stepY, 0.0f)).x;
+        float y2 = tex3Dlod(_DataTex, float4(pos - stepY, 0.0f)).x;
+        float z1 = tex3Dlod(_DataTex, float4(pos + stepZ, 0.0f)).x;
+        float z2 = tex3Dlod(_DataTex, float4(pos - stepZ, 0.0f)).x;
+        return float3(x2 - x1, y2 - y1, z2 - z1);
+    }*/
+
+
+    public static Texture2D Generate2DHistogramTexture(VolumeDataset dataset)
+    {
+        int numSamples = dataset.maxDataValue + 1;
+        int numGradientSamples = 256;
+        Color[] cols = new Color[numSamples * numGradientSamples];
+        Texture2D texture = new Texture2D(numSamples, numGradientSamples, TextureFormat.RGBAFloat, false);
+
+        for (int iCol = 0; iCol < cols.Length; iCol++)
+            cols[iCol] = new Color(0.0f, 0.0f, 0.0f, 0.0f);
+
+        int maxRange = dataset.maxDataValue - dataset.minDataValue;
+        const float maxNormalisedMagnitude = 1.75f; // sqrt(1^2 + 1^2 + 1^2) = swrt(3) = a bit less than 1.75
+
+        for (int x = 1; x < dataset.dimX-1; x++)
+        {
+            for (int y = 1; y < dataset.dimY-1; y++)
+            {
+                for (int z = 1; z < dataset.dimZ-1; z++)
+                {
+                    int iData = x + y * dataset.dimX + z * (dataset.dimX * dataset.dimY);
+                    int density = dataset.data[iData];
+
+                    int x1 = dataset.data[(x + 1) + y * dataset.dimX + z * (dataset.dimX * dataset.dimY)];
+                    int x2 = dataset.data[(x - 1) + y * dataset.dimX + z * (dataset.dimX * dataset.dimY)];
+                    int y1 = dataset.data[x + (y + 1) * dataset.dimX + z * (dataset.dimX * dataset.dimY)];
+                    int y2 = dataset.data[x + (y - 1) * dataset.dimX + z * (dataset.dimX * dataset.dimY)];
+                    int z1 = dataset.data[x + y * dataset.dimX + (z + 1) * (dataset.dimX * dataset.dimY)];
+                    int z2 = dataset.data[x + y * dataset.dimX + (z - 1) * (dataset.dimX * dataset.dimY)];
+
+                    Vector3 grad = new Vector3((x2 - x1) / (float)maxRange, (y2 - y1) / (float)maxRange, (z2 - z1) / (float)maxRange);
+                    cols[density + (int)(grad.magnitude * numGradientSamples / maxNormalisedMagnitude) * numSamples] = Color.white;
+                }
+            }
+        }
+
+        texture.SetPixels(cols);
+        texture.Apply();
+
+        return texture;
+    }
 }

@@ -20,6 +20,7 @@
 		{
 			CGPROGRAM
             #pragma multi_compile MODE_DVR MODE_MIP MODE_SURF
+            #pragma multi_compile __ TF2D_ON
 			#pragma vertex vert
 			#pragma fragment frag
 			// make fog work
@@ -81,7 +82,7 @@
             // Direct Volume Rendering
 			fixed4 frag_dvr (v2f i)
 			{
-                #define NUM_STEPS 2048//200
+                #define NUM_STEPS 512//200
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
                 float4 col = float4(i.vertexLocal.x, i.vertexLocal.y, i.vertexLocal.z, 1.0f);
@@ -101,11 +102,16 @@
                     const float3 currPos = rayStartPos + rayDir * t;
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         break;
-                    
+
                     const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).r;
 
-                    float4 src = tex2Dlod(_TFTex, float4(density, 0.0f, 0.0f, 0.0f));// tex2D(_TFTex, float2(density, 0.0f));
-
+#if TF2D_ON
+                    float3 gradient = getGradient(currPos, 0.005f);
+                    float mag = length(gradient) / 1.75f;
+                    float4 src = tex2Dlod(_TFTex, float4(density, mag, 0.0f, 0.0f));
+#else
+                    float4 src = tex2Dlod(_TFTex, float4(density, 0.0f, 0.0f, 0.0f));
+#endif
                     if (density < _MinVal || density > _MaxVal)
                         src.a = 0.0f;
 

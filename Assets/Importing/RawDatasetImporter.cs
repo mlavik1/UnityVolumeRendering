@@ -33,6 +33,10 @@ public class RawDatasetImporter
     {
         VolumeDataset dataset = new VolumeDataset();
 
+        dataset.dimX = dimX;
+        dataset.dimY = dimY;
+        dataset.dimZ = dimZ;
+
         FileStream fs = new FileStream(filePath, FileMode.Open);
         BinaryReader reader = new BinaryReader(fs);
 

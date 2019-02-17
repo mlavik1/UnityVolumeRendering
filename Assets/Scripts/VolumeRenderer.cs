@@ -6,6 +6,8 @@ using UnityEngine;
 public class VolumeRenderer : MonoBehaviour
 {
     public TransferFunction tf = null;
+    public TransferFunction2D tf2D = null;
+    public VolumeDataset volumeDataset = null;
 
     private void Start()
     {
@@ -25,6 +27,7 @@ public class VolumeRenderer : MonoBehaviour
 
         RawDatasetImporter importer = new RawDatasetImporter("DataFiles//manix.dat", dimX, dimY, dimZ, DataContentFormat.Int16);
         VolumeDataset dataset = importer.Import();
+        volumeDataset = dataset;
 
         Color[] cols = new Color[dataset.data.Length];
         for(int iData = 0; iData < dataset.data.Length; iData++)
@@ -56,6 +59,9 @@ public class VolumeRenderer : MonoBehaviour
         Texture2D tfTexture = tf.GetTexture();
 
         tf.histogramTexture = HistogramTextureGenerator.GenerateHistogramTexture(dataset);
+
+        tf2D = new TransferFunction2D();
+        tf2D.AddBox(0.05f, 0.1f, 0.8f, 0.7f, Color.white, 0.4f);
 
         GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_DataTex", tex);
         GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_NoiseTex", noiseTexture);

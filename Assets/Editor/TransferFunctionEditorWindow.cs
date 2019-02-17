@@ -10,9 +10,13 @@ public class TransferFunctionEditorWindow : EditorWindow
 
     private int selectedColPointIndex = -1;
 
-    [MenuItem("Volume Rendering/Transfer Function")]
+    [MenuItem("Volume Rendering/1D Transfer Function")]
     static void ShowWindow()
     {
+        TransferFunction2DEditorWindow tf2dWnd = (TransferFunction2DEditorWindow)EditorWindow.GetWindow(typeof(TransferFunction2DEditorWindow));
+        if (tf2dWnd != null)
+            tf2dWnd.Close();
+
         TransferFunctionEditorWindow wnd = (TransferFunctionEditorWindow)EditorWindow.GetWindow(typeof(TransferFunctionEditorWindow));
         wnd.Show();
     }
@@ -113,11 +117,10 @@ public class TransferFunctionEditorWindow : EditorWindow
             tf.colourControlPoints[selectedColPointIndex] = colPoint;
         }
 
-        if(Application.isPlaying)
-        {
-            // TEST!!! TODO
-            volRend.GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_TFTex", tfTexture);
-        }
+        // TEST!!! TODO
+        volRend.GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_TFTex", tfTexture);
+        volRend.GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("TF2D_ON");
+
         GUI.color = oldColour;
     }
 
