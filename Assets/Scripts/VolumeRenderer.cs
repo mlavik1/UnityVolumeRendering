@@ -11,7 +11,8 @@ public class VolumeRenderer : MonoBehaviour
 
     private void Start()
     {
-        FileStream fs = new FileStream("DataFiles//manix.dat", FileMode.Open);
+        string fileToLoad = "DataFiles//manix.dat";
+        FileStream fs = new FileStream(fileToLoad, FileMode.Open);
         BinaryReader reader = new BinaryReader(fs);
 
         ushort dimX = reader.ReadUInt16();
@@ -25,14 +26,21 @@ public class VolumeRenderer : MonoBehaviour
 
         int uDimension = dimX * dimY * dimZ;
 
-        RawDatasetImporter importer = new RawDatasetImporter("DataFiles//manix.dat", dimX, dimY, dimZ, DataContentFormat.Int16);
+        RawDatasetImporter importer = new RawDatasetImporter(fileToLoad, dimX, dimY, dimZ, DataContentFormat.Int16, 6);
         VolumeDataset dataset = importer.Import();
         volumeDataset = dataset;
 
         Color[] cols = new Color[dataset.data.Length];
-        for(int iData = 0; iData < dataset.data.Length; iData++)
+        for(int iX = 0; iX < dataset.dimX; iX++)
         {
-            cols[iData] = new Color((float)dataset.data[iData] / (float)dataset.maxDataValue, 0.0f, 0.0f);
+            for (int iY = 0; iY < dataset.dimY; iY++)
+            {
+                for (int iZ = 0; iZ < dataset.dimZ; iZ++)
+                {
+                    int iData = iX + iY * dimX + iZ * (dimX * dimY);
+                    cols[iData] = new Color((float)dataset.data[iData] / (float)dataset.maxDataValue, 0.0f, 0.0f);
+                }
+            }
         }
 
         dataset.texture.SetPixels(cols);

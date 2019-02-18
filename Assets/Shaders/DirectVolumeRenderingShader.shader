@@ -82,7 +82,11 @@
             // Direct Volume Rendering
 			fixed4 frag_dvr (v2f i)
 			{
-                #define NUM_STEPS 512//200
+#if TF2D_ON
+                #define NUM_STEPS 512
+#else
+                #define NUM_STEPS 1024
+#endif
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
                 float4 col = float4(i.vertexLocal.x, i.vertexLocal.y, i.vertexLocal.z, 1.0f);
@@ -106,7 +110,7 @@
                     const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).r;
 
 #if TF2D_ON
-                    float3 gradient = getGradient(currPos, 0.005f);
+                    float3 gradient = getGradient(currPos, stepSize);
                     float mag = length(gradient) / 1.75f;
                     float4 src = tex2Dlod(_TFTex, float4(density, mag, 0.0f, 0.0f));
 #else
@@ -129,7 +133,7 @@
             // Maximum Intensity Projection mode
             fixed4 frag_mip(v2f i)
             {
-                #define NUM_STEPS 1024//200
+                #define NUM_STEPS 1024
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
@@ -160,7 +164,11 @@
             // TODO: Cast ray FROM the camera instead, since this is a waste of performance
             fixed4 frag_surf(v2f i)
             {
-                #define NUM_STEPS 2048//200
+#if TF2D_ON
+                #define NUM_STEPS 512
+#else
+                #define NUM_STEPS 1024
+#endif
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
@@ -195,8 +203,8 @@
                 lightReflection = lerp(0.0f, 1.5f, lightReflection);
                 
                 // Maximum intensity projection
-                float4 col = float4(lastDensity, 0.0f, 0.0f, lastDensity > 0.1f ? 1.0f : 0.0f);
-                col = lightReflection * tex2Dlod(_TFTex, float4(lastDensity, 0.0f, 0.0f, 0.0f));
+
+                float4 col = lightReflection * tex2Dlod(_TFTex, float4(lastDensity, 0.0f, 0.0f, 0.0f));
                 col.a = lastDensity > 0.1f ? 1.0f : 0.0f;
 
                 return col;

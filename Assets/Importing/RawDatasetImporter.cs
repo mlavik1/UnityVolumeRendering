@@ -19,14 +19,16 @@ public class RawDatasetImporter
     private int dimY;
     private int dimZ;
     private DataContentFormat contentFormat;
+    int skipBytes;
 
-    public RawDatasetImporter(string filePath, int dimX, int dimY, int dimZ, DataContentFormat contentFormat)
+    public RawDatasetImporter(string filePath, int dimX, int dimY, int dimZ, DataContentFormat contentFormat, int skipBytes)
     {
         this.filePath = filePath;
         this.dimX = dimX;
         this.dimY = dimY;
         this.dimZ = dimZ;
         this.contentFormat = contentFormat;
+        this.skipBytes = skipBytes;
     }
 
     public VolumeDataset Import()
@@ -39,6 +41,8 @@ public class RawDatasetImporter
 
         FileStream fs = new FileStream(filePath, FileMode.Open);
         BinaryReader reader = new BinaryReader(fs);
+
+        reader.ReadBytes(skipBytes);
 
         int uDimension = dimX * dimY * dimZ;
         dataset.texture = new Texture3D(dimX, dimY, dimZ, TextureFormat.RGBAFloat, false);
