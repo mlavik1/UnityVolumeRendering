@@ -52,19 +52,9 @@
             float _MinVal;
             float _MaxVal;
 
-            float3 getGradient(float3 pos, float gradientStep)
+            float3 getGradient(float3 pos)
             {
-                float3 stepX = float3(gradientStep, 0.0f, 0.0f);
-                float3 stepY = float3(0.0f, gradientStep, 0.0f);
-                float3 stepZ = float3(0.0f, 0.0f, gradientStep);
-
-                float x1 = tex3Dlod(_DataTex, float4(pos + stepX, 0.0f)).x;
-                float x2 = tex3Dlod(_DataTex, float4(pos - stepX, 0.0f)).x;
-                float y1 = tex3Dlod(_DataTex, float4(pos + stepY, 0.0f)).x;
-                float y2 = tex3Dlod(_DataTex, float4(pos - stepY, 0.0f)).x;
-                float z1 = tex3Dlod(_DataTex, float4(pos + stepZ, 0.0f)).x;
-                float z2 = tex3Dlod(_DataTex, float4(pos - stepZ, 0.0f)).x;
-                return float3(x2 - x1, y2 - y1, z2 - z1);
+                return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f)).rgb;
             }
 
 			v2f vert_main (appdata v)
@@ -82,11 +72,8 @@
             // Direct Volume Rendering
 			fixed4 frag_dvr (v2f i)
 			{
-#if TF2D_ON
-                #define NUM_STEPS 512
-#else
-                #define NUM_STEPS 1024
-#endif
+#define NUM_STEPS 1024
+
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
                 float4 col = float4(i.vertexLocal.x, i.vertexLocal.y, i.vertexLocal.z, 1.0f);
@@ -107,10 +94,10 @@
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         break;
 
-                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).r;
+                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).a;
 
 #if TF2D_ON
-                    float3 gradient = getGradient(currPos, stepSize);
+                    float3 gradient = getGradient(currPos);
                     float mag = length(gradient) / 1.75f;
                     float4 src = tex2Dlod(_TFTex, float4(density, mag, 0.0f, 0.0f));
 #else
@@ -164,11 +151,7 @@
             // TODO: Cast ray FROM the camera instead, since this is a waste of performance
             fixed4 frag_surf(v2f i)
             {
-#if TF2D_ON
-                #define NUM_STEPS 512
-#else
-                #define NUM_STEPS 1024
-#endif
+#define NUM_STEPS 1024
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
@@ -188,15 +171,14 @@
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         break;
 
-                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).r;
+                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).a;
                     if (density > max(_MinVal, 0.1f)/*TODO*/ && density < _MaxVal) // TEMP TEST
                     {
                         lastDensity = density;
                         lastT = t;
                     }
                 }
-
-                float3 normal = getGradient(rayStartPos + rayDir * lastT, stepSize);
+                float3 normal = getGradient(rayStartPos + rayDir * lastT);
                 normal = normalize(normal);
                 //float lightReflection = dot(normal, normalize(float3(0.1f, 0.1f, 0.1f)));
                 float lightReflection = dot(normal, rayDir);
