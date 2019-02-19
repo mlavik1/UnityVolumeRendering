@@ -23,8 +23,6 @@
             #pragma multi_compile __ TF2D_ON
 			#pragma vertex vert
 			#pragma fragment frag
-			// make fog work
-			#pragma multi_compile_fog
 
 			#include "UnityCG.cginc"
 
@@ -37,12 +35,10 @@
 
 			struct v2f
 			{
-				UNITY_FOG_COORDS(1)
 				float4 vertex : SV_POSITION;
                 float2 uv : TEXCOORD0;
                 float3 vertexLocal : TEXCOORD1;
                 float3 normal : NORMAL;
-                //float3 screenPos : TEXCOORD1;
 			};
 
 			sampler3D _DataTex;
@@ -52,6 +48,25 @@
             float _MinVal;
             float _MaxVal;
 
+            // Gets the colour from a 1D Transfer Function (x = density)
+            float4 getTF1DColour(float density)
+            {
+                return tex2Dlod(_TFTex, float4(density, 0.0f, 0.0f, 0.0f));
+            }
+
+            // Gets the colour from a 2D Transfer Function (x = density, y = gradient magnitude)
+            float4 getTF2DColour(float density, float gradientMagnitude)
+            {
+                return tex2Dlod(_TFTex, float4(density, gradientMagnitude, 0.0f, 0.0f));
+            }
+
+            // Gets the density at the specified position
+            float getDensity(float3 pos)
+            {
+                return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f)).a;
+            }
+
+            // Gets the gradient at the specified position
             float3 getGradient(float3 pos)
             {
                 return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f)).rgb;
@@ -62,10 +77,8 @@
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
-                //o.screenPos = ComputeScreenPos(o.vertex);
                 o.vertexLocal = v.vertex;
                 o.normal = UnityObjectToWorldNormal(v.normal);
-				UNITY_TRANSFER_FOG(o,o.vertex);
 				return o;
 			}
 
@@ -86,7 +99,6 @@
                 rayStartPos = rayStartPos + (2.0f * rayDir / NUM_STEPS) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
 
                 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
-                //[unroll(NUM_STEPS)]
                 for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
                 {
                     const float t = iStep * stepSize + stepSize * 0.5f;
@@ -94,14 +106,14 @@
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         break;
 
-                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).a;
+                    const float density = getDensity(currPos);
 
 #if TF2D_ON
                     float3 gradient = getGradient(currPos);
                     float mag = length(gradient) / 1.75f;
-                    float4 src = tex2Dlod(_TFTex, float4(density, mag, 0.0f, 0.0f));
+                    float4 src = getTF2DColour(density, mag);
 #else
-                    float4 src = tex2Dlod(_TFTex, float4(density, 0.0f, 0.0f, 0.0f));
+                    float4 src = getTF1DColour(density);
 #endif
                     if (density < _MinVal || density > _MaxVal)
                         src.a = 0.0f;
@@ -109,7 +121,8 @@
                     col.rgb = src.a * src.rgb + (1.0f - src.a)*col.rgb;
                     col.a = src.a + (1.0f - src.a)*col.a;
 
-                    if (col.a > 1.0f) break;
+                    if (col.a > 1.0f)
+                        break;
                 }
 
                 col.rgb = col.rgb;
@@ -128,15 +141,15 @@
                 rayDir = normalize(rayDir);
 
                 float maxDensity = 0.0f;
-                //[unroll(NUM_STEPS)]
                 for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
                 {
                     const float t = iStep * stepSize + stepSize * 0.5f;
                     const float3 currPos = rayStartPos + rayDir * t;
+                    // Stop when we are outside the box
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         break;
 
-                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).a;
+                    const float density = getDensity(currPos);
                     if (density > _MinVal && density < _MaxVal)
                         maxDensity = max(density, maxDensity);
                 }
@@ -149,43 +162,42 @@
 
             // Surface rendering mode
             // Draws the first point (closest to camera) with a density within the user-defined thresholds.
-            // TODO: Cast ray FROM the camera instead, since this is a waste of performance
             fixed4 frag_surf(v2f i)
             {
 #define NUM_STEPS 1024
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
-                float3 rayDir = ObjSpaceViewDir(float4(i.vertexLocal, 0.0f));
-                rayDir = normalize(rayDir);
+                float3 rayDir = normalize(ObjSpaceViewDir(float4(i.vertexLocal, 0.0f)));
+                // Start from the end, tand trace towards the vertex
+                rayStartPos += rayDir * stepSize * NUM_STEPS;
+                rayDir = -rayDir;
+
+                float3 lightDir = -rayDir;
 
                 // Create a small random offset in order to remove artifacts
                 rayStartPos = rayStartPos + (2.0f * rayDir / NUM_STEPS) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
 
-                float lastDensity = 0.0f;
-                float lastT = 0.0f;
-                //[unroll(NUM_STEPS)]
+                float4 col = float4(0,0,0,0);
                 for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
                 {
                     const float t = iStep * stepSize + stepSize * 0.5f;
                     const float3 currPos = rayStartPos + rayDir * t;
+                    // Make sure we are inside the box
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
-                        break;
+                        continue;
 
-                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).a;
-                    if (density > max(_MinVal, 0.1f)/*TODO*/ && density < _MaxVal) // TEMP TEST
+                    const float density = getDensity(currPos);
+                    if (density > _MinVal && density < _MaxVal)
                     {
-                        lastDensity = density;
-                        lastT = t;
+                        float3 normal = normalize(getGradient(currPos));
+                        float lightReflection = dot(normal, lightDir);
+                        lightReflection =  max(lerp(0.0f, 1.5f, lightReflection), 0.5f);
+                        col = lightReflection * getTF1DColour(density);
+                        col.a = 1.0f;
+                        break;
                     }
                 }
-                float3 normal = getGradient(rayStartPos + rayDir * lastT);
-                normal = normalize(normal);
-                float lightReflection = dot(normal, rayDir);
-                lightReflection = max(lerp(0.0f, 1.5f, lightReflection), 0.5f);
-                
-                float4 col = lightReflection * tex2Dlod(_TFTex, float4(lastDensity, 0.0f, 0.0f, 0.0f));
-                col.a = lastDensity > 0.1f ? 1.0f : 0.0f;
 
                 return col;
             }
