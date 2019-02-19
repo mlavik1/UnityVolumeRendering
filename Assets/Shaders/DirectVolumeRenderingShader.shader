@@ -136,12 +136,13 @@
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         break;
 
-                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).r;
+                    const float density = tex3Dlod(_DataTex, float4(currPos.x, currPos.y, currPos.z, 0.0f)).a;
                     if (density > _MinVal && density < _MaxVal)
                         maxDensity = max(density, maxDensity);
                 }
+
                 // Maximum intensity projection
-                float4 col = float4(maxDensity, maxDensity, maxDensity, maxDensity);
+                float4 col = float4(1.0f, 1.0f, 1.0f, maxDensity);
 
                 return col;
             }
@@ -180,12 +181,9 @@
                 }
                 float3 normal = getGradient(rayStartPos + rayDir * lastT);
                 normal = normalize(normal);
-                //float lightReflection = dot(normal, normalize(float3(0.1f, 0.1f, 0.1f)));
                 float lightReflection = dot(normal, rayDir);
-                lightReflection = lerp(0.0f, 1.5f, lightReflection);
+                lightReflection = max(lerp(0.0f, 1.5f, lightReflection), 0.5f);
                 
-                // Maximum intensity projection
-
                 float4 col = lightReflection * tex2Dlod(_TFTex, float4(lastDensity, 0.0f, 0.0f, 0.0f));
                 col.a = lastDensity > 0.1f ? 1.0f : 0.0f;
 

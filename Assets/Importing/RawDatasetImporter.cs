@@ -42,7 +42,8 @@ public class RawDatasetImporter
         FileStream fs = new FileStream(filePath, FileMode.Open);
         BinaryReader reader = new BinaryReader(fs);
 
-        reader.ReadBytes(skipBytes);
+        if(skipBytes > 0)
+            reader.ReadBytes(skipBytes);
 
         int uDimension = dimX * dimY * dimZ;
         dataset.texture = new Texture3D(dimX, dimY, dimZ, TextureFormat.RGBAFloat, false);
