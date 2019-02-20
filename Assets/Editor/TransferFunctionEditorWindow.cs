@@ -32,13 +32,10 @@ public class TransferFunctionEditorWindow : EditorWindow
 
     private void OnGUI()
     {
-        if (!Application.isPlaying)
-            return;
-
-        VolumeRenderer volRend = FindObjectOfType<VolumeRenderer>();
+        VolumeRenderedObject volRend = FindObjectOfType<VolumeRenderedObject>();
         if (volRend == null)
             return;
-        tf = volRend.tf;
+        tf = volRend.transferFunction;
 
         Color oldColour = GUI.color;
         float bgWidth = Mathf.Min(this.position.width - 20.0f, (this.position.height - 50.0f) * 2.0f);

@@ -28,17 +28,14 @@ public class TransferFunction2DEditorWindow : EditorWindow
 
     private void OnGUI()
     {
-        if (!Application.isPlaying)
-            return;
-
-        VolumeRenderer volRend = FindObjectOfType<VolumeRenderer>();
+        VolumeRenderedObject volRend = FindObjectOfType<VolumeRenderedObject>();
         if (volRend == null)
             return;
 
         if (hist2DTex == null)
-            hist2DTex = HistogramTextureGenerator.Generate2DHistogramTexture(volRend.volumeDataset);
+            hist2DTex = HistogramTextureGenerator.Generate2DHistogramTexture(volRend.dataset);
 
-        TransferFunction2D tf2d = volRend.tf2D;
+        TransferFunction2D tf2d = volRend.transferFunction2D;
 
         //tf.GenerateTexture();
 

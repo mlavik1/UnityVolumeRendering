@@ -14,9 +14,6 @@ public class SliceRenderingEditorWindow : EditorWindow
 
     private void OnGUI()
     {
-        if (!Application.isPlaying)
-            return;
-
         SlicingPlane[] spawnedPlanes = FindObjectsOfType<SlicingPlane>();
 
         if(spawnedPlanes.Length > 0)
@@ -41,7 +38,7 @@ public class SliceRenderingEditorWindow : EditorWindow
         }
         if (GUI.Button(new Rect(240.0f, bgRect.y + bgRect.height + 20.0f, 100.0f, 100.0f), "+"))
         {
-            VolumeRenderer volRend = FindObjectOfType<VolumeRenderer>();
+            VolumeRenderedObject volRend = FindObjectOfType<VolumeRenderedObject>();
             if(volRend != null)
             {
                 selectedPlaneIndex = spawnedPlanes.Length;

@@ -12,7 +12,7 @@ public enum DataContentFormat
     Uint32
 }
 
-public class RawDatasetImporter
+public class RawDatasetImporter : DatasetImporterBase
 {
     string filePath;
     private int dimX;
@@ -31,7 +31,7 @@ public class RawDatasetImporter
         this.skipBytes = skipBytes;
     }
 
-    public VolumeDataset Import()
+    public override VolumeDataset Import()
     {
         VolumeDataset dataset = new VolumeDataset();
 

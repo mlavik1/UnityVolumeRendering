@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+[ExecuteInEditMode]
 public class SlicingPlane : MonoBehaviour
 {
     private MeshRenderer meshRenderer;

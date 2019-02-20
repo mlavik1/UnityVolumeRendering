@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 4022122026797268}
   - component: {fileID: 33312357750855204}
   - component: {fileID: 23086139309309076}
-  - component: {fileID: 114671375263017396}
+  - component: {fileID: 114985090201080716}
   m_Layer: 0
   m_Name: VolumeRenderedObject
   m_TagString: Untagged
@@ -84,7 +84,7 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1758459268553486}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &114671375263017396
+--- !u!114 &114985090201080716
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -92,7 +92,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1758459268553486}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a00a6dc9906286a46948a51d4f7c56ab, type: 3}
+  m_Script: {fileID: 11500000, guid: acf4a5cf6519d714895a068f9a4e8456, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tf2D: {fileID: 0}
+  transferFunction2D: {fileID: 0}
