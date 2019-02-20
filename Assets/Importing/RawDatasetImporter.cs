@@ -47,6 +47,7 @@ public class RawDatasetImporter
 
         int uDimension = dimX * dimY * dimZ;
         dataset.texture = new Texture3D(dimX, dimY, dimZ, TextureFormat.RGBAFloat, false);
+        dataset.texture.wrapMode = TextureWrapMode.Clamp;
         dataset.data = new int[uDimension];
 
         int minVal = int.MaxValue;

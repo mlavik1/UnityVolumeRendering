@@ -10,6 +10,8 @@ public class VolumeRenderer : MonoBehaviour
     public TransferFunction2D tf2D = null;
     public VolumeDataset volumeDataset = null;
 
+    private GameObject sliceRenderingPlane;
+
     private void Start()
     {
         string fileToLoad = "DataFiles//manix.dat";
@@ -93,6 +95,23 @@ public class VolumeRenderer : MonoBehaviour
         GetComponent<MeshRenderer>().sharedMaterial.EnableKeyword("MODE_DVR");
         GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_MIP");
         GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_SURF");
+    }
+
+    public SlicingPlane CreateSlicingPlane()
+    {
+        sliceRenderingPlane = GameObject.Instantiate(Resources.Load<GameObject>("SlicingPlane"));
+        sliceRenderingPlane.transform.parent = transform;
+        sliceRenderingPlane.transform.localPosition = Vector3.zero;
+        sliceRenderingPlane.transform.localRotation = Quaternion.identity;
+        MeshRenderer sliceMeshRend = sliceRenderingPlane.GetComponent<MeshRenderer>();
+        sliceMeshRend.material = new Material(sliceMeshRend.sharedMaterial);
+        Material sliceMat = sliceRenderingPlane.GetComponent<MeshRenderer>().sharedMaterial;
+        sliceMat.SetTexture("_DataTex", volumeDataset.texture);
+        sliceMat.SetTexture("_TFTex", tf.GetTexture());
+        sliceMat.SetMatrix("_parentInverseMat", transform.worldToLocalMatrix);
+        sliceMat.SetMatrix("_planeMat", Matrix4x4.TRS(sliceRenderingPlane.transform.position, sliceRenderingPlane.transform.rotation, Vector3.one)); // TODO: allow changing scale
+
+        return sliceRenderingPlane.GetComponent<SlicingPlane>();
     }
 
     private void Update()

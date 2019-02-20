@@ -24,22 +24,6 @@ public class HistogramTextureGenerator
 
         return texture;
     }
-    /*
-    float3 getGradient(float3 pos, float gradientStep)
-    {
-        float3 stepX = float3(gradientStep, 0.0f, 0.0f);
-        float3 stepY = float3(0.0f, gradientStep, 0.0f);
-        float3 stepZ = float3(0.0f, 0.0f, gradientStep);
-
-        float x1 = tex3Dlod(_DataTex, float4(pos + stepX, 0.0f)).x;
-        float x2 = tex3Dlod(_DataTex, float4(pos - stepX, 0.0f)).x;
-        float y1 = tex3Dlod(_DataTex, float4(pos + stepY, 0.0f)).x;
-        float y2 = tex3Dlod(_DataTex, float4(pos - stepY, 0.0f)).x;
-        float z1 = tex3Dlod(_DataTex, float4(pos + stepZ, 0.0f)).x;
-        float z2 = tex3Dlod(_DataTex, float4(pos - stepZ, 0.0f)).x;
-        return float3(x2 - x1, y2 - y1, z2 - z1);
-    }*/
-
 
     public static Texture2D Generate2DHistogramTexture(VolumeDataset dataset)
     {
