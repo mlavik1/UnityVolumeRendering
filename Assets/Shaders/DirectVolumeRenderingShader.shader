@@ -101,7 +101,7 @@
                 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
                 for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
                 {
-                    const float t = iStep * stepSize + stepSize * 0.5f;
+                    const float t = iStep * stepSize;
                     const float3 currPos = rayStartPos + rayDir * t;
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         break;
@@ -143,7 +143,7 @@
                 float maxDensity = 0.0f;
                 for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
                 {
-                    const float t = iStep * stepSize + stepSize * 0.5f;
+                    const float t = iStep * stepSize;
                     const float3 currPos = rayStartPos + rayDir * t;
                     // Stop when we are outside the box
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
@@ -181,7 +181,7 @@
                 float4 col = float4(0,0,0,0);
                 for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
                 {
-                    const float t = iStep * stepSize + stepSize * 0.5f;
+                    const float t = iStep * stepSize;
                     const float3 currPos = rayStartPos + rayDir * t;
                     // Make sure we are inside the box
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
