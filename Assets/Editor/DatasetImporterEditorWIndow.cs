@@ -42,6 +42,8 @@ public class DatasetImporterEditorWindow : EditorWindow
             reader.Close();
             fs.Close();
         }
+
+        this.minSize = new Vector2(300.0f, 200.0f);
     }
 
     private void ImportDataset()
