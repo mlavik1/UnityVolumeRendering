@@ -45,6 +45,7 @@ The importer takes the following parameters:
 - Optimise histogram generation
 - Support very large datasets (currently we naively try to create 3D textures with the same dimension as the data)
 
+![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/slices.gif)
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/1.png)
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/2.png)
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/3.png)
