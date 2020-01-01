@@ -4,7 +4,7 @@ A volume renderer, made in Unity3D. See slides from presentation here: https://s
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/front.jpg)
 
 # Requirements:
-- Unity 2018 1.5 (should also work with other versions, but I haven't tested)
+- Unity 2018 1.5 or newer (should also work with some older versions, but I haven't tested)
 
 # How to use sample scene
 - Open "TestScene.unity"
@@ -44,6 +44,7 @@ The importer takes the following parameters:
 - Improve 2D Transfer Function editor: Better GUI, more shapes (triangles)
 - Optimise histogram generation
 - Support very large datasets (currently we naively try to create 3D textures with the same dimension as the data)
+- Volume cross sections
 
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/slices.gif)
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/1.png)
