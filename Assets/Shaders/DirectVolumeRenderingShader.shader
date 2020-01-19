@@ -89,8 +89,6 @@
 
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
-                float4 col = float4(i.vertexLocal.x, i.vertexLocal.y, i.vertexLocal.z, 1.0f);
-
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
                 float3 rayDir = ObjSpaceViewDir(float4(i.vertexLocal, 0.0f));
                 rayDir = normalize(rayDir);
@@ -98,7 +96,7 @@
                 // Create a small random offset in order to remove artifacts
                 rayStartPos = rayStartPos + (2.0f * rayDir / NUM_STEPS) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
 
-                col = float4(0.0f, 0.0f, 0.0f, 0.0f);
+                float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
                 for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
                 {
                     const float t = iStep * stepSize;
@@ -124,8 +122,6 @@
                     if (col.a > 1.0f)
                         break;
                 }
-
-                col.rgb = col.rgb;
 
                 return col;
             }
