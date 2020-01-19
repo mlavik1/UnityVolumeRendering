@@ -1,47 +1,47 @@
 ﻿Shader "VolumeRendering/DirectVolumeRenderingShader"
 {
-	Properties
-	{
-		_DataTex ("Data Texture (Generated)", 3D) = "" {}
+    Properties
+    {
+        _DataTex ("Data Texture (Generated)", 3D) = "" {}
         _NoiseTex("Noise Texture (Generated)", 2D) = "white" {}
         _TFTex("Transfer Function Texture (Generated)", 2D) = "" {}
         _MinVal("Min val", Range(0.0, 1.0)) = 0.0
         _MaxVal("Max val", Range(0.0, 1.0)) = 1.0
     }
-	SubShader
-	{
-		Tags { "Queue" = "Transparent" "RenderType" = "Transparent" }
-		LOD 100
+    SubShader
+    {
+        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" }
+        LOD 100
         Cull Front
         ZWrite Off
         Blend SrcAlpha OneMinusSrcAlpha
 
-		Pass
-		{
-			CGPROGRAM
+        Pass
+        {
+            CGPROGRAM
             #pragma multi_compile MODE_DVR MODE_MIP MODE_SURF
             #pragma multi_compile __ TF2D_ON
-			#pragma vertex vert
-			#pragma fragment frag
+            #pragma vertex vert
+            #pragma fragment frag
 
-			#include "UnityCG.cginc"
+            #include "UnityCG.cginc"
 
-			struct appdata
-			{
-				float4 vertex : POSITION;
+            struct appdata
+            {
+                float4 vertex : POSITION;
                 float4 normal : NORMAL;
                 float2 uv : TEXCOORD0;
-			};
+            };
 
-			struct v2f
-			{
-				float4 vertex : SV_POSITION;
+            struct v2f
+            {
+                float4 vertex : SV_POSITION;
                 float2 uv : TEXCOORD0;
                 float3 vertexLocal : TEXCOORD1;
                 float3 normal : NORMAL;
-			};
+            };
 
-			sampler3D _DataTex;
+            sampler3D _DataTex;
             sampler2D _NoiseTex;
             sampler2D _TFTex;
 
@@ -72,20 +72,20 @@
                 return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f)).rgb;
             }
 
-			v2f vert_main (appdata v)
-			{
-				v2f o;
-				o.vertex = UnityObjectToClipPos(v.vertex);
+            v2f vert_main (appdata v)
+            {
+                v2f o;
+                o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
                 o.vertexLocal = v.vertex;
                 o.normal = UnityObjectToWorldNormal(v.normal);
-				return o;
-			}
+                return o;
+            }
 
             // Direct Volume Rendering
-			fixed4 frag_dvr (v2f i)
-			{
-#define NUM_STEPS 1024
+            fixed4 frag_dvr (v2f i)
+            {
+                #define NUM_STEPS 512
 
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
@@ -128,12 +128,12 @@
                 col.rgb = col.rgb;
 
                 return col;
-			}
+            }
 
             // Maximum Intensity Projection mode
             fixed4 frag_mip(v2f i)
             {
-                #define NUM_STEPS 1024
+                #define NUM_STEPS 512
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
@@ -218,7 +218,7 @@
 #endif
             }
 
-			ENDCG
-		}
-	}
+            ENDCG
+        }
+    }
 }
