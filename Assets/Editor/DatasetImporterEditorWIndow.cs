@@ -26,6 +26,8 @@ public class DatasetImporterEditorWindow : EditorWindow
         string extension = Path.GetExtension(fileToImport);
         if (extension == ".dat" || extension == ".raw")
             datasetType = DatasetType.Raw;
+        else if (extension == ".dicom")
+            datasetType = DatasetType.DICOM;
         else
             datasetType = DatasetType.Unknown;
 
@@ -55,6 +57,10 @@ public class DatasetImporterEditorWindow : EditorWindow
                 {
                     importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, DataContentFormat.Int16, 6);
                     break;
+                }
+            case DatasetType.DICOM:
+                {
+                    throw new System.NotImplementedException("TODO: implement support for DICOM files");
                 }
         }
 
