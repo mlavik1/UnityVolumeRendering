@@ -15,7 +15,7 @@ public class VolumeObjectFactory
         int dimY = dataset.dimY;
         int dimZ = dataset.dimZ;
 
-        int maxRange = dataset.maxDataValue - dataset.minDataValue;
+        int maxRange = dataset.GetMaxDataValue() - dataset.GetMinDataValue();
 
         Color[] cols = new Color[dataset.data.Length];
         for (int x = 0; x < dataset.dimX; x++)
@@ -35,15 +35,14 @@ public class VolumeObjectFactory
 
                     Vector3 grad = new Vector3((x2 - x1) / (float)maxRange, (y2 - y1) / (float)maxRange, (z2 - z1) / (float)maxRange);
 
-                    cols[iData] = new Color(grad.x, grad.y, grad.z, (float)dataset.data[iData] / (float)dataset.maxDataValue);
+                    cols[iData] = new Color(grad.x, grad.y, grad.z, (float)dataset.data[iData] / (float)dataset.GetMaxDataValue());
                 }
             }
         }
 
-        dataset.texture.SetPixels(cols);
-        dataset.texture.Apply();
-
-        Texture3D tex = dataset.texture;
+        Texture3D tex = dataset.GetTexture();
+        tex.SetPixels(cols);
+        tex.Apply();
 
         const int noiseDimX = 512;
         const int noiseDimY = 512;

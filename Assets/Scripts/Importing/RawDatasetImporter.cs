@@ -46,12 +46,8 @@ public class RawDatasetImporter : DatasetImporterBase
             reader.ReadBytes(skipBytes);
 
         int uDimension = dimX * dimY * dimZ;
-        dataset.texture = new Texture3D(dimX, dimY, dimZ, TextureFormat.RGBAFloat, false);
-        dataset.texture.wrapMode = TextureWrapMode.Clamp;
         dataset.data = new int[uDimension];
 
-        int minVal = int.MaxValue;
-        int maxVal = int.MinValue;
         int val = 0;
         for (int i = 0; i < uDimension; i++)
         {
@@ -76,15 +72,9 @@ public class RawDatasetImporter : DatasetImporterBase
                     val = (int)reader.ReadUInt32();
                     break;
             }
-            minVal = Math.Min(minVal, val);
-            maxVal = Math.Max(maxVal, val);
             dataset.data[i] = val;
         }
-        Debug.Log("Loaded dataset in range: " + minVal + "  -  " + maxVal);
-        Debug.Log(minVal + "  -  " + maxVal);
-
-        dataset.minDataValue = minVal;
-        dataset.maxDataValue = maxVal;
+        Debug.Log("Loaded dataset in range: " + dataset.GetMinDataValue() + "  -  " + dataset.GetMaxDataValue());
 
         return dataset;
     }

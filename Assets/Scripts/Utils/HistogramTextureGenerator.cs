@@ -4,7 +4,7 @@ public class HistogramTextureGenerator
 {
     public static Texture2D GenerateHistogramTexture(VolumeDataset dataset)
     {
-        int numSamples = dataset.maxDataValue + 1;
+        int numSamples = dataset.GetMaxDataValue() + 1;
         int[] values = new int[numSamples];
         Color[] cols = new Color[numSamples];
         Texture2D texture = new Texture2D(numSamples, 1, TextureFormat.RGBAFloat, false);
@@ -27,7 +27,7 @@ public class HistogramTextureGenerator
 
     public static Texture2D Generate2DHistogramTexture(VolumeDataset dataset)
     {
-        int numSamples = dataset.maxDataValue + 1;
+        int numSamples = dataset.GetMaxDataValue() + 1;
         int numGradientSamples = 256;
         Color[] cols = new Color[numSamples * numGradientSamples];
         Texture2D texture = new Texture2D(numSamples, numGradientSamples, TextureFormat.RGBAFloat, false);
@@ -35,7 +35,7 @@ public class HistogramTextureGenerator
         for (int iCol = 0; iCol < cols.Length; iCol++)
             cols[iCol] = new Color(0.0f, 0.0f, 0.0f, 0.0f);
 
-        int maxRange = dataset.maxDataValue - dataset.minDataValue;
+        int maxRange = dataset.GetMaxDataValue() - dataset.GetMinDataValue();
         const float maxNormalisedMagnitude = 1.75f; // sqrt(1^2 + 1^2 + 1^2) = swrt(3) = a bit less than 1.75
 
         for (int x = 1; x < dataset.dimX-1; x++)
