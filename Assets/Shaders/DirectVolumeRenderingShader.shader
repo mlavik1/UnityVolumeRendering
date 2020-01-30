@@ -48,6 +48,9 @@
             float _MinVal;
             float _MaxVal;
 
+			float3 _PlanePos;
+			float3 _PlaneNormal;
+
             // Gets the colour from a 1D Transfer Function (x = density)
             float4 getTF1DColour(float density)
             {
@@ -115,6 +118,18 @@
 #endif
                     if (density < _MinVal || density > _MaxVal)
                         src.a = 0.0f;
+
+					// Move the reference in the middle of the mesh, like the pivot
+					float3 pivotPos = currPos - float3(0.5f, 0.5f, 0.5f);
+
+					// Convert to world position
+					float3 pos = mul(unity_ObjectToWorld, -pivotPos);
+
+					// If the dot product is < 0, the current position is "below" the plane, if it's > 0 it's "above"
+					// Then cull if the current position is below
+					float cull = dot(_PlaneNormal, pos - _PlanePos);
+					if (cull < 0)
+						src.a = 0;
 
                     col.rgb = src.a * src.rgb + (1.0f - src.a)*col.rgb;
                     col.a = src.a + (1.0f - src.a)*col.a;
