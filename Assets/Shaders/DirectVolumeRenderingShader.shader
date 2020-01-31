@@ -21,6 +21,7 @@
             CGPROGRAM
             #pragma multi_compile MODE_DVR MODE_MIP MODE_SURF
             #pragma multi_compile __ TF2D_ON
+            #pragma multi_compile __ SLICEPLANE_ON
             #pragma vertex vert
             #pragma fragment frag
 
@@ -75,6 +76,20 @@
                 return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f)).rgb;
             }
 
+            bool isSliceCulled(float3 currPos)
+            {
+                // Move the reference in the middle of the mesh, like the pivot
+                float3 pivotPos = currPos - float3(0.5f, 0.5f, 0.5f);
+
+                // Convert to world position
+                float3 pivotWorldPos = mul(unity_ObjectToWorld, -pivotPos);
+
+                // If the dot product is < 0, the current position is "below" the plane, if it's > 0 it's "above"
+                // Then cull if the current position is below
+                float cull = dot(_PlaneNormal, pivotWorldPos - _PlanePos);
+                return cull < 0;
+            }
+
             v2f vert_main (appdata v)
             {
                 v2f o;
@@ -119,18 +134,10 @@
                     if (density < _MinVal || density > _MaxVal)
                         src.a = 0.0f;
 
-                    // Move the reference in the middle of the mesh, like the pivot
-                    float3 pivotPos = currPos - float3(0.5f, 0.5f, 0.5f);
-
-                    // Convert to world position
-                    float3 pos = mul(unity_ObjectToWorld, -pivotPos);
-
-                    // If the dot product is < 0, the current position is "below" the plane, if it's > 0 it's "above"
-                    // Then cull if the current position is below
-                    float cull = dot(_PlaneNormal, pos - _PlanePos);
-                    if (cull < 0)
+#ifdef SLICEPLANE_ON
+                    if(isSliceCulled(currPos))
                     	src.a = 0;
-
+#endif
                     col.rgb = src.a * src.rgb + (1.0f - src.a)*col.rgb;
                     col.a = src.a + (1.0f - src.a)*col.a;
 
@@ -159,6 +166,11 @@
                     // Stop when we are outside the box
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         break;
+
+#ifdef SLICEPLANE_ON
+                    if (isSliceCulled(currPos))
+                        break;
+#endif
 
                     const float density = getDensity(currPos);
                     if (density > _MinVal && density < _MaxVal)
@@ -197,6 +209,11 @@
                     // Make sure we are inside the box
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         continue;
+
+#ifdef SLICEPLANE_ON
+                    if (isSliceCulled(currPos))
+                        continue;
+#endif
 
                     const float density = getDensity(currPos);
                     if (density > _MinVal && density < _MaxVal)
