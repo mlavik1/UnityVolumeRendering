@@ -10,6 +10,8 @@ public class TransferFunctionEditorWindow : EditorWindow
 
     private int selectedColPointIndex = -1;
 
+    private VolumeRenderedObject volRendObject = null;
+
     [MenuItem("Volume Rendering/1D Transfer Function")]
     static void ShowWindow()
     {
@@ -19,6 +21,15 @@ public class TransferFunctionEditorWindow : EditorWindow
 
         TransferFunctionEditorWindow wnd = (TransferFunctionEditorWindow)EditorWindow.GetWindow(typeof(TransferFunctionEditorWindow));
         wnd.Show();
+        wnd.SetInitialPosition();
+    }
+
+    private void SetInitialPosition()
+    {
+        Rect rect = this.position;
+        rect.width = 800.0f;
+        rect.height = 500.0f;
+        this.position = rect;
     }
 
     private Material tfGUIMat = null;
@@ -28,14 +39,25 @@ public class TransferFunctionEditorWindow : EditorWindow
     {
         tfGUIMat = Resources.Load<Material>("TransferFunctionGUIMat");
         tfPaletteGUIMat = Resources.Load<Material>("TransferFunctionPaletteGUIMat");
+
+        volRendObject = SelectionHelper.GetSelectedVolumeObject();
+        if (volRendObject == null)
+        {
+            volRendObject = GameObject.FindObjectOfType<VolumeRenderedObject>();
+            if(volRendObject != null)
+                Selection.objects = new Object[] { volRendObject.gameObject };
+        }
     }
 
     private void OnGUI()
     {
-        VolumeRenderedObject volRend = FindObjectOfType<VolumeRenderedObject>();
-        if (volRend == null)
+        // Update selected object
+        if (volRendObject == null)
+            volRendObject = SelectionHelper.GetSelectedVolumeObject();
+
+        if (volRendObject == null)
             return;
-        tf = volRend.transferFunction;
+        tf = volRendObject.transferFunction;
 
         Color oldColour = GUI.color;
         float bgWidth = Mathf.Min(this.position.width - 20.0f, (this.position.height - 50.0f) * 2.0f);
@@ -115,10 +137,18 @@ public class TransferFunctionEditorWindow : EditorWindow
         }
 
         // TEST!!! TODO
-        volRend.GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_TFTex", tfTexture);
-        volRend.GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("TF2D_ON");
+        volRendObject.GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_TFTex", tfTexture);
+        volRendObject.GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("TF2D_ON");
 
         GUI.color = oldColour;
+    }
+
+    private void OnSelectionChange()
+    {
+        VolumeRenderedObject newVolRendObj = Selection.activeGameObject?.GetComponent<VolumeRenderedObject>();
+        // If we selected another volume object than the one previously edited in this GUI
+        if (volRendObject != null && newVolRendObj != null && newVolRendObj != volRendObject)
+            this.Close();
     }
 
     public void OnInspectorUpdate()

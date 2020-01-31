@@ -8,6 +8,7 @@ public class VolumeObjectFactory
         GameObject obj = GameObject.Instantiate((GameObject)Resources.Load("VolumeRenderedObject"));
         VolumeRenderedObject volObj = obj.GetComponent<VolumeRenderedObject>();
         MeshRenderer meshRenderer = obj.GetComponent<MeshRenderer>();
+        meshRenderer.material = new Material(meshRenderer.sharedMaterial); 
 
         volObj.dataset = dataset;
 
