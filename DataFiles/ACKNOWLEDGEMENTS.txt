@@ -1,0 +1,9 @@
+Skull.raw
+- University of California, Davis
+- Downloaded from: https://web.cs.ucdavis.edu/~okreylos/PhDStudies/Spring2000/ECS277/DataSets.html
+- Original filename: Skull.vol
+
+VisMale.raw
+- Sample dataset from GitHub user mattatz: https://github.com/mattatz/unity-volume-rendering (License: MIT)
+- The original file comes from Visible Human Project, National Library of Medicine
+  Disclaimer: This version of the Visible Human Dataset does not reflect the most current/accurate data available from NLM.

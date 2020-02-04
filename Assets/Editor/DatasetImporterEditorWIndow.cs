@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.IO;
+using System;
 
 public class DatasetImporterEditorWindow : EditorWindow
 {
@@ -22,27 +23,31 @@ public class DatasetImporterEditorWindow : EditorWindow
 
     public DatasetImporterEditorWindow(string fileToImport)
     {
-        this.fileToImport = fileToImport;
+        // Check file extension
         string extension = Path.GetExtension(fileToImport);
-        if (extension == ".dat" || extension == ".raw")
+        if (extension == ".dat" || extension == ".raw" || extension == ".vol")
             datasetType = DatasetType.Raw;
+        else if (extension == ".ini")
+        {
+            fileToImport = fileToImport.Substring(0, fileToImport.LastIndexOf("."));
+            datasetType = DatasetType.Raw;
+        }
         else if (extension == ".dicom")
             datasetType = DatasetType.DICOM;
         else
             datasetType = DatasetType.Unknown;
 
-        if(extension == ".dat")
+        this.fileToImport = fileToImport;
+
+        // Try parse ini file (if available)
+        DatasetIniData initData = DatasetIniReader.ParseIniFile(fileToImport + ".ini");
+        if (initData != null)
         {
-            FileStream fs = new FileStream(fileToImport, FileMode.Open);
-            BinaryReader reader = new BinaryReader(fs);
-
-            dimX = reader.ReadUInt16();
-            dimY = reader.ReadUInt16();
-            dimZ = reader.ReadUInt16();
-            bytesToSkip = 6;
-
-            reader.Close();
-            fs.Close();
+            dimX = initData.dimX;
+            dimY = initData.dimY;
+            dimZ = initData.dimZ;
+            bytesToSkip = initData.bytesToSkip;
+            dataFormat = initData.format;
         }
 
         this.minSize = new Vector2(300.0f, 200.0f);
@@ -54,14 +59,14 @@ public class DatasetImporterEditorWindow : EditorWindow
         switch(datasetType)
         {
             case DatasetType.Raw:
-                {
-                    importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, DataContentFormat.Int16, 6);
-                    break;
-                }
+            {
+                importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, bytesToSkip);
+                break;
+            }
             case DatasetType.DICOM:
-                {
-                    throw new System.NotImplementedException("TODO: implement support for DICOM files");
-                }
+            {
+                throw new System.NotImplementedException("TODO: implement support for DICOM files");
+            }
         }
 
         VolumeDataset dataset = null;

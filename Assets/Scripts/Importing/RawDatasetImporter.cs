@@ -54,7 +54,7 @@ public class RawDatasetImporter : DatasetImporterBase
             switch(contentFormat)
             {
                 case DataContentFormat.Int8:
-                    val = (int)reader.ReadByte();
+                    val = (int)reader.ReadSByte();
                     break;
                 case DataContentFormat.Int16:
                     val = (int)reader.ReadInt16();
