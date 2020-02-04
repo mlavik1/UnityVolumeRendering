@@ -1,24 +1,27 @@
 ﻿using UnityEngine;
 
-[ExecuteInEditMode]
-public class SlicingPlaneAnyDirection : MonoBehaviour
+namespace UnityVolumeRendering
 {
-    public Material mat;
-    public Transform volumeTransform;
-
-    private void OnDisable()
+    [ExecuteInEditMode]
+    public class SlicingPlaneAnyDirection : MonoBehaviour
     {
-        if(mat != null)
-            mat.DisableKeyword("SLICEPLANE_ON");
-    }
+        public Material mat;
+        public Transform volumeTransform;
 
-    private void Update()
-    {
-        if (mat == null || volumeTransform == null)
-            return;
+        private void OnDisable()
+        {
+            if (mat != null)
+                mat.DisableKeyword("SLICEPLANE_ON");
+        }
 
-        mat.EnableKeyword("SLICEPLANE_ON");
-        mat.SetVector("_PlanePos", volumeTransform.position - transform.position);
-        mat.SetVector("_PlaneNormal", transform.forward);
+        private void Update()
+        {
+            if (mat == null || volumeTransform == null)
+                return;
+
+            mat.EnableKeyword("SLICEPLANE_ON");
+            mat.SetVector("_PlanePos", volumeTransform.position - transform.position);
+            mat.SetVector("_PlaneNormal", transform.forward);
+        }
     }
 }

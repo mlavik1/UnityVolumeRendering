@@ -1,17 +1,20 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(VolumeRenderedObject))]
-public class VolumeRenderedObjectCustomInspector : Editor
+namespace UnityVolumeRendering
 {
-    public override void OnInspectorGUI()
+    [CustomEditor(typeof(VolumeRenderedObject))]
+    public class VolumeRenderedObjectCustomInspector : Editor
     {
-        VolumeRenderedObject myTarget = (VolumeRenderedObject)target;
+        public override void OnInspectorGUI()
+        {
+            VolumeRenderedObject myTarget = (VolumeRenderedObject)target;
 
-        RenderMode oldRenderMode = myTarget.GetRemderMode();
-        RenderMode newRenderMode = (RenderMode)EditorGUILayout.EnumPopup("Render mode", oldRenderMode);
+            RenderMode oldRenderMode = myTarget.GetRemderMode();
+            RenderMode newRenderMode = (RenderMode)EditorGUILayout.EnumPopup("Render mode", oldRenderMode);
 
-        if (newRenderMode != oldRenderMode)
-            myTarget.SetRenderMode(newRenderMode);
+            if (newRenderMode != oldRenderMode)
+                myTarget.SetRenderMode(newRenderMode);
+        }
     }
 }

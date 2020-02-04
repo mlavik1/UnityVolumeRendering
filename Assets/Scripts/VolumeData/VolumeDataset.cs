@@ -1,49 +1,52 @@
 ﻿using System;
 using UnityEngine;
 
-public class VolumeDataset
+namespace UnityVolumeRendering
 {
-    public int[] data = null;
-    public int dimX, dimY, dimZ;
-
-    private int minDataValue = int.MaxValue;
-    private int maxDataValue = int.MinValue;
-    private Texture3D texture = null;
-
-    public Texture3D GetTexture()
+    public class VolumeDataset
     {
-        if (texture == null)
+        public int[] data = null;
+        public int dimX, dimY, dimZ;
+
+        private int minDataValue = int.MaxValue;
+        private int maxDataValue = int.MinValue;
+        private Texture3D texture = null;
+
+        public Texture3D GetTexture()
         {
-            texture = new Texture3D(dimX, dimY, dimZ, TextureFormat.RGBAFloat, false);
-            texture.wrapMode = TextureWrapMode.Clamp;
+            if (texture == null)
+            {
+                texture = new Texture3D(dimX, dimY, dimZ, TextureFormat.RGBAFloat, false);
+                texture.wrapMode = TextureWrapMode.Clamp;
+            }
+            return texture;
         }
-        return texture;
-    }
 
-    public int GetMinDataValue()
-    {
-        if (minDataValue == int.MaxValue)
-            CalculateValueBounds();
-        return minDataValue;
-    }
-
-    public int GetMaxDataValue()
-    {
-        if (maxDataValue == int.MinValue)
-            CalculateValueBounds();
-        return maxDataValue;
-    }
-
-    private void CalculateValueBounds()
-    {
-        minDataValue = int.MaxValue;
-        maxDataValue = int.MinValue;
-        int dim = dimX * dimY * dimZ;
-        for (int i = 0; i < dim; i++)
+        public int GetMinDataValue()
         {
-            int val = data[i];
-            minDataValue = Math.Min(minDataValue, val);
-            maxDataValue = Math.Max(maxDataValue, val);
+            if (minDataValue == int.MaxValue)
+                CalculateValueBounds();
+            return minDataValue;
+        }
+
+        public int GetMaxDataValue()
+        {
+            if (maxDataValue == int.MinValue)
+                CalculateValueBounds();
+            return maxDataValue;
+        }
+
+        private void CalculateValueBounds()
+        {
+            minDataValue = int.MaxValue;
+            maxDataValue = int.MinValue;
+            int dim = dimX * dimY * dimZ;
+            for (int i = 0; i < dim; i++)
+            {
+                int val = data[i];
+                minDataValue = Math.Min(minDataValue, val);
+                maxDataValue = Math.Max(maxDataValue, val);
+            }
         }
     }
 }

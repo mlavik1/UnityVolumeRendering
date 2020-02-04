@@ -2,24 +2,27 @@
 using UnityEngine;
 using System.IO;
 
-public class VolumeRendererEditorFunctions
+namespace UnityVolumeRendering
 {
-    [MenuItem("Volume Rendering/Load dataset")]
-    static void ShowWindow()
+    public class VolumeRendererEditorFunctions
     {
-        string file = EditorUtility.OpenFilePanel("Select a dataset to load", "DataFiles", "");
-        if(File.Exists(file))
+        [MenuItem("Volume Rendering/Load dataset")]
+        static void ShowWindow()
         {
-            DatasetImporterEditorWindow wnd = (DatasetImporterEditorWindow)EditorWindow.GetWindow(typeof(DatasetImporterEditorWindow));
-            if (wnd != null)
-                wnd.Close();
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "DataFiles", "");
+            if (File.Exists(file))
+            {
+                DatasetImporterEditorWindow wnd = (DatasetImporterEditorWindow)EditorWindow.GetWindow(typeof(DatasetImporterEditorWindow));
+                if (wnd != null)
+                    wnd.Close();
 
-            wnd = new DatasetImporterEditorWindow(file);
-            wnd.Show();
-        }
-        else
-        {
-            Debug.LogError("File doesn't exist: " + file);
+                wnd = new DatasetImporterEditorWindow(file);
+                wnd.Show();
+            }
+            else
+            {
+                Debug.LogError("File doesn't exist: " + file);
+            }
         }
     }
 }

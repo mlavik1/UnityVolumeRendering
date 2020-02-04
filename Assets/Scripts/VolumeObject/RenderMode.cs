@@ -1,6 +1,9 @@
-﻿public enum RenderMode
+﻿namespace UnityVolumeRendering
 {
-    DirectVolumeRendering,
-    MaximumIntensityProjectipon,
-    IsosurfaceRendering
+    public enum RenderMode
+    {
+        DirectVolumeRendering,
+        MaximumIntensityProjectipon,
+        IsosurfaceRendering
+    }
 }

@@ -1,16 +1,19 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-public class SelectionHelper
+namespace UnityVolumeRendering
 {
-    public static VolumeRenderedObject GetSelectedVolumeObject()
+    public class SelectionHelper
     {
-        foreach (GameObject obj in Selection.gameObjects)
+        public static VolumeRenderedObject GetSelectedVolumeObject()
         {
-            VolumeRenderedObject volrendobj = obj.GetComponent<VolumeRenderedObject>();
-            if (volrendobj != null)
-                return volrendobj;
+            foreach (GameObject obj in Selection.gameObjects)
+            {
+                VolumeRenderedObject volrendobj = obj.GetComponent<VolumeRenderedObject>();
+                if (volrendobj != null)
+                    return volrendobj;
+            }
+            return null;
         }
-        return null;
     }
 }

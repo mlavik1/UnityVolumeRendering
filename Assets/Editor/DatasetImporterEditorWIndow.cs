@@ -3,93 +3,95 @@ using UnityEditor;
 using System.IO;
 using System;
 
-public class DatasetImporterEditorWindow : EditorWindow
+namespace UnityVolumeRendering
 {
-    private enum DatasetType
+    public class DatasetImporterEditorWindow : EditorWindow
     {
-        Unknown,
-        Raw,
-        DICOM
-    }
-
-    private string fileToImport;
-    private DatasetType datasetType;
-
-    private int dimX; // TODO: set good default value
-    private int dimY; // TODO: set good default value
-    private int dimZ; // TODO: set good default value
-    private int bytesToSkip = 0;
-    private DataContentFormat dataFormat = DataContentFormat.Int16;
-
-    public DatasetImporterEditorWindow(string fileToImport)
-    {
-        // Check file extension
-        string extension = Path.GetExtension(fileToImport);
-        if (extension == ".dat" || extension == ".raw" || extension == ".vol")
-            datasetType = DatasetType.Raw;
-        else if (extension == ".ini")
+        private enum DatasetType
         {
-            fileToImport = fileToImport.Substring(0, fileToImport.LastIndexOf("."));
-            datasetType = DatasetType.Raw;
-        }
-        else if (extension == ".dicom")
-            datasetType = DatasetType.DICOM;
-        else
-            datasetType = DatasetType.Unknown;
-
-        this.fileToImport = fileToImport;
-
-        // Try parse ini file (if available)
-        DatasetIniData initData = DatasetIniReader.ParseIniFile(fileToImport + ".ini");
-        if (initData != null)
-        {
-            dimX = initData.dimX;
-            dimY = initData.dimY;
-            dimZ = initData.dimZ;
-            bytesToSkip = initData.bytesToSkip;
-            dataFormat = initData.format;
+            Unknown,
+            Raw,
+            DICOM
         }
 
-        this.minSize = new Vector2(300.0f, 200.0f);
-    }
+        private string fileToImport;
+        private DatasetType datasetType;
 
-    private void ImportDataset()
-    {
-        DatasetImporterBase importer = null;
-        switch(datasetType)
+        private int dimX; // TODO: set good default value
+        private int dimY; // TODO: set good default value
+        private int dimZ; // TODO: set good default value
+        private int bytesToSkip = 0;
+        private DataContentFormat dataFormat = DataContentFormat.Int16;
+
+        public DatasetImporterEditorWindow(string fileToImport)
         {
-            case DatasetType.Raw:
+            // Check file extension
+            string extension = Path.GetExtension(fileToImport);
+            if (extension == ".dat" || extension == ".raw" || extension == ".vol")
+                datasetType = DatasetType.Raw;
+            else if (extension == ".ini")
             {
-                importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, bytesToSkip);
-                break;
+                fileToImport = fileToImport.Substring(0, fileToImport.LastIndexOf("."));
+                datasetType = DatasetType.Raw;
             }
-            case DatasetType.DICOM:
+            else if (extension == ".dicom")
+                datasetType = DatasetType.DICOM;
+            else
+                datasetType = DatasetType.Unknown;
+
+            this.fileToImport = fileToImport;
+
+            // Try parse ini file (if available)
+            DatasetIniData initData = DatasetIniReader.ParseIniFile(fileToImport + ".ini");
+            if (initData != null)
             {
-                throw new System.NotImplementedException("TODO: implement support for DICOM files");
+                dimX = initData.dimX;
+                dimY = initData.dimY;
+                dimZ = initData.dimZ;
+                bytesToSkip = initData.bytesToSkip;
+                dataFormat = initData.format;
             }
+
+            this.minSize = new Vector2(300.0f, 200.0f);
         }
 
-        VolumeDataset dataset = null;
-        if(importer != null)
-            dataset = importer.Import();
-
-        if (dataset != null)
+        private void ImportDataset()
         {
-            VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
+            DatasetImporterBase importer = null;
+            switch (datasetType)
+            {
+                case DatasetType.Raw:
+                {
+                    importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, bytesToSkip);
+                    break;
+                }
+                case DatasetType.DICOM:
+                {
+                    throw new System.NotImplementedException("TODO: implement support for DICOM files");
+                }
+            }
+
+            VolumeDataset dataset = null;
+            if (importer != null)
+                dataset = importer.Import();
+
+            if (dataset != null)
+            {
+                VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
+            }
+            else
+            {
+                Debug.LogError("Failed to import datset");
+            }
+
+            this.Close();
         }
-        else
-        {
-            Debug.LogError("Failed to import datset");
-        }
 
-        this.Close();
-    }
-
-    private void OnGUI()
-    {
-        switch(datasetType)
+        private void OnGUI()
         {
-            case DatasetType.Raw:
+            switch (datasetType)
+            {
+                case DatasetType.Raw:
                 {
                     dimX = EditorGUILayout.IntField("X dimension", dimX);
                     dimY = EditorGUILayout.IntField("X dimension", dimY);
@@ -98,12 +100,13 @@ public class DatasetImporterEditorWindow : EditorWindow
                     dataFormat = (DataContentFormat)EditorGUILayout.EnumPopup("Data format", dataFormat);
                     break;
                 }
+            }
+
+            if (GUILayout.Button("Import"))
+                ImportDataset();
+
+            if (GUILayout.Button("Cancel"))
+                this.Close();
         }
-
-        if(GUILayout.Button("Import"))
-            ImportDataset();
-
-        if (GUILayout.Button("Cancel"))
-            this.Close();
     }
 }

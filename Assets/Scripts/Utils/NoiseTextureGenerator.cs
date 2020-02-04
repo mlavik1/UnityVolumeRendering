@@ -1,22 +1,25 @@
 ﻿using UnityEngine;
 
-public class NoiseTextureGenerator
+namespace UnityVolumeRendering
 {
-    public static Texture2D GenerateNoiseTexture(int noiseDimX, int noiseDimY)
+    public class NoiseTextureGenerator
     {
-        Texture2D noiseTexture = new Texture2D(noiseDimX, noiseDimY);
-        Color[] noiseCols = new Color[noiseDimX * noiseDimY];
-        for (int iY = 0; iY < noiseDimY; iY++)
+        public static Texture2D GenerateNoiseTexture(int noiseDimX, int noiseDimY)
         {
-            for (int iX = 0; iX < noiseDimX; iX++)
+            Texture2D noiseTexture = new Texture2D(noiseDimX, noiseDimY);
+            Color[] noiseCols = new Color[noiseDimX * noiseDimY];
+            for (int iY = 0; iY < noiseDimY; iY++)
             {
-                float pixVal = Random.Range(0.0f, 1.0f);
-                noiseCols[iX + iY * noiseDimX] = new Color(pixVal, pixVal, pixVal);
+                for (int iX = 0; iX < noiseDimX; iX++)
+                {
+                    float pixVal = Random.Range(0.0f, 1.0f);
+                    noiseCols[iX + iY * noiseDimX] = new Color(pixVal, pixVal, pixVal);
+                }
             }
-        }
 
-        noiseTexture.SetPixels(noiseCols);
-        noiseTexture.Apply();
-        return noiseTexture;
+            noiseTexture.SetPixels(noiseCols);
+            noiseTexture.Apply();
+            return noiseTexture;
+        }
     }
 }

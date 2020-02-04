@@ -1,4 +1,7 @@
-﻿public abstract class DatasetImporterBase
+﻿namespace UnityVolumeRendering
 {
-    public abstract VolumeDataset Import();
+    public abstract class DatasetImporterBase
+    {
+        public abstract VolumeDataset Import();
+    }
 }
