@@ -13,7 +13,8 @@
         Tags { "Queue" = "Transparent" "RenderType" = "Transparent" }
         LOD 100
         Cull Front
-        ZWrite Off
+        ZTest LEqual
+        ZWrite On
         Blend SrcAlpha OneMinusSrcAlpha
 
         Pass
@@ -22,24 +23,33 @@
             #pragma multi_compile MODE_DVR MODE_MIP MODE_SURF
             #pragma multi_compile __ TF2D_ON
             #pragma multi_compile __ SLICEPLANE_ON
+            #pragma multi_compile DEPTHWRITE_ON DEPTHWRITE_OFF
             #pragma vertex vert
             #pragma fragment frag
 
             #include "UnityCG.cginc"
 
-            struct appdata
+            struct vert_in
             {
                 float4 vertex : POSITION;
                 float4 normal : NORMAL;
                 float2 uv : TEXCOORD0;
             };
 
-            struct v2f
+            struct frag_in
             {
                 float4 vertex : SV_POSITION;
                 float2 uv : TEXCOORD0;
                 float3 vertexLocal : TEXCOORD1;
                 float3 normal : NORMAL;
+            };
+
+            struct frag_out
+            {
+                float4 colour : SV_TARGET;
+#if DEPTHWRITE_ON
+                float depth : SV_DEPTH;
+#endif
             };
 
             sampler3D _DataTex;
@@ -49,8 +59,10 @@
             float _MinVal;
             float _MaxVal;
 
+#if SLICEPLANE_ON
             float3 _PlanePos;
             float3 _PlaneNormal;
+#endif
 
             // Gets the colour from a 1D Transfer Function (x = density)
             float4 getTF1DColour(float density)
@@ -76,8 +88,21 @@
                 return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f)).rgb;
             }
 
+            // Converts local position to depth value
+            float localToDepth(float3 localPos)
+            {
+                float4 clipPos = UnityObjectToClipPos(float4(localPos, 1.0f));
+
+#if defined(SHADER_API_GLCORE) || defined(SHADER_API_OPENGL) || defined(SHADER_API_GLES) || defined(SHADER_API_GLES3)
+                return (clipPos.z / clipPos.w) * 0.5 + 0.5;
+#else
+                return clipPos.z / clipPos.w;
+#endif
+            }
+
             bool isSliceCulled(float3 currPos)
             {
+#if SLICEPLANE_ON
                 // Move the reference in the middle of the mesh, like the pivot
                 float3 pivotPos = currPos - float3(0.5f, 0.5f, 0.5f);
 
@@ -88,11 +113,14 @@
                 // Then cull if the current position is below
                 float cull = dot(_PlaneNormal, pivotWorldPos - _PlanePos);
                 return cull < 0;
+#else
+                return false;
+#endif
             }
 
-            v2f vert_main (appdata v)
+            frag_in vert_main (vert_in v)
             {
-                v2f o;
+                frag_in o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
                 o.vertexLocal = v.vertex;
@@ -101,7 +129,7 @@
             }
 
             // Direct Volume Rendering
-            fixed4 frag_dvr (v2f i)
+            frag_out frag_dvr (frag_in i)
             {
                 #define NUM_STEPS 512
 
@@ -115,6 +143,7 @@
                 rayStartPos = rayStartPos + (2.0f * rayDir / NUM_STEPS) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
 
                 float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
+                uint iDepth = 0;
                 for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
                 {
                     const float t = iStep * stepSize;
@@ -141,15 +170,24 @@
                     col.rgb = src.a * src.rgb + (1.0f - src.a)*col.rgb;
                     col.a = src.a + (1.0f - src.a)*col.a;
 
+                    if (src.a > 0.15f)
+                        iDepth = iStep;
+
                     if (col.a > 1.0f)
                         break;
                 }
 
-                return col;
+                // Write fragment output
+                frag_out output;
+                output.colour = col;
+#if DEPTHWRITE_ON
+                output.depth = localToDepth(rayStartPos + rayDir * (iDepth * stepSize) - float3(0.5f, 0.5f, 0.5f));
+#endif
+                return output;
             }
 
             // Maximum Intensity Projection mode
-            fixed4 frag_mip(v2f i)
+            frag_out frag_mip(frag_in i)
             {
                 #define NUM_STEPS 512
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
@@ -177,15 +215,18 @@
                         maxDensity = max(density, maxDensity);
                 }
 
-                // Maximum intensity projection
-                float4 col = float4(1.0f, 1.0f, 1.0f, maxDensity);
-
-                return col;
+                // Write fragment output
+                frag_out output;
+                output.colour = float4(1.0f, 1.0f, 1.0f, maxDensity); // maximum intensity
+#if DEPTHWRITE_ON
+                output.depth = localToDepth(i.vertexLocal);
+#endif
+                return output;
             }
 
             // Surface rendering mode
             // Draws the first point (closest to camera) with a density within the user-defined thresholds.
-            fixed4 frag_surf(v2f i)
+            frag_out frag_surf(frag_in i)
             {
 #define NUM_STEPS 1024
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
@@ -227,15 +268,21 @@
                     }
                 }
 
-                return col;
+                // Write fragment output
+                frag_out output;
+                output.colour = col;
+#if DEPTHWRITE_ON
+                output.depth = localToDepth(rayStartPos + rayDir * (iStep * stepSize) - float3(0.5f, 0.5f, 0.5f));
+#endif
+                return output;
             }
 
-            v2f vert(appdata v)
+            frag_in vert(vert_in v)
             {
                 return vert_main(v);
             }
 
-            fixed4 frag(v2f i) : SV_Target
+            frag_out frag(frag_in i)
             {
 #if MODE_DVR
                 return frag_dvr(i);
