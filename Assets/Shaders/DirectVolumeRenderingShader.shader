@@ -181,10 +181,10 @@
                 frag_out output;
                 output.colour = col;
 #if DEPTHWRITE_ON
-				if (iDepth != 0)
-					output.depth = localToDepth(rayStartPos + rayDir * (iDepth * stepSize) - float3(0.5f, 0.5f, 0.5f));
-				else
-					output.depth = 0;
+                if (iDepth != 0)
+                    output.depth = localToDepth(rayStartPos + rayDir * (iDepth * stepSize) - float3(0.5f, 0.5f, 0.5f));
+                else
+                    output.depth = 0;
 #endif
                 return output;
             }
