@@ -18,7 +18,8 @@ namespace UnityVolumeRendering
             int dimY = dataset.dimY;
             int dimZ = dataset.dimZ;
 
-            int maxRange = dataset.GetMaxDataValue() - dataset.GetMinDataValue();
+            float valueRange = dataset.GetMaxDataValue() - dataset.GetMinDataValue();
+            float minValue = dataset.GetMinDataValue();
 
             Color[] cols = new Color[dataset.data.Length];
             for (int x = 0; x < dataset.dimX; x++)
@@ -36,9 +37,9 @@ namespace UnityVolumeRendering
                         int z1 = dataset.data[x + y * dataset.dimX + Math.Min(z + 1, dimZ - 1) * (dataset.dimX * dataset.dimY)];
                         int z2 = dataset.data[x + y * dataset.dimX + Math.Max(z - 1, 0) * (dataset.dimX * dataset.dimY)];
 
-                        Vector3 grad = new Vector3((x2 - x1) / (float)maxRange, (y2 - y1) / (float)maxRange, (z2 - z1) / (float)maxRange);
+                        Vector3 grad = new Vector3((x2 - x1) / valueRange, (y2 - y1) / valueRange, (z2 - z1) / valueRange);
 
-                        cols[iData] = new Color(grad.x, grad.y, grad.z, (float)dataset.data[iData] / (float)dataset.GetMaxDataValue());
+                        cols[iData] = new Color(grad.x, grad.y, grad.z, (dataset.data[iData] - minValue) / valueRange);
                     }
                 }
             }

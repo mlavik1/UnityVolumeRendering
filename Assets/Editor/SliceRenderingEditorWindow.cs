@@ -48,14 +48,19 @@ namespace UnityVolumeRendering
             {
                 SlicingPlane planeObj = spawnedPlanes[System.Math.Min(selectedPlaneIndex, spawnedPlanes.Length - 1)];
                 // Draw the slice view
-                Material mat = planeObj.GetComponent<MeshRenderer>().sharedMaterial;
-                Graphics.DrawTexture(bgRect, mat.GetTexture("_DataTex"), mat);
+                Graphics.DrawTexture(bgRect, planeObj.postPassOutputTexture);
 
                 // Handle mouse click inside slice view (activates moving the plane with mouse)
                 if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && bgRect.Contains(new Vector2(Event.current.mousePosition.x, Event.current.mousePosition.y)))
                 {
                     handleMouseMovement = true;
                     prevMousePos = Event.current.mousePosition;
+
+                    int xCoord = (int)((Event.current.mousePosition.x / bgRect.width) * 2048);
+                    int yCoord = 2048 - (int)((Event.current.mousePosition.y / bgRect.height) * 2048);
+                    Color dataValue = planeObj.prePassOutputTexture.GetPixel(xCoord, yCoord);
+                    Debug.Log(xCoord + ", " + yCoord);
+                    Debug.Log(dataValue.ToString());
                 }
 
                 // Handle mouse movement (move the plane)
@@ -64,7 +69,7 @@ namespace UnityVolumeRendering
                     Vector2 mouseOffset = (Event.current.mousePosition - prevMousePos) / new Vector2(bgRect.width, bgRect.height);
                     if (Mathf.Abs(mouseOffset.y) > 0.00001f)
                     {
-                        planeObj.transform.Translate(Vector3.up * mouseOffset.y);
+                        planeObj.transform.Translate(Vector3.forward * mouseOffset.y);
                         prevMousePos = Event.current.mousePosition;
                     }
                 }

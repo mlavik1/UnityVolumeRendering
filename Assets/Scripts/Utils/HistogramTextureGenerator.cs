@@ -6,7 +6,7 @@ namespace UnityVolumeRendering
     {
         public static Texture2D GenerateHistogramTexture(VolumeDataset dataset)
         {
-            int numSamples = dataset.GetMaxDataValue() + 1;
+            int numSamples = dataset.GetMaxDataValue() + 1 - dataset.GetMinDataValue();
             int[] values = new int[numSamples];
             Color[] cols = new Color[numSamples];
             Texture2D texture = new Texture2D(numSamples, 1, TextureFormat.RGBAFloat, false);
@@ -14,8 +14,9 @@ namespace UnityVolumeRendering
             int maxFreq = 0;
             for (int iData = 0; iData < dataset.data.Length; iData++)
             {
-                values[dataset.data[iData]] += 1;
-                maxFreq = System.Math.Max(values[dataset.data[iData]], maxFreq);
+                int index = dataset.data[iData] - dataset.GetMinDataValue();
+                values[index] += 1;
+                maxFreq = System.Math.Max(values[index], maxFreq);
             }
 
             for (int iSample = 0; iSample < numSamples; iSample++)
@@ -29,7 +30,7 @@ namespace UnityVolumeRendering
 
         public static Texture2D Generate2DHistogramTexture(VolumeDataset dataset)
         {
-            int numSamples = dataset.GetMaxDataValue() + 1;
+            int numSamples = dataset.GetMaxDataValue() + 1 - dataset.GetMinDataValue();
             int numGradientSamples = 256;
             Color[] cols = new Color[numSamples * numGradientSamples];
             Texture2D texture = new Texture2D(numSamples, numGradientSamples, TextureFormat.RGBAFloat, false);
@@ -47,7 +48,7 @@ namespace UnityVolumeRendering
                     for (int z = 1; z < dataset.dimZ - 1; z++)
                     {
                         int iData = x + y * dataset.dimX + z * (dataset.dimX * dataset.dimY);
-                        int density = dataset.data[iData];
+                        int density = dataset.data[iData] - dataset.GetMinDataValue();
 
                         int x1 = dataset.data[(x + 1) + y * dataset.dimX + z * (dataset.dimX * dataset.dimY)];
                         int x2 = dataset.data[(x - 1) + y * dataset.dimX + z * (dataset.dimX * dataset.dimY)];

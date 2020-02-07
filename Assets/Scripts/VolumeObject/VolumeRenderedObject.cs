@@ -17,19 +17,19 @@ namespace UnityVolumeRendering
 
         public SlicingPlane CreateSlicingPlane()
         {
-            GameObject sliceRenderingPlane = GameObject.Instantiate(Resources.Load<GameObject>("SlicingPlane"));
-            sliceRenderingPlane.transform.parent = transform;
-            sliceRenderingPlane.transform.localPosition = Vector3.zero;
-            sliceRenderingPlane.transform.localRotation = Quaternion.identity;
-            MeshRenderer sliceMeshRend = sliceRenderingPlane.GetComponent<MeshRenderer>();
-            sliceMeshRend.material = new Material(sliceMeshRend.sharedMaterial);
-            Material sliceMat = sliceRenderingPlane.GetComponent<MeshRenderer>().sharedMaterial;
-            sliceMat.SetTexture("_DataTex", dataset.GetTexture());
-            sliceMat.SetTexture("_TFTex", transferFunction.GetTexture());
-            sliceMat.SetMatrix("_parentInverseMat", transform.worldToLocalMatrix);
-            sliceMat.SetMatrix("_planeMat", Matrix4x4.TRS(sliceRenderingPlane.transform.position, sliceRenderingPlane.transform.rotation, Vector3.one)); // TODO: allow changing scale
+            GameObject slicingPlaneObj = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            slicingPlaneObj.transform.parent = transform;
+            slicingPlaneObj.transform.localPosition = Vector3.zero;
+            slicingPlaneObj.transform.localRotation = Quaternion.Euler(270.0f, 0.0f, 0.0f);
+            SlicingPlane slicingPlane = slicingPlaneObj.AddComponent<SlicingPlane>();
+            slicingPlane.voldRendObj = this;
 
-            return sliceRenderingPlane.GetComponent<SlicingPlane>();
+            SlicingPlaneAnyDirection csplane = slicingPlaneObj.AddComponent<SlicingPlaneAnyDirection>();
+            csplane.mat = this.GetComponent<MeshRenderer>().sharedMaterial;
+            csplane.volumeTransform = this.transform;
+            csplane.enabled = false;
+
+            return slicingPlane;
         }
 
         public void SetRenderMode(RenderMode mode)
