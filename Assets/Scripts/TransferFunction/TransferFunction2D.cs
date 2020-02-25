@@ -6,6 +6,7 @@ namespace UnityVolumeRendering
 {
     public class TransferFunction2D : MonoBehaviour
     {
+        [System.Serializable]
         public struct TF2DBox
         {
             public Color colour;

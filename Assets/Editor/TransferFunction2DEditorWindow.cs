@@ -107,7 +107,7 @@ namespace UnityVolumeRendering
             }
 
             // Add new rectangle
-            if (GUI.Button(new Rect(startX, startY + 100, 150.0f, 40.0f), "Add rectangle"))
+            if (GUI.Button(new Rect(startX, startY + 100, 110.0f, 30.0f), "Add rectangle"))
             {
                 tf2d.AddBox(0.1f, 0.1f, 0.8f, 0.8f, Color.white, 0.5f);
                 needsRegenTexture = true;
@@ -115,10 +115,27 @@ namespace UnityVolumeRendering
             // Remove selected shape
             if (selectedBoxIndex != -1)
             {
-                if (GUI.Button(new Rect(startX, startY + 150, 150.0f, 40.0f), "Remove selected shape"))
+                if (GUI.Button(new Rect(startX, startY + 140, 110.0f, 30.0f), "Remove selected shape"))
                 {
                     tf2d.boxes.RemoveAt(selectedBoxIndex);
                     needsRegenTexture = true;
+                }
+            }
+
+            if(GUI.Button(new Rect(startX, startY + 180, 110.0f, 30.0f), "Save"))
+            {
+                string filepath = EditorUtility.SaveFilePanel("Save transfer function", "", "default.tf2d", "tf2d");
+                if(filepath != "")
+                    TransferFunctionDatabase.SaveTransferFunction2D(tf2d, filepath);
+            }
+            if(GUI.Button(new Rect(startX, startY + 220, 110.0f, 30.0f), "Load"))
+            {
+                string filepath = EditorUtility.OpenFilePanel("Save transfer function", "", "tf2d");
+                if(filepath != "")
+                {
+                    TransferFunction2D newTF = TransferFunctionDatabase.LoadTransferFunction2D(filepath);
+                    if(newTF != null)
+                        volRendObject.transferFunction2D = tf2d = newTF;
                 }
             }
 
@@ -128,6 +145,7 @@ namespace UnityVolumeRendering
                 tf2d.GenerateTexture();
                 needsRegenTexture = false;
             }
+            // TODO:
             volRendObject.GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_TFTex", tf2d.GetTexture());
             volRendObject.GetComponent<MeshRenderer>().sharedMaterial.EnableKeyword("TF2D_ON");
 
