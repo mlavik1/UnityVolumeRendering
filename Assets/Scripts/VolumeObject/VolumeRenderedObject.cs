@@ -13,7 +13,8 @@ namespace UnityVolumeRendering
         [HideInInspector]
         public VolumeDataset dataset;
 
-        private RenderMode remderMode;
+        private RenderMode renderMode;
+        private TFRenderMode tfRenderMode;
 
         public SlicingPlane CreateSlicingPlane()
         {
@@ -24,7 +25,7 @@ namespace UnityVolumeRendering
             MeshRenderer sliceMeshRend = sliceRenderingPlane.GetComponent<MeshRenderer>();
             sliceMeshRend.material = new Material(sliceMeshRend.sharedMaterial);
             Material sliceMat = sliceRenderingPlane.GetComponent<MeshRenderer>().sharedMaterial;
-            sliceMat.SetTexture("_DataTex", dataset.GetTexture());
+            sliceMat.SetTexture("_DataTex", dataset.GetDataTexture());
             sliceMat.SetTexture("_TFTex", transferFunction.GetTexture());
             sliceMat.SetMatrix("_parentInverseMat", transform.worldToLocalMatrix);
             sliceMat.SetMatrix("_planeMat", Matrix4x4.TRS(sliceRenderingPlane.transform.position, sliceRenderingPlane.transform.rotation, Vector3.one)); // TODO: allow changing scale
@@ -34,37 +35,63 @@ namespace UnityVolumeRendering
 
         public void SetRenderMode(RenderMode mode)
         {
-            remderMode = mode;
+            renderMode = mode;
+            UpdateMaaterialProperties();
+        }
 
-            switch (mode)
+        public void SetTransferFunctionMode(TFRenderMode mode)
+        {
+            tfRenderMode = mode;
+            UpdateMaaterialProperties();
+        }
+
+        public RenderMode GetRenderMode()
+        {
+            return renderMode;
+        }
+
+        private void UpdateMaaterialProperties()
+        {
+            MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
+
+            bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering;
+            meshRenderer.sharedMaterial.SetTexture("_GradientTex", useGradientTexture ? dataset.GetGradientTexture() : null);
+
+            if(tfRenderMode == TFRenderMode.TF2D)
+            {
+                meshRenderer.sharedMaterial.SetTexture("_TFTex", transferFunction2D.GetTexture());
+                meshRenderer.sharedMaterial.EnableKeyword("TF2D_ON");
+            }
+            else
+            {
+                meshRenderer.sharedMaterial.SetTexture("_TFTex", transferFunction.GetTexture());
+                meshRenderer.sharedMaterial.DisableKeyword("TF2D_ON");
+            }
+
+            switch (renderMode)
             {
                 case RenderMode.DirectVolumeRendering:
                     {
-                        GetComponent<MeshRenderer>().sharedMaterial.EnableKeyword("MODE_DVR");
-                        GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_MIP");
-                        GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_SURF");
+                        meshRenderer.sharedMaterial.EnableKeyword("MODE_DVR");
+                        meshRenderer.sharedMaterial.DisableKeyword("MODE_MIP");
+                        meshRenderer.sharedMaterial.DisableKeyword("MODE_SURF");
                         break;
                     }
                 case RenderMode.MaximumIntensityProjectipon:
                     {
-                        GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_DVR");
-                        GetComponent<MeshRenderer>().sharedMaterial.EnableKeyword("MODE_MIP");
-                        GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_SURF");
+                        meshRenderer.sharedMaterial.DisableKeyword("MODE_DVR");
+                        meshRenderer.sharedMaterial.EnableKeyword("MODE_MIP");
+                        meshRenderer.sharedMaterial.DisableKeyword("MODE_SURF");
                         break;
                     }
                 case RenderMode.IsosurfaceRendering:
                     {
-                        GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_DVR");
-                        GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("MODE_MIP");
-                        GetComponent<MeshRenderer>().sharedMaterial.EnableKeyword("MODE_SURF");
+                        meshRenderer.sharedMaterial.DisableKeyword("MODE_DVR");
+                        meshRenderer.sharedMaterial.DisableKeyword("MODE_MIP");
+                        meshRenderer.sharedMaterial.EnableKeyword("MODE_SURF");
                         break;
                     }
             }
-        }
-
-        public RenderMode GetRemderMode()
-        {
-            return remderMode;
         }
     }
 }

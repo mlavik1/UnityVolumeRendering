@@ -189,9 +189,7 @@ namespace UnityVolumeRendering
             GUI.skin.label.wordWrap = false;    
             GUI.Label(new Rect(0.0f, bgRect.y + bgRect.height + 85.0f, 700.0f, 30.0f), "Left click to select and move a control point. Right click to add a control point, and ctrl + right click to delete.");
 
-            // TEST!!! TODO
-            volRendObject.GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_TFTex", tfTexture);
-            volRendObject.GetComponent<MeshRenderer>().sharedMaterial.DisableKeyword("TF2D_ON");
+            volRendObject.SetTransferFunctionMode(TFRenderMode.TF1D);
 
             GUI.color = oldColour;
         }

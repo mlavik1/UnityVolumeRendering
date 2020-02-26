@@ -54,7 +54,7 @@ Shader "VolumeRendering/SliceRenderingShader"
             fixed4 frag (v2f i) : SV_Target
             {
                 float3 dataCoord = i.relVert +float3(0.5f, 0.5f, 0.5f);
-                float dataVal = tex3D(_DataTex, dataCoord).a;
+                float dataVal = tex3D(_DataTex, dataCoord);
                 float4 col = tex2D(_TFTex, float2(dataVal, 0.0f));
                 col.a = 1.0f;
 

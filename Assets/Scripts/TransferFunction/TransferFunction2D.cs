@@ -24,7 +24,8 @@ namespace UnityVolumeRendering
 
         public TransferFunction2D()
         {
-            texture = new Texture2D(TEXTURE_WIDTH, TEXTURE_HEIGHT, TextureFormat.RGBAFloat, false);
+            TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RGBAHalf) ? TextureFormat.RGBAHalf : TextureFormat.RGBAFloat;
+            texture = new Texture2D(TEXTURE_WIDTH, TEXTURE_HEIGHT, texformat, false);
         }
 
         public void AddBox(float x, float y, float width, float height, Color colour, float alpha)

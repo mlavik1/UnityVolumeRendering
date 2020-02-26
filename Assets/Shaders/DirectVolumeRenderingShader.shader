@@ -3,6 +3,7 @@
     Properties
     {
         _DataTex ("Data Texture (Generated)", 3D) = "" {}
+        _GradientTex("Gradient Texture (Generated)", 3D) = "" {}
         _NoiseTex("Noise Texture (Generated)", 2D) = "white" {}
         _TFTex("Transfer Function Texture (Generated)", 2D) = "" {}
         _MinVal("Min val", Range(0.0, 1.0)) = 0.0
@@ -53,6 +54,7 @@
             };
 
             sampler3D _DataTex;
+            sampler3D _GradientTex;
             sampler2D _NoiseTex;
             sampler2D _TFTex;
 
@@ -79,13 +81,13 @@
             // Gets the density at the specified position
             float getDensity(float3 pos)
             {
-                return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f)).a;
+                return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f));
             }
 
             // Gets the gradient at the specified position
             float3 getGradient(float3 pos)
             {
-                return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f)).rgb;
+                return tex3Dlod(_GradientTex, float4(pos.x, pos.y, pos.z, 0.0f)).rgb;
             }
 
             // Converts local position to depth value

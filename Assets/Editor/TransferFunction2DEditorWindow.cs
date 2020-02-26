@@ -148,9 +148,8 @@ namespace UnityVolumeRendering
                 tf2d.GenerateTexture();
                 needsRegenTexture = false;
             }
-            // TODO:
-            volRendObject.GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_TFTex", tf2d.GetTexture());
-            volRendObject.GetComponent<MeshRenderer>().sharedMaterial.EnableKeyword("TF2D_ON");
+            
+            volRendObject.SetTransferFunctionMode(TFRenderMode.TF2D);
 
             return;
         }

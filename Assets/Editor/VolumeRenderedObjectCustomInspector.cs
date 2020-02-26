@@ -10,7 +10,7 @@ namespace UnityVolumeRendering
         {
             VolumeRenderedObject myTarget = (VolumeRenderedObject)target;
 
-            RenderMode oldRenderMode = myTarget.GetRemderMode();
+            RenderMode oldRenderMode = myTarget.GetRenderMode();
             RenderMode newRenderMode = (RenderMode)EditorGUILayout.EnumPopup("Render mode", oldRenderMode);
 
             if (newRenderMode != oldRenderMode)
