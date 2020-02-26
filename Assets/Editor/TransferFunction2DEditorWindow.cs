@@ -135,7 +135,10 @@ namespace UnityVolumeRendering
                 {
                     TransferFunction2D newTF = TransferFunctionDatabase.LoadTransferFunction2D(filepath);
                     if(newTF != null)
+                    {
                         volRendObject.transferFunction2D = tf2d = newTF;
+                        needsRegenTexture = true;
+                    }
                 }
             }
 

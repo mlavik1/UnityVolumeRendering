@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UnityVolumeRendering
 {
-    public class TransferFunction2D : MonoBehaviour
+    public class TransferFunction2D
     {
         [System.Serializable]
         public struct TF2DBox
