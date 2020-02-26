@@ -64,9 +64,13 @@ namespace UnityVolumeRendering
             Event currentEvent = new Event(Event.current);
 
             Color oldColour = GUI.color;
-            float bgWidth = Mathf.Min(this.position.width - 20.0f, (this.position.height - 50.0f) * 2.0f);
-            Rect bgRect = new Rect(0.0f, 0.0f, bgWidth, bgWidth * 0.5f);
+            
+            float contentWidth = Mathf.Min(this.position.width - 20.0f, (this.position.height - 100.0f) * 2.0f);
+            float contentHeight = contentWidth * 0.5f;
+            
+            Rect bgRect = new Rect(0.0f, 0.0f, contentWidth, contentHeight);
 
+            // TODO:
             tf.GenerateTexture();
 
             tfGUIMat.SetTexture("_TFTex", tf.GetTexture());
@@ -161,11 +165,29 @@ namespace UnityVolumeRendering
             if (selectedColPointIndex != -1)
             {
                 TFColourControlPoint colPoint = tf.colourControlPoints[selectedColPointIndex];
-                colPoint.colourValue = EditorGUI.ColorField(new Rect(bgRect.x, bgRect.y + bgRect.height + 50, 100.0f, 40.0f), colPoint.colourValue);
+                colPoint.colourValue = EditorGUI.ColorField(new Rect(150, bgRect.y + bgRect.height + 50, 100.0f, 40.0f), colPoint.colourValue);
                 tf.colourControlPoints[selectedColPointIndex] = colPoint;
             }
-            GUI.skin.label.wordWrap = false;
-            GUI.Label(new Rect(0.0f, bgRect.y + bgRect.height + 60.0f, 700.0f, 30.0f), "Left click to select and move a control point. Right click to add a control point, and ctrl + right click to delete.");
+
+            if(GUI.Button(new Rect(0.0f, bgRect.y + bgRect.height + 50.0f, 70.0f, 30.0f), "Save"))
+            {
+                string filepath = EditorUtility.SaveFilePanel("Save transfer function", "", "default.tf", "tf");
+                if(filepath != "")
+                    TransferFunctionDatabase.SaveTransferFunction(tf, filepath);
+            }
+            if(GUI.Button(new Rect(75.0f, bgRect.y + bgRect.height + 50.0f, 70.0f, 30.0f), "Load"))
+            {
+                string filepath = EditorUtility.OpenFilePanel("Save transfer function", "", "tf");
+                if(filepath != "")
+                {
+                    TransferFunction newTF = TransferFunctionDatabase.LoadTransferFunction(filepath);
+                    if(newTF != null)
+                        volRendObject.transferFunction = tf = newTF;
+                }
+            }
+
+            GUI.skin.label.wordWrap = false;    
+            GUI.Label(new Rect(0.0f, bgRect.y + bgRect.height + 85.0f, 700.0f, 30.0f), "Left click to select and move a control point. Right click to add a control point, and ctrl + right click to delete.");
 
             // TEST!!! TODO
             volRendObject.GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_TFTex", tfTexture);

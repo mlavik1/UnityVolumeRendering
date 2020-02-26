@@ -2,6 +2,7 @@
 
 namespace UnityVolumeRendering
 {
+    [System.Serializable]
     public struct TFColourControlPoint
     {
         public float dataValue;
@@ -14,6 +15,7 @@ namespace UnityVolumeRendering
         }
     }
 
+    [System.Serializable]
     public struct TFAlphaControlPoint
     {
         public float dataValue;
