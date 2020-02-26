@@ -18,7 +18,8 @@ namespace UnityVolumeRendering
 
         public TransferFunction()
         {
-            texture = new Texture2D(TEXTURE_WIDTH, TEXTURE_HEIGHT, TextureFormat.RGBAFloat, false);
+            TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RGBAHalf) ? TextureFormat.RGBAHalf : TextureFormat.RGBAFloat;
+            texture = new Texture2D(TEXTURE_WIDTH, TEXTURE_HEIGHT, texformat, false);
             tfCols = new Color[TEXTURE_WIDTH * TEXTURE_HEIGHT];
         }
 

@@ -24,7 +24,7 @@ namespace UnityVolumeRendering
             MeshRenderer sliceMeshRend = sliceRenderingPlane.GetComponent<MeshRenderer>();
             sliceMeshRend.material = new Material(sliceMeshRend.sharedMaterial);
             Material sliceMat = sliceRenderingPlane.GetComponent<MeshRenderer>().sharedMaterial;
-            sliceMat.SetTexture("_DataTex", dataset.GetTexture());
+            sliceMat.SetTexture("_DataTex", dataset.GetDataTexture());
             sliceMat.SetTexture("_TFTex", transferFunction.GetTexture());
             sliceMat.SetMatrix("_parentInverseMat", transform.worldToLocalMatrix);
             sliceMat.SetMatrix("_planeMat", Matrix4x4.TRS(sliceRenderingPlane.transform.position, sliceRenderingPlane.transform.rotation, Vector3.one)); // TODO: allow changing scale
