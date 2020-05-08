@@ -94,8 +94,8 @@ namespace UnityVolumeRendering
                 case DatasetType.Raw:
                 {
                     dimX = EditorGUILayout.IntField("X dimension", dimX);
-                    dimY = EditorGUILayout.IntField("X dimension", dimY);
-                    dimZ = EditorGUILayout.IntField("X dimension", dimZ);
+                    dimY = EditorGUILayout.IntField("Y dimension", dimY);
+                    dimZ = EditorGUILayout.IntField("Z dimension", dimZ);
                     bytesToSkip = EditorGUILayout.IntField("Bytes to skip", bytesToSkip);
                     dataFormat = (DataContentFormat)EditorGUILayout.EnumPopup("Data format", dataFormat);
                     break;
