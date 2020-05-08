@@ -35,21 +35,37 @@ namespace UnityVolumeRendering
 
         public override VolumeDataset Import()
         {
-            VolumeDataset dataset = new VolumeDataset();
-
-            dataset.dimX = dimX;
-            dataset.dimY = dimY;
-            dataset.dimZ = dimZ;
+            // Check that the file exists
+            if(!File.Exists(filePath))
+            {
+                Debug.LogError("The file does not exist.");
+                return null;
+            }
 
             FileStream fs = new FileStream(filePath, FileMode.Open);
             BinaryReader reader = new BinaryReader(fs);
 
+            // Check that the dimension does not exceed the file size
+            long expectedFileSize = (long)(dimX * dimY * dimZ) * GetSampleFormatSize(contentFormat) + skipBytes;
+            if (fs.Length < expectedFileSize)
+            {
+                Debug.LogError($"The dimension({dimX}, {dimY}, {dimZ}) exceeds the file size. Expected file size is {expectedFileSize} bytes, while the actual file size is {fs.Length} bytes");
+                return null;
+            }
+
+            VolumeDataset dataset = new VolumeDataset();
+            dataset.dimX = dimX;
+            dataset.dimY = dimY;
+            dataset.dimZ = dimZ;
+
+            // Skip header (if any)
             if (skipBytes > 0)
                 reader.ReadBytes(skipBytes);
 
             int uDimension = dimX * dimY * dimZ;
             dataset.data = new int[uDimension];
 
+            // Read the data/sample values
             int val = 0;
             for (int i = 0; i < uDimension; i++)
             {
@@ -79,6 +95,32 @@ namespace UnityVolumeRendering
             Debug.Log("Loaded dataset in range: " + dataset.GetMinDataValue() + "  -  " + dataset.GetMaxDataValue());
 
             return dataset;
+        }
+
+        private int GetSampleFormatSize(DataContentFormat format)
+        {
+            switch (format)
+            {
+                case DataContentFormat.Int8:
+                    return 1;
+                    break;
+                case DataContentFormat.Uint8:
+                    return 1;
+                    break;
+                case DataContentFormat.Int16:
+                    return 2;
+                    break;
+                case DataContentFormat.Uint16:
+                    return 2;
+                    break;
+                case DataContentFormat.Int32:
+                    return 4;
+                    break;
+                case DataContentFormat.Uint32:
+                    return 4;
+                    break;
+            }
+            throw new NotImplementedException();
         }
     }
 }
