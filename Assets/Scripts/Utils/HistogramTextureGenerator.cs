@@ -8,8 +8,9 @@ namespace UnityVolumeRendering
         {
             int minValue = dataset.GetMinDataValue();
             int maxValue = dataset.GetMaxDataValue();
+            int numValues = maxValue - minValue + 1;
 
-            int numSamples = maxValue - minValue + 1;
+            int numSamples = System.Math.Min(numValues, 1024);
             int[] values = new int[numSamples];
             Color[] cols = new Color[numSamples];
             Texture2D texture = new Texture2D(numSamples, 1, TextureFormat.RGBAFloat, false);
@@ -17,9 +18,11 @@ namespace UnityVolumeRendering
             int maxFreq = 0;
             for (int iData = 0; iData < dataset.data.Length; iData++)
             {
-                int dataValue = dataset.data[iData] - minValue;
-                values[dataValue] += 1;
-                maxFreq = System.Math.Max(values[dataValue], maxFreq);
+                int dataValue = dataset.data[iData];
+                float tValue = Mathf.InverseLerp(minValue, maxValue, dataValue);
+                int valueIndex = Mathf.RoundToInt((numSamples - 1) * tValue);
+                values[valueIndex] += 1;
+                maxFreq = System.Math.Max(values[valueIndex], maxFreq);
             }
 
             for (int iSample = 0; iSample < numSamples; iSample++)
