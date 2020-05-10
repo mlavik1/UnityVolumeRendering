@@ -51,7 +51,7 @@ Here you can change the "Render mode":
 
 Example:
 
-<img src="Screenshots/rendermodes.gif" width="400px">
+<img src="Screenshots/rendermodes.gif" width="500px">
 
 There are 3 render modes:
 - Direct Volume Rendering (using transfer functions)
@@ -69,10 +69,10 @@ Direct volume rendering is the most standard rendering mode. It sends rays throu
 
 # Isosurface Rendering
 
-Isosurface rendering draws the first thing the ray hits, with a density higher than some threshold. You can set this threshold yourself, by opening "DirectVolumeRenderingMaterial" and changing the "Min Val".
+Isosurface rendering draws the first thing the ray hits, with a density higher than some threshold. You can set this threshold yourself, by selecting the object and changing the "Visible value range" in the inspector.
 These can also be used with direct volume rendering mode.
 
-<img src="Screenshots/material-dvr.png" width="300px">
+<img src="Screenshots/isosurface.gif" width="500px">
 
 # How to use in your own project
 - Create an instance of an importer (for example _RawDatasetImporter_):<br>
