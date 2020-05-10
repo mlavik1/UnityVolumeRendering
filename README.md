@@ -16,6 +16,8 @@ A volume renderer, made in Unity3D. See slides from presentation here: https://s
 # Step-by-step instructions
 **1. Import model**
 
+**Raw datasets:**
+
 In the menu bar, click "Volume Rendering" and "Load dataset"
 
 <img src="Screenshots/menubar.png" width="200px">
@@ -25,6 +27,11 @@ Then select the dataset you wish to import. Currently only raw datasets are supp
 In the next menu you can optionally set the import setting for the raw dataset. For the sample files you don't need to change anything.
 
 <img src="Screenshots/import.png" width="200px">
+
+**DICOM:**
+
+To import a DICOM dataset, click "Volume Rendering" and "Load DICOM" and select the folder containing your DICOM files.
+The dataset must be of 3D nature, and contain several files - each being a slice along the Z axis.
 
 **2. Moving the model**
 
