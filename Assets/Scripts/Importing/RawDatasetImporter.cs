@@ -50,6 +50,8 @@ namespace UnityVolumeRendering
             if (fs.Length < expectedFileSize)
             {
                 Debug.LogError($"The dimension({dimX}, {dimY}, {dimZ}) exceeds the file size. Expected file size is {expectedFileSize} bytes, while the actual file size is {fs.Length} bytes");
+                reader.Close();
+                fs.Close();
                 return null;
             }
 
@@ -94,6 +96,8 @@ namespace UnityVolumeRendering
             }
             Debug.Log("Loaded dataset in range: " + dataset.GetMinDataValue() + "  -  " + dataset.GetMaxDataValue());
 
+            reader.Close();
+            fs.Close();
             return dataset;
         }
 

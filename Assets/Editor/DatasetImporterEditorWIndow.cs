@@ -34,7 +34,7 @@ namespace UnityVolumeRendering
                 fileToImport = fileToImport.Substring(0, fileToImport.LastIndexOf("."));
                 datasetType = DatasetType.Raw;
             }
-            else if (extension == ".dicom")
+            else if (extension == ".dicom" || extension == ".dcm")
                 datasetType = DatasetType.DICOM;
             else
                 datasetType = DatasetType.Unknown;
@@ -67,7 +67,8 @@ namespace UnityVolumeRendering
                 }
                 case DatasetType.DICOM:
                 {
-                    throw new System.NotImplementedException("TODO: implement support for DICOM files");
+                    importer = new DICOMImporter(new FileInfo(fileToImport).Directory.FullName, false);
+                    break;
                 }
             }
 
