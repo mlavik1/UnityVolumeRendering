@@ -18,9 +18,9 @@ A volume renderer, made in Unity3D. See slides from presentation here: https://s
 
 **Raw datasets:**
 
-In the menu bar, click "Volume Rendering" and "Load dataset"
+In the menu bar, click "Volume Rendering" and "Load raw dataset"
 
-<img src="Screenshots/menubar.png" width="200px">
+<img src="Screenshots/menubar2.png" width="200px">
 
 Then select the dataset you wish to import. Currently only raw datasets are supported (you can add your own importer for other datasets).
 
@@ -37,6 +37,7 @@ The dataset must be of 3D nature, and contain several files - each being a slice
 
 You can move the model like any other GameObject. Simply select it in the scene view or scene hierarchy, and move/rotate it like normal.
 
+<img src="Screenshots/movement.gif" width="400px">
 
 **3. Changing the visualisation**
 
@@ -47,6 +48,10 @@ Select the model and find the "Volume Render Object" in the inspector.
 Here you can change the "Render mode":
 
 <img src="Screenshots/rendermode.png" width="200px">
+
+Example:
+
+<img src="Screenshots/rendermodes.gif" width="400px">
 
 There are 3 render modes:
 - Direct Volume Rendering (using transfer functions)
