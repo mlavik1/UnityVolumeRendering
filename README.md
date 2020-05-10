@@ -104,3 +104,5 @@ The importer takes the following parameters:
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/5.png)
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/6.png)
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/7.png)
+
+See ACKNOWLEDGEMENTS.txt for libraries used by this project.
