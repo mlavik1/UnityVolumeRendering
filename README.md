@@ -1,5 +1,8 @@
 # UnityVolumeRendering
-A volume renderer, made in Unity3D. See slides from presentation here: https://speakerdeck.com/mlavik1/volume-rendering-in-unity3d
+A volume renderer, made in Unity3D.
+Tutorial explaining the basic implementation here: https://matiaslavik.wordpress.com/2020/01/19/volume-rendering-in-unity/
+
+Also, slides from presentation can be found here: https://speakerdeck.com/mlavik1/volume-rendering-in-unity3d
 
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/front.jpg)
 
