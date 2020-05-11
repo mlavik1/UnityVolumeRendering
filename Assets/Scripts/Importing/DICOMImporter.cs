@@ -15,7 +15,9 @@ namespace UnityVolumeRendering
         private class DICOMSliceFile
         {
             public AcrNemaFile file;
-            public double location;
+            public float location;
+            public float intercept;
+            public float slope;
         }
 
         private string diroctoryPath;
@@ -50,8 +52,12 @@ namespace UnityVolumeRendering
                 {
                     DICOMSliceFile slice = new DICOMSliceFile();
                     slice.file = file;
-                    DataElement sliceLocElem = file.DataSet[new Tag("(0020,1041)")];
-                    slice.location = Convert.ToDouble(sliceLocElem.Value[0]);
+                    DataElement elemLoc = file.DataSet[new Tag("(0020,1041)")];
+                    DataElement elemIntercept = file.DataSet[new Tag("(0028,1052)")];
+                    DataElement elemSlope = file.DataSet[new Tag("(0028,1053)")];
+                    slice.location = (float)Convert.ToDouble(elemLoc.Value[0]);
+                    slice.intercept = (float)Convert.ToDouble(elemIntercept.Value[0]);
+                    slice.slope = (float)Convert.ToDouble(elemSlope.Value[0]);
                     files.Add(slice);
                 }
             }
@@ -91,7 +97,11 @@ namespace UnityVolumeRendering
                     {
                         int pixelIndex = (iRow * pixelData.Columns) + iCol;
                         int dataIndex = (iSlice * pixelData.Columns * pixelData.Rows) + (iRow * pixelData.Columns) + iCol;
-                        dataset.data[dataIndex] = pixelArr[pixelIndex];
+
+                        int pixelValue = pixelArr[pixelIndex];
+                        float hounsfieldValue = pixelValue * slice.slope + slice.intercept;
+
+                        dataset.data[dataIndex] = (int)Mathf.Clamp(hounsfieldValue, -1024.0f, 3071.0f);
                     }
                 }
             }
