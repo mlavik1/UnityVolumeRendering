@@ -1,8 +1,9 @@
 # UnityVolumeRendering
 A volume renderer, made in Unity3D.
-Tutorial explaining the basic implementation here: https://matiaslavik.wordpress.com/2020/01/19/volume-rendering-in-unity/
+I have also written a [tutorial explaining the basic implementation](https://matiaslavik.wordpress.com/2020/01/19/volume-rendering-in-unity/).
+Have any questions? [Find my contact info here](https://matiaslavik.wordpress.com/contact-me/).
 
-Also, slides from presentation can be found here: https://speakerdeck.com/mlavik1/volume-rendering-in-unity3d
+Also, slides from presentation can be found [here](https://speakerdeck.com/mlavik1/volume-rendering-in-unity3d)
 
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/front.jpg)
 
@@ -77,9 +78,16 @@ These can also be used with direct volume rendering mode.
 
 <img src="Screenshots/isosurface.gif" width="500px">
 
+# (VR) performance
+
+Since VR requires two cameras to render each frame, you can expect worse performance. However, you can improve the FPS in two ways:
+- Open _DirectVolumeRenderingShader.shader_ and reduce the value of _NUM_STEPS_ inthe  _frag_dvr_ function. This will sacrifice quality for performance.
+- Disable the DEPTHWRITE_ON shader variant. You can do this from code, or just remove the line "#pragma multi_compile DEPTHWRITE_ON DEPTHWRITE_OFF" in _DirectVolumeRenderingShader.shader_. Note: this will remove depth writing, so you won't be able to intersect multiple datasets.
+
 # How to use in your own project
 - Create an instance of an importer (for example _RawDatasetImporter_):<br>
 `DatasetImporterBase importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, DataContentFormat.Int16, 6);`
+(alternatively, use the _DICOMImporter_)
 - Call the Import()-function, which returns a Dataset:<br>
 `VolumeDataset dataset = importer.Import();`
 - Use _VolumeObjectFactory_ to create an object from the dataset:<br> 
@@ -87,7 +95,7 @@ These can also be used with direct volume rendering mode.
 
 See "DatasetImporterEditorWindow.cs" for an example.
 
-# Note:
+# Explanation of the raw dataset importer:
 The _RawDatasetImporter_ imports raw datasets, where the data is stored sequentially. Some raw datasets contain a header where you can read information about how the data is stored (content format, dimension, etc.), while some datasets expect you to know the layout and format.
 The importer takes the following parameters:
 - filePath: Filepath of the dataset
@@ -97,12 +105,11 @@ The importer takes the following parameters:
 - contentFormat: Value type of the data (Int8, Uint8, Int16, Uint16, etc..)
 - skipBytes: Number of bytes to skip (offset to where the data begins). This is usually the same as the header size, and will be 0 if there is no header.
 
+All this info can be added to a ".ini"-file, which the importer will use (if it finds any). See the sample files (in the  "DataFiles" folder for an example).
 # Todo:
-- DICOM support
 - Improve 2D Transfer Function editor: Better GUI, more shapes (triangles)
 - Optimise histogram generation
 - Support very large datasets (currently we naively try to create 3D textures with the same dimension as the data)
-- Volume cross sections
 
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/slices.gif)
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/1.png)
@@ -111,6 +118,5 @@ The importer takes the following parameters:
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/4.png)
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/5.png)
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/6.png)
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/7.png)
 
 See ACKNOWLEDGEMENTS.txt for libraries used by this project.
