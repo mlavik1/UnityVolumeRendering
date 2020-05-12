@@ -74,6 +74,8 @@ namespace UnityVolumeRendering
                         DataElement elemIntercept = file.DataSet[interceptTag];
                         slice.intercept = (float)Convert.ToDouble(elemIntercept.Value[0]);
                     }
+                    else
+                        Debug.LogWarning($"The file {filePath} is missing the intercept element. As a result, the default transfer function might not look good.");
                     // Read slope
                     Tag slopeTag = new Tag("(0028,1053)");
                     if (file.DataSet.Contains(slopeTag))
@@ -81,6 +83,9 @@ namespace UnityVolumeRendering
                         DataElement elemSlope = file.DataSet[slopeTag];
                         slice.slope = (float)Convert.ToDouble(elemSlope.Value[0]);
                     }
+                    else
+                        Debug.LogWarning($"The file {filePath} is missing the intercept element. As a result, the default transfer function might not look good.");
+
                     files.Add(slice);
                 }
             }

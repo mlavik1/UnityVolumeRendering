@@ -7,11 +7,16 @@ namespace UnityVolumeRendering
     {
         public static VolumeRenderedObject CreateObject(VolumeDataset dataset)
         {
-            GameObject obj = GameObject.Instantiate((GameObject)Resources.Load("VolumeRenderedObject"));
-            VolumeRenderedObject volObj = obj.GetComponent<VolumeRenderedObject>();
-            MeshRenderer meshRenderer = obj.GetComponent<MeshRenderer>();
-            meshRenderer.material = new Material(meshRenderer.sharedMaterial);
+            GameObject outerObject = new GameObject("VolumeRenderedObject");
+            VolumeRenderedObject volObj = outerObject.AddComponent<VolumeRenderedObject>();
 
+            GameObject meshContainer = GameObject.Instantiate((GameObject)Resources.Load("VolumeContainer"));
+            meshContainer.transform.parent = outerObject.transform;
+            meshContainer.transform.localScale = Vector3.one;
+            meshContainer.transform.localPosition = Vector3.zero;
+            meshContainer.transform.parent = outerObject.transform;
+            MeshRenderer meshRenderer = meshContainer.GetComponent<MeshRenderer>();
+            volObj.meshRenderer = meshRenderer;
             volObj.dataset = dataset;
 
             const int noiseDimX = 512;
@@ -37,6 +42,20 @@ namespace UnityVolumeRendering
             meshRenderer.sharedMaterial.DisableKeyword("MODE_SURF");
 
             return volObj;
+        }
+
+        public static void SpawnCrossSectionPlane(VolumeRenderedObject volobj)
+        {
+            GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            quad.transform.rotation = Quaternion.Euler(270.0f, 0.0f, 0.0f);
+            SlicingPlaneAnyDirection csplane = quad.gameObject.AddComponent<SlicingPlaneAnyDirection>();
+            csplane.mat = volobj.meshRenderer.sharedMaterial;
+            csplane.volumeTransform = volobj.transform;
+            quad.transform.position = volobj.transform.position;
+
+#if UNITY_EDITOR
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { quad };
+#endif
         }
     }
 }

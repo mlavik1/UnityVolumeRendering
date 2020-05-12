@@ -10,21 +10,31 @@ namespace UnityVolumeRendering
         {
             VolumeRenderedObject volrendObj = (VolumeRenderedObject)target;
 
+            // Render mode
             RenderMode oldRenderMode = volrendObj.GetRenderMode();
             RenderMode newRenderMode = (RenderMode)EditorGUILayout.EnumPopup("Render mode", oldRenderMode);
-
-            if(newRenderMode == RenderMode.IsosurfaceRendering)
-            {
-                Material mat = volrendObj.GetComponent<MeshRenderer>().sharedMaterial; // TODO
-                float minVal = mat.GetFloat("_MinVal");
-                float maxVal = mat.GetFloat("_MaxVal");
-                EditorGUILayout.MinMaxSlider("Visible value range",  ref minVal, ref maxVal, 0.0f, 1.0f);
-                mat.SetFloat("_MinVal", minVal);
-                mat.SetFloat("_MaxVal", maxVal);
-            }
-
             if (newRenderMode != oldRenderMode)
                 volrendObj.SetRenderMode(newRenderMode);
+
+            // Visibility window
+            Vector2 visibilityWindow = volrendObj.GetVisibilityWindow();
+            EditorGUILayout.MinMaxSlider("Visible value range", ref visibilityWindow.x, ref visibilityWindow.y, 0.0f, 1.0f);
+            EditorGUILayout.Space();
+            volrendObj.SetVisibilityWindow(visibilityWindow);
+
+            // Transfer function type
+            TFRenderMode tfMode = (TFRenderMode)EditorGUILayout.EnumPopup("Transfer function type", volrendObj.GetTransferFunctionMode());
+            if (tfMode != volrendObj.GetTransferFunctionMode())
+                volrendObj.SetTransferFunctionMode(tfMode);
+
+            // Show TF button
+            if (GUILayout.Button("Edit transfer function"))
+            {
+                if(tfMode == TFRenderMode.TF1D)
+                    TransferFunctionEditorWindow.ShowWindow();
+                else
+                    TransferFunction2DEditorWindow.ShowWindow();
+            }
         }
     }
 }

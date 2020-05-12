@@ -15,7 +15,7 @@ namespace UnityVolumeRendering
         private VolumeRenderedObject volRendObject = null;
 
         [MenuItem("Volume Rendering/2D Transfer Function")]
-        static void ShowWindow()
+        public static void ShowWindow()
         {
             TransferFunctionEditorWindow tf1dWnd = (TransferFunctionEditorWindow)EditorWindow.GetWindow(typeof(TransferFunctionEditorWindow));
             if (tf1dWnd != null)
@@ -45,6 +45,9 @@ namespace UnityVolumeRendering
                 if (volRendObject != null)
                     Selection.objects = new Object[] { volRendObject.gameObject };
             }
+
+            if(volRendObject != null)
+                volRendObject.SetTransferFunctionMode(TFRenderMode.TF2D);
         }
 
         private void OnGUI()
@@ -148,8 +151,6 @@ namespace UnityVolumeRendering
                 tf2d.GenerateTexture();
                 needsRegenTexture = false;
             }
-            
-            volRendObject.SetTransferFunctionMode(TFRenderMode.TF2D);
 
             return;
         }

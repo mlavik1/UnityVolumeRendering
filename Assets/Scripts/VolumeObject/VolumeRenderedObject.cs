@@ -2,6 +2,7 @@
 
 namespace UnityVolumeRendering
 {
+    [ExecuteInEditMode]
     public class VolumeRenderedObject : MonoBehaviour
     {
         [HideInInspector]
@@ -13,8 +14,13 @@ namespace UnityVolumeRendering
         [HideInInspector]
         public VolumeDataset dataset;
 
+        [HideInInspector]
+        public MeshRenderer meshRenderer;
+
         private RenderMode renderMode;
         private TFRenderMode tfRenderMode;
+
+        private Vector2 visibilityWindow = new Vector2(0.0f, 1.0f);
 
         public SlicingPlane CreateSlicingPlane()
         {
@@ -35,14 +41,27 @@ namespace UnityVolumeRendering
 
         public void SetRenderMode(RenderMode mode)
         {
-            renderMode = mode;
+            if(renderMode != mode)
+            {
+                renderMode = mode;
+                SetVisibilityWindow(0.0f, 1.0f); // reset visibility window
+            }
             UpdateMaaterialProperties();
         }
 
         public void SetTransferFunctionMode(TFRenderMode mode)
         {
             tfRenderMode = mode;
+            if (tfRenderMode == TFRenderMode.TF1D)
+                transferFunction.GenerateTexture();
+            else
+                transferFunction2D.GenerateTexture();
             UpdateMaaterialProperties();
+        }
+
+        public TFRenderMode GetTransferFunctionMode()
+        {
+            return tfRenderMode;
         }
 
         public RenderMode GetRenderMode()
@@ -50,10 +69,24 @@ namespace UnityVolumeRendering
             return renderMode;
         }
 
+        public void SetVisibilityWindow(float min, float max)
+        {
+            SetVisibilityWindow(new Vector2(min, max));
+        }
+
+        public void SetVisibilityWindow(Vector2 window)
+        {
+            visibilityWindow = window;
+            UpdateMaaterialProperties();
+        }
+
+        public Vector2 GetVisibilityWindow()
+        {
+            return visibilityWindow;
+        }
+
         private void UpdateMaaterialProperties()
         {
-            MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
-
             bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering;
             meshRenderer.sharedMaterial.SetTexture("_GradientTex", useGradientTexture ? dataset.GetGradientTexture() : null);
 
@@ -92,6 +125,14 @@ namespace UnityVolumeRendering
                         break;
                     }
             }
+
+            meshRenderer.sharedMaterial.SetFloat("_MinVal", visibilityWindow.x);
+            meshRenderer.sharedMaterial.SetFloat("_MaxVal", visibilityWindow.y);
+        }
+
+        private void Start()
+        {
+            UpdateMaaterialProperties();
         }
     }
 }

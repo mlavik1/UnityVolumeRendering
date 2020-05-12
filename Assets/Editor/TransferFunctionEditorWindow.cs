@@ -15,7 +15,7 @@ namespace UnityVolumeRendering
         private VolumeRenderedObject volRendObject = null;
 
         [MenuItem("Volume Rendering/1D Transfer Function")]
-        static void ShowWindow()
+        public static void ShowWindow()
         {
             TransferFunction2DEditorWindow tf2dWnd = (TransferFunction2DEditorWindow)EditorWindow.GetWindow(typeof(TransferFunction2DEditorWindow));
             if (tf2dWnd != null)
@@ -49,6 +49,9 @@ namespace UnityVolumeRendering
                 if (volRendObject != null)
                     Selection.objects = new Object[] { volRendObject.gameObject };
             }
+
+            if(volRendObject != null)
+                volRendObject.SetTransferFunctionMode(TFRenderMode.TF1D);
         }
 
         private void OnGUI()
@@ -188,8 +191,6 @@ namespace UnityVolumeRendering
 
             GUI.skin.label.wordWrap = false;    
             GUI.Label(new Rect(0.0f, bgRect.y + bgRect.height + 85.0f, 700.0f, 30.0f), "Left click to select and move a control point. Right click to add a control point, and ctrl + right click to delete.");
-
-            volRendObject.SetTransferFunctionMode(TFRenderMode.TF1D);
 
             GUI.color = oldColour;
         }

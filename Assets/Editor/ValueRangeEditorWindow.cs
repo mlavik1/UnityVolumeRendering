@@ -23,18 +23,15 @@ namespace UnityVolumeRendering
 
             EditorGUILayout.LabelField("Edit the visible value range (min/max value) with the slider.");
 
-            // TODO: cache reference in VolumeRenderedObject?
-            MeshRenderer mr = volRendObject.GetComponent<MeshRenderer>();
-            Material mat = mr.sharedMaterial;
-            float minVal = mat.GetFloat("_MinVal");
-            float maxVal = mat.GetFloat("_MaxVal");
+            Vector2 visibilityWindow = volRendObject.GetVisibilityWindow();
+
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.MinMaxSlider("Visible value range", ref minVal, ref maxVal, 0.0f, 1.0f);
+            EditorGUILayout.MinMaxSlider("Visible value range", ref visibilityWindow.x, ref visibilityWindow.y, 0.0f, 1.0f);
             EditorGUILayout.Space();
             EditorGUILayout.Space();
             EditorGUILayout.EndHorizontal();
-            mat.SetFloat("_MinVal", minVal);
-            mat.SetFloat("_MaxVal", maxVal);
+
+            volRendObject.SetVisibilityWindow(visibilityWindow);
         }
     }
 }
