@@ -3,7 +3,7 @@ A volume renderer, made in Unity3D.
 I have also written a [tutorial explaining the basic implementation](https://matiaslavik.wordpress.com/2020/01/19/volume-rendering-in-unity/).
 Have any questions? [Find my contact info here](https://matiaslavik.wordpress.com/contact-me/).
 
-Also, slides from presentation can be found [here](https://speakerdeck.com/mlavik1/volume-rendering-in-unity3d)
+Tutorial video: https://youtu.be/1pIvmhXPh0w
 
 ![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/front.jpg)
 
