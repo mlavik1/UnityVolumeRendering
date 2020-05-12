@@ -7,6 +7,7 @@ using openDicom.DataStructure.DataSet;
 using openDicom.DataStructure;
 using System.Collections.Generic;
 using openDicom.Image;
+using System.Linq;
 
 namespace UnityVolumeRendering
 {
@@ -15,9 +16,9 @@ namespace UnityVolumeRendering
         private class DICOMSliceFile
         {
             public AcrNemaFile file;
-            public float location;
-            public float intercept;
-            public float slope;
+            public float location = 0;
+            public float intercept = 0.0f;
+            public float slope = 1.0f;
         }
 
         private string diroctoryPath;
@@ -44,20 +45,42 @@ namespace UnityVolumeRendering
                 return null;
             }
 
+            IEnumerable<string> fileCandidates = Directory.EnumerateFiles(diroctoryPath, "*.*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
+                .Where(p => p.EndsWith(".dcm") || p.EndsWith(".dicom") || p.EndsWith(".dicm"));
             List<DICOMSliceFile> files = new List<DICOMSliceFile>();
-            foreach (string filePath in Directory.EnumerateFiles(diroctoryPath, "*.*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
+            foreach (string filePath in fileCandidates)
             {
                 AcrNemaFile file = LoadFile(filePath);
                 if(file != null && file.HasPixelData)
                 {
                     DICOMSliceFile slice = new DICOMSliceFile();
                     slice.file = file;
-                    DataElement elemLoc = file.DataSet[new Tag("(0020,1041)")];
-                    DataElement elemIntercept = file.DataSet[new Tag("(0028,1052)")];
-                    DataElement elemSlope = file.DataSet[new Tag("(0028,1053)")];
-                    slice.location = (float)Convert.ToDouble(elemLoc.Value[0]);
-                    slice.intercept = (float)Convert.ToDouble(elemIntercept.Value[0]);
-                    slice.slope = (float)Convert.ToDouble(elemSlope.Value[0]);
+                    // Read location
+                    Tag locTag = new Tag("(0020,1041)");
+                    if(file.DataSet.Contains(locTag))
+                    {
+                        DataElement elemLoc = file.DataSet[locTag];
+                        slice.location = (float)Convert.ToDouble(elemLoc.Value[0]);
+                    }
+                    else
+                    {
+                        Debug.LogError($"Missing location tag in file: {filePath}.\n The file will not be imported");
+                        continue;
+                    }
+                    // Read intercept
+                    Tag interceptTag = new Tag("(0028,1052)");
+                    if (file.DataSet.Contains(interceptTag))
+                    {
+                        DataElement elemIntercept = file.DataSet[interceptTag];
+                        slice.intercept = (float)Convert.ToDouble(elemIntercept.Value[0]);
+                    }
+                    // Read slope
+                    Tag slopeTag = new Tag("(0028,1053)");
+                    if (file.DataSet.Contains(slopeTag))
+                    {
+                        DataElement elemSlope = file.DataSet[slopeTag];
+                        slice.slope = (float)Convert.ToDouble(elemSlope.Value[0]);
+                    }
                     files.Add(slice);
                 }
             }
@@ -106,20 +129,6 @@ namespace UnityVolumeRendering
                 }
             }
 
-            /*foreach (openDicom.DataStructure.DataSet.DataElement element in file.DataSet)
-            {
-                Debug.Log(file.DataSet.StreamPosition);
-                Debug.Log(element.Tag.ToString() + " - " + element.VR.Tag.GetDictionaryEntry().Description);
-            }*/
-
-            /*
-            dataset.dimX = file.DataSet.GetEnumerator;
-            dataset.dimY = dimY;
-            dataset.dimZ = dimZ;
-
-            int uDimension = dimX * dimY * dimZ;
-            dataset.data = new int[uDimension];*/
-
             return dataset;
         }
 
@@ -137,7 +146,7 @@ namespace UnityVolumeRendering
             }
             catch (Exception dicomFileException)
             {
-                Debug.LogError("Problems processing DICOM file:\n" + dicomFileException);
+                Debug.LogError($"Problems processing the DICOM file {filePath} :\n {dicomFileException}");
                 return null;
             }
             return file;
