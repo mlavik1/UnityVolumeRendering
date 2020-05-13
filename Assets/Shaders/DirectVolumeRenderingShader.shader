@@ -207,7 +207,7 @@
                     const float t = iStep * stepSize;
                     const float3 currPos = rayStartPos + rayDir * t;
                     // Stop when we are outside the box
-                    if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
+                    if (currPos.x < -0.0001f || currPos.x >= 1.0001f || currPos.y < -0.0001f || currPos.y > 1.0001f || currPos.z < -0.0001f || currPos.z > 1.0001f) // TODO: avoid branch?
                         break;
 
 #ifdef SLICEPLANE_ON
