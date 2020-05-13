@@ -18,6 +18,7 @@ namespace UnityVolumeRendering
             outerObject.transform.localRotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
 
             MeshRenderer meshRenderer = meshContainer.GetComponent<MeshRenderer>();
+            meshRenderer.sharedMaterial = new Material(meshRenderer.sharedMaterial);
             volObj.meshRenderer = meshRenderer;
             volObj.dataset = dataset;
 
