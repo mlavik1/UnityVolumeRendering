@@ -10,6 +10,7 @@ namespace UnityVolumeRendering
         public int dimZ = 0;
         public int bytesToSkip = 0;
         public DataContentFormat format = DataContentFormat.Uint8;
+        public Endianness endianness = Endianness.LittleEndian;
     }
 
     public class DatasetIniReader
@@ -41,9 +42,9 @@ namespace UnityVolumeRendering
                 else if (name == "skip")
                     Int32.TryParse(value, out iniData.bytesToSkip);
                 else if (name == "format")
-                {
                     iniData.format = GetFormatByName(value);
-                }
+                else if (name == "endianness")
+                    iniData.endianness = GetEndiannessByName(value);
             }
 
             return iniData;
@@ -67,6 +68,19 @@ namespace UnityVolumeRendering
                     return DataContentFormat.Uint8;
                 default:
                     return DataContentFormat.Uint8;
+            }
+        }
+
+        private static Endianness GetEndiannessByName(string name)
+        {
+            switch (name)
+            {
+                case "bigendian":
+                    return Endianness.BigEndian;
+                case "littleendian":
+                    return Endianness.LittleEndian;
+                default:
+                    return Endianness.LittleEndian;
             }
         }
     }

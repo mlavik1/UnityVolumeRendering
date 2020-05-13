@@ -14,6 +14,12 @@ namespace UnityVolumeRendering
         Uint32
     }
 
+    public enum Endianness
+    {
+        LittleEndian,
+        BigEndian
+    }
+
     public class RawDatasetImporter : DatasetImporterBase
     {
         string filePath;
@@ -21,15 +27,17 @@ namespace UnityVolumeRendering
         private int dimY;
         private int dimZ;
         private DataContentFormat contentFormat;
-        int skipBytes;
+        private Endianness endianness;
+        private int skipBytes;
 
-        public RawDatasetImporter(string filePath, int dimX, int dimY, int dimZ, DataContentFormat contentFormat, int skipBytes)
+        public RawDatasetImporter(string filePath, int dimX, int dimY, int dimZ, DataContentFormat contentFormat, Endianness endianness, int skipBytes)
         {
             this.filePath = filePath;
             this.dimX = dimX;
             this.dimY = dimY;
             this.dimZ = dimZ;
             this.contentFormat = contentFormat;
+            this.endianness = endianness;
             this.skipBytes = skipBytes;
         }
 
@@ -68,37 +76,77 @@ namespace UnityVolumeRendering
             dataset.data = new int[uDimension];
 
             // Read the data/sample values
-            int val = 0;
             for (int i = 0; i < uDimension; i++)
             {
-                switch (contentFormat)
-                {
-                    case DataContentFormat.Int8:
-                        val = (int)reader.ReadSByte();
-                        break;
-                    case DataContentFormat.Int16:
-                        val = (int)reader.ReadInt16();
-                        break;
-                    case DataContentFormat.Int32:
-                        val = (int)reader.ReadInt32();
-                        break;
-                    case DataContentFormat.Uint8:
-                        val = (int)reader.ReadByte();
-                        break;
-                    case DataContentFormat.Uint16:
-                        val = (int)reader.ReadUInt16();
-                        break;
-                    case DataContentFormat.Uint32:
-                        val = (int)reader.ReadUInt32();
-                        break;
-                }
-                dataset.data[i] = val;
+                dataset.data[i] = ReadDataValue(reader);
             }
             Debug.Log("Loaded dataset in range: " + dataset.GetMinDataValue() + "  -  " + dataset.GetMaxDataValue());
 
             reader.Close();
             fs.Close();
             return dataset;
+        }
+
+        private int ReadDataValue(BinaryReader reader)
+        {
+            switch (contentFormat)
+            {
+                case DataContentFormat.Int8:
+                    {
+                        sbyte dataval = reader.ReadSByte();
+                        return (int)dataval;
+                    }
+                case DataContentFormat.Int16:
+                    {
+                        short dataval = reader.ReadInt16();
+                        if (endianness == Endianness.BigEndian)
+                        {
+                            byte[] bytes = BitConverter.GetBytes(dataval);
+                            Array.Reverse(bytes, 0, bytes.Length);
+                            dataval = BitConverter.ToInt16(bytes, 0);
+                        }
+                        return (int)dataval;
+                    }
+                case DataContentFormat.Int32:
+                    {
+                        int dataval = reader.ReadInt32();
+                        if (endianness == Endianness.BigEndian)
+                        {
+                            byte[] bytes = BitConverter.GetBytes(dataval);
+                            Array.Reverse(bytes, 0, bytes.Length);
+                            dataval = BitConverter.ToInt32(bytes, 0);
+                        }
+                        return (int)dataval;
+                    }
+                case DataContentFormat.Uint8:
+                    {
+                        return (int)reader.ReadByte();
+                    }
+                case DataContentFormat.Uint16:
+                    {
+                        ushort dataval = reader.ReadUInt16();
+                        if (endianness == Endianness.BigEndian)
+                        {
+                            byte[] bytes = BitConverter.GetBytes(dataval);
+                            Array.Reverse(bytes, 0, bytes.Length);
+                            dataval = BitConverter.ToUInt16(bytes, 0);
+                        }
+                        return (int)dataval;
+                    }
+                case DataContentFormat.Uint32:
+                    {
+                        uint dataval = reader.ReadUInt32();
+                        if (endianness == Endianness.BigEndian)
+                        {
+                            byte[] bytes = BitConverter.GetBytes(dataval);
+                            Array.Reverse(bytes, 0, bytes.Length);
+                            dataval = BitConverter.ToUInt32(bytes, 0);
+                        }
+                        return (int)dataval;
+                    }
+                default:
+                    throw new NotImplementedException("Unimplemented data content format");
+            }
         }
 
         private int GetSampleFormatSize(DataContentFormat format)

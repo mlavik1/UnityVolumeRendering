@@ -52,9 +52,9 @@ namespace UnityVolumeRendering
         public void SetTransferFunctionMode(TFRenderMode mode)
         {
             tfRenderMode = mode;
-            if (tfRenderMode == TFRenderMode.TF1D)
+            if (tfRenderMode == TFRenderMode.TF1D && transferFunction != null)
                 transferFunction.GenerateTexture();
-            else
+            else if(transferFunction2D != null)
                 transferFunction2D.GenerateTexture();
             UpdateMaaterialProperties();
         }

@@ -22,6 +22,7 @@ namespace UnityVolumeRendering
         private int dimZ; // TODO: set good default value
         private int bytesToSkip = 0;
         private DataContentFormat dataFormat = DataContentFormat.Int16;
+        private Endianness endianness = Endianness.LittleEndian;
 
         public DatasetImporterEditorWindow(string fileToImport)
         {
@@ -50,6 +51,7 @@ namespace UnityVolumeRendering
                 dimZ = initData.dimZ;
                 bytesToSkip = initData.bytesToSkip;
                 dataFormat = initData.format;
+                endianness = initData.endianness;
             }
 
             this.minSize = new Vector2(300.0f, 200.0f);
@@ -62,7 +64,7 @@ namespace UnityVolumeRendering
             {
                 case DatasetType.Raw:
                 {
-                    importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, bytesToSkip);
+                    importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, endianness, bytesToSkip);
                     break;
                 }
                 case DatasetType.DICOM:
@@ -99,6 +101,7 @@ namespace UnityVolumeRendering
                     dimZ = EditorGUILayout.IntField("Z dimension", dimZ);
                     bytesToSkip = EditorGUILayout.IntField("Bytes to skip", bytesToSkip);
                     dataFormat = (DataContentFormat)EditorGUILayout.EnumPopup("Data format", dataFormat);
+                    endianness = (Endianness)EditorGUILayout.EnumPopup("Endianness", endianness);
                     break;
                 }
             }
