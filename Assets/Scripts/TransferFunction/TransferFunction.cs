@@ -1,27 +1,22 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 namespace UnityVolumeRendering
 {
+    [Serializable]
     public class TransferFunction
     {
+        [SerializeField]
         public List<TFColourControlPoint> colourControlPoints = new List<TFColourControlPoint>();
+        [SerializeField]
         public List<TFAlphaControlPoint> alphaControlPoints = new List<TFAlphaControlPoint>();
 
-        public Texture2D histogramTexture = null;
-
         private Texture2D texture = null;
-        Color[] tfCols;
+        private Color[] tfCols;
 
         private const int TEXTURE_WIDTH = 512;
         private const int TEXTURE_HEIGHT = 2;
-
-        public TransferFunction()
-        {
-            TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RGBAHalf) ? TextureFormat.RGBAHalf : TextureFormat.RGBAFloat;
-            texture = new Texture2D(TEXTURE_WIDTH, TEXTURE_HEIGHT, texformat, false);
-            tfCols = new Color[TEXTURE_WIDTH * TEXTURE_HEIGHT];
-        }
 
         public void AddControlPoint(TFColourControlPoint ctrlPoint)
         {
@@ -43,6 +38,9 @@ namespace UnityVolumeRendering
 
         public void GenerateTexture()
         {
+            if (texture == null)
+                CreateTexture();
+
             List<TFColourControlPoint> cols = new List<TFColourControlPoint>(colourControlPoints);
             List<TFAlphaControlPoint> alphas = new List<TFAlphaControlPoint>(alphaControlPoints);
 
@@ -95,6 +93,13 @@ namespace UnityVolumeRendering
             texture.wrapMode = TextureWrapMode.Clamp;
             texture.SetPixels(tfCols);
             texture.Apply();
+        }
+
+        private void CreateTexture()
+        {
+            TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RGBAHalf) ? TextureFormat.RGBAHalf : TextureFormat.RGBAFloat;
+            texture = new Texture2D(TEXTURE_WIDTH, TEXTURE_HEIGHT, texformat, false);
+            tfCols = new Color[TEXTURE_WIDTH * TEXTURE_HEIGHT];
         }
     }
 }

@@ -30,8 +30,6 @@ namespace UnityVolumeRendering
             Texture2D tfTexture = tf.GetTexture();
             volObj.transferFunction = tf;
 
-            tf.histogramTexture = HistogramTextureGenerator.GenerateHistogramTexture(dataset);
-
             TransferFunction2D tf2D = TransferFunctionDatabase.CreateTransferFunction2D();
             volObj.transferFunction2D = tf2D;
 
