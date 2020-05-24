@@ -1,10 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityVolumeRendering
 {
-    public class TransferFunction2D
+    [Serializable]
+    public class TransferFunction2D : ScriptableObject
     {
         [System.Serializable]
         public struct TF2DBox
@@ -15,18 +17,13 @@ namespace UnityVolumeRendering
             public Rect rect;
         }
 
+        [SerializeField]
         public List<TF2DBox> boxes = new List<TF2DBox>();
 
         private Texture2D texture = null;
 
         private const int TEXTURE_WIDTH = 512;
         private const int TEXTURE_HEIGHT = 512;
-
-        public TransferFunction2D()
-        {
-            TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RGBAHalf) ? TextureFormat.RGBAHalf : TextureFormat.RGBAFloat;
-            texture = new Texture2D(TEXTURE_WIDTH, TEXTURE_HEIGHT, texformat, false);
-        }
 
         public void AddBox(float x, float y, float width, float height, Color colour, float alpha)
         {
@@ -42,11 +39,23 @@ namespace UnityVolumeRendering
 
         public Texture2D GetTexture()
         {
+            if(texture == null)
+                GenerateTexture();
+
             return texture;
+        }
+
+        private void CreateTexture()
+        {
+            TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RGBAHalf) ? TextureFormat.RGBAHalf : TextureFormat.RGBAFloat;
+            texture = new Texture2D(TEXTURE_WIDTH, TEXTURE_HEIGHT, texformat, false);
         }
 
         public void GenerateTexture()
         {
+            if (texture == null)
+                CreateTexture();
+
             Color[] cols = new Color[TEXTURE_WIDTH * TEXTURE_HEIGHT];
             for (int iX = 0; iX < TEXTURE_WIDTH; iX++)
             {
