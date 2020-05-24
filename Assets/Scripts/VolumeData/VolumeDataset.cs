@@ -3,9 +3,12 @@ using UnityEngine;
 
 namespace UnityVolumeRendering
 {
-    public class VolumeDataset
+    [Serializable]
+    public class VolumeDataset : ScriptableObject
     {
+        [SerializeField]
         public int[] data = null;
+        [SerializeField]
         public int dimX, dimY, dimZ;
 
         private int minDataValue = int.MaxValue;

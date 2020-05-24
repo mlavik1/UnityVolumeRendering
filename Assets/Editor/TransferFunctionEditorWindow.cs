@@ -13,6 +13,7 @@ namespace UnityVolumeRendering
         private int selectedColPointIndex = -1;
 
         private VolumeRenderedObject volRendObject = null;
+        private Texture2D histTex = null;
 
         [MenuItem("Volume Rendering/1D Transfer Function")]
         public static void ShowWindow()
@@ -76,8 +77,11 @@ namespace UnityVolumeRendering
             // TODO:
             tf.GenerateTexture();
 
+            if(histTex == null)
+                histTex = HistogramTextureGenerator.GenerateHistogramTexture(volRendObject.dataset);
+
             tfGUIMat.SetTexture("_TFTex", tf.GetTexture());
-            tfGUIMat.SetTexture("_HistTex", tf.histogramTexture);
+            tfGUIMat.SetTexture("_HistTex", histTex);
             Graphics.DrawTexture(bgRect, tf.GetTexture(), tfGUIMat);
 
             Texture2D tfTexture = tf.GetTexture();
