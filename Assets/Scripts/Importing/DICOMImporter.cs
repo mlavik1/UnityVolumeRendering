@@ -11,6 +11,11 @@ using System.Linq;
 
 namespace UnityVolumeRendering
 {
+    /// <summary>
+    /// DICOM importer.
+    /// Reads a 3D DICOM dataset from a folder.
+    /// The folder needs to contain several .dcm/.dicom files, where each file is a slice of the same dataset.
+    /// </summary>
     public class DICOMImporter : DatasetImporterBase
     {
         private class DICOMSliceFile
@@ -45,50 +50,17 @@ namespace UnityVolumeRendering
                 return null;
             }
 
+            // Read all files
             IEnumerable<string> fileCandidates = Directory.EnumerateFiles(diroctoryPath, "*.*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
                 .Where(p => p.EndsWith(".dcm") || p.EndsWith(".dicom") || p.EndsWith(".dicm"));
             List<DICOMSliceFile> files = new List<DICOMSliceFile>();
             foreach (string filePath in fileCandidates)
             {
-                AcrNemaFile file = LoadFile(filePath);
-                if(file != null && file.HasPixelData)
-                {
-                    DICOMSliceFile slice = new DICOMSliceFile();
-                    slice.file = file;
-                    // Read location
-                    Tag locTag = new Tag("(0020,1041)");
-                    if(file.DataSet.Contains(locTag))
-                    {
-                        DataElement elemLoc = file.DataSet[locTag];
-                        slice.location = (float)Convert.ToDouble(elemLoc.Value[0]);
-                    }
-                    else
-                    {
-                        Debug.LogError($"Missing location tag in file: {filePath}.\n The file will not be imported");
-                        continue;
-                    }
-                    // Read intercept
-                    Tag interceptTag = new Tag("(0028,1052)");
-                    if (file.DataSet.Contains(interceptTag))
-                    {
-                        DataElement elemIntercept = file.DataSet[interceptTag];
-                        slice.intercept = (float)Convert.ToDouble(elemIntercept.Value[0]);
-                    }
-                    else
-                        Debug.LogWarning($"The file {filePath} is missing the intercept element. As a result, the default transfer function might not look good.");
-                    // Read slope
-                    Tag slopeTag = new Tag("(0028,1053)");
-                    if (file.DataSet.Contains(slopeTag))
-                    {
-                        DataElement elemSlope = file.DataSet[slopeTag];
-                        slice.slope = (float)Convert.ToDouble(elemSlope.Value[0]);
-                    }
-                    else
-                        Debug.LogWarning($"The file {filePath} is missing the intercept element. As a result, the default transfer function might not look good.");
-
-                    files.Add(slice);
-                }
+                DICOMSliceFile sliceFile = ReadDICOMFile(filePath);
+                if(sliceFile != null)
+                    files.Add(sliceFile);
             }
+            // Sort files by slice location
             files.Sort((DICOMSliceFile a, DICOMSliceFile b) => { return a.location.CompareTo(b.location); });
 
             Debug.Log($"Imported {files.Count} datasets");
@@ -103,6 +75,7 @@ namespace UnityVolumeRendering
             float maxLoc = (float)files[files.Count - 1].location;
             float locRange = maxLoc - minLoc;
 
+            // Create dataset
             VolumeDataset dataset = new VolumeDataset();
             dataset.dimX = files[0].file.PixelData.Columns;
             dataset.dimY = files[0].file.PixelData.Rows;
@@ -135,6 +108,50 @@ namespace UnityVolumeRendering
             }
 
             return dataset;
+        }
+
+        private DICOMSliceFile ReadDICOMFile(string filePath)
+        {
+            AcrNemaFile file = LoadFile(filePath);
+
+            if (file != null && file.HasPixelData)
+            {
+                DICOMSliceFile slice = new DICOMSliceFile();
+                slice.file = file;
+                // Read location
+                Tag locTag = new Tag("(0020,1041)");
+                if (file.DataSet.Contains(locTag))
+                {
+                    DataElement elemLoc = file.DataSet[locTag];
+                    slice.location = (float)Convert.ToDouble(elemLoc.Value[0]);
+                }
+                else
+                {
+                    Debug.LogError($"Missing location tag in file: {filePath}.\n The file will not be imported");
+                    return null;
+                }
+                // Read intercept
+                Tag interceptTag = new Tag("(0028,1052)");
+                if (file.DataSet.Contains(interceptTag))
+                {
+                    DataElement elemIntercept = file.DataSet[interceptTag];
+                    slice.intercept = (float)Convert.ToDouble(elemIntercept.Value[0]);
+                }
+                else
+                    Debug.LogWarning($"The file {filePath} is missing the intercept element. As a result, the default transfer function might not look good.");
+                // Read slope
+                Tag slopeTag = new Tag("(0028,1053)");
+                if (file.DataSet.Contains(slopeTag))
+                {
+                    DataElement elemSlope = file.DataSet[slopeTag];
+                    slice.slope = (float)Convert.ToDouble(elemSlope.Value[0]);
+                }
+                else
+                    Debug.LogWarning($"The file {filePath} is missing the intercept element. As a result, the default transfer function might not look good.");
+
+                return slice;
+            }
+            return null;
         }
 
         private AcrNemaFile LoadFile(string filePath)

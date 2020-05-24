@@ -49,9 +49,8 @@ namespace UnityVolumeRendering
         {
             GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
             quad.transform.rotation = Quaternion.Euler(270.0f, 0.0f, 0.0f);
-            SlicingPlaneAnyDirection csplane = quad.gameObject.AddComponent<SlicingPlaneAnyDirection>();
-            csplane.mat = volobj.meshRenderer.sharedMaterial;
-            csplane.volumeTransform = volobj.transform;
+            CrossSectionPlane csplane = quad.gameObject.AddComponent<CrossSectionPlane>();
+            csplane.targetObject = volobj;
             quad.transform.position = volobj.transform.position;
 
 #if UNITY_EDITOR

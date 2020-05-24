@@ -13,6 +13,17 @@ namespace UnityVolumeRendering
         public Endianness endianness = Endianness.LittleEndian;
     }
 
+    /// <summary>
+    /// .ini-file reader for raw datasets.
+    /// .ini files contains information about how to import a raw dataset file.
+    /// Example file:
+    ///   dimx:256
+    ///   dimy:256
+    ///   dimz:68
+    ///   skip:28
+    ///   format:uint8
+    /// "skip" defines how many bytes to skip (file header) - it should be 0 if the file has no header, which is often the case.
+    /// </summary>
     public class DatasetIniReader
     {
         public static DatasetIniData ParseIniFile(string filePath)

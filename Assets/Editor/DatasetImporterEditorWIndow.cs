@@ -5,6 +5,9 @@ using System;
 
 namespace UnityVolumeRendering
 {
+    /// <summary>
+    /// Editor window for importing datasets.
+    /// </summary>
     public class DatasetImporterEditorWindow : EditorWindow
     {
         private enum DatasetType
@@ -17,9 +20,9 @@ namespace UnityVolumeRendering
         private string fileToImport;
         private DatasetType datasetType;
 
-        private int dimX; // TODO: set good default value
-        private int dimY; // TODO: set good default value
-        private int dimZ; // TODO: set good default value
+        private int dimX;
+        private int dimY;
+        private int dimZ;
         private int bytesToSkip = 0;
         private DataContentFormat dataFormat = DataContentFormat.Int16;
         private Endianness endianness = Endianness.LittleEndian;

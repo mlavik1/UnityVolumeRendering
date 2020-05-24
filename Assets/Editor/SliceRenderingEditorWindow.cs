@@ -76,12 +76,12 @@ namespace UnityVolumeRendering
             // Show buttons for changing the active plane
             if (spawnedPlanes.Length > 0)
             {
-                if (GUI.Button(new Rect(0.0f, bgRect.y + bgRect.height + 20.0f, 100.0f, 30.0f), "previous\nplane"))
+                if (GUI.Button(new Rect(0.0f, bgRect.y + bgRect.height + 20.0f, 70.0f, 30.0f), "previous\nplane"))
                 {
                     selectedPlaneIndex = (selectedPlaneIndex - 1) % spawnedPlanes.Length;
                     Selection.activeGameObject = spawnedPlanes[selectedPlaneIndex].gameObject;
                 }
-                if (GUI.Button(new Rect(120.0f, bgRect.y + bgRect.height + 20.0f, 100.0f, 30.0f), "next\nplane"))
+                if (GUI.Button(new Rect(90.0f, bgRect.y + bgRect.height + 20.0f, 70.0f, 30.0f), "next\nplane"))
                 {
                     selectedPlaneIndex = (selectedPlaneIndex + 1) % spawnedPlanes.Length;
                     Selection.activeGameObject = spawnedPlanes[selectedPlaneIndex].gameObject;
@@ -89,7 +89,7 @@ namespace UnityVolumeRendering
             }
 
             // Show button for adding new plane
-            if (GUI.Button(new Rect(240.0f, bgRect.y + bgRect.height + 20.0f, 100.0f, 30.0f), "add\nplane"))
+            if (GUI.Button(new Rect(180.0f, bgRect.y + bgRect.height + 20.0f, 70.0f, 30.0f), "add\nplane"))
             {
                 VolumeRenderedObject volRend = FindObjectOfType<VolumeRenderedObject>();
                 if (volRend != null)
@@ -97,6 +97,13 @@ namespace UnityVolumeRendering
                     selectedPlaneIndex = spawnedPlanes.Length;
                     volRend.CreateSlicingPlane();
                 }
+            }
+
+            // Show button for removing
+            if (spawnedPlanes.Length > 0 && GUI.Button(new Rect(270.0f, bgRect.y + bgRect.height + 20.0f, 70.0f, 30.0f), "remove\nplane"))
+            {
+                SlicingPlane planeToRemove = spawnedPlanes[selectedPlaneIndex];
+                GameObject.DestroyImmediate(planeToRemove.gameObject);
             }
 
             // Show hint
