@@ -17,8 +17,9 @@ namespace UnityVolumeRendering
         [MenuItem("Volume Rendering/2D Transfer Function")]
         public static void ShowWindow()
         {
-            TransferFunctionEditorWindow tf1dWnd = (TransferFunctionEditorWindow)EditorWindow.GetWindow(typeof(TransferFunctionEditorWindow));
-            if (tf1dWnd != null)
+            // Close all (if any) 1D TF editor windows
+            TransferFunctionEditorWindow[] tf1dWnds = Resources.FindObjectsOfTypeAll<TransferFunctionEditorWindow>();
+            foreach (TransferFunctionEditorWindow tf1dWnd in tf1dWnds)
                 tf1dWnd.Close();
 
             TransferFunction2DEditorWindow tf2dWnd = (TransferFunction2DEditorWindow)EditorWindow.GetWindow(typeof(TransferFunction2DEditorWindow));

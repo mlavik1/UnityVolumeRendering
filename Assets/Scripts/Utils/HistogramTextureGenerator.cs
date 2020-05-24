@@ -2,13 +2,25 @@
 
 namespace UnityVolumeRendering
 {
+    /// <summary>
+    /// Utility class for generating histograms fo rthe dataset.
+    /// </summary>
     public class HistogramTextureGenerator
     {
+        /// <summary>
+        /// Generates a histogram where:
+        ///   X-axis = the data sample (density) value
+        ///   Y-axis = the sample count (number of data samples with the specified density)
+        /// </summary>
+        /// <param name="dataset"></param>
+        /// <returns></returns>
         public static Texture2D GenerateHistogramTexture(VolumeDataset dataset)
         {
             int minValue = dataset.GetMinDataValue();
             int maxValue = dataset.GetMaxDataValue();
             int numValues = maxValue - minValue + 1;
+
+            float valRangeRecip = 1.0f / (maxValue - minValue);
 
             int numSamples = System.Math.Min(numValues, 1024);
             int[] values = new int[numSamples];
@@ -19,7 +31,7 @@ namespace UnityVolumeRendering
             for (int iData = 0; iData < dataset.data.Length; iData++)
             {
                 int dataValue = dataset.data[iData];
-                float tValue = Mathf.InverseLerp(minValue, maxValue, dataValue);
+                float tValue = (dataValue - minValue) * valRangeRecip;
                 int valueIndex = Mathf.RoundToInt((numSamples - 1) * tValue);
                 values[valueIndex] += 1;
                 maxFreq = System.Math.Max(values[valueIndex], maxFreq);
@@ -34,6 +46,14 @@ namespace UnityVolumeRendering
             return texture;
         }
 
+        /// <summary>
+        /// Creates a histogram texture for 2D transfer functions.
+        ///   X-axis = data sample (density) value
+        ///   Y-axis = gradient magnitude
+        ///   colour = white (if there is a data sample with the specified value and gradient magnitude) or black (if not)
+        /// </summary>
+        /// <param name="dataset"></param>
+        /// <returns></returns>
         public static Texture2D Generate2DHistogramTexture(VolumeDataset dataset)
         {
             int numSamples = dataset.GetMaxDataValue() + 1;
