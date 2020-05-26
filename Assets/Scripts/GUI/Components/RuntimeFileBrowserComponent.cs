@@ -6,6 +6,9 @@ namespace UnityVolumeRendering
 {
     public partial class RuntimeFileBrowser
     {
+        /// <summary>
+        /// Internal MonoBehaviour that shows the GUI of the file browser.
+        /// </summary>
         public class RuntimeFileBrowserComponent : MonoBehaviour
         {
             public enum DialogMode
@@ -33,6 +36,7 @@ namespace UnityVolumeRendering
 
             private void Awake()
             {
+                // Fetch a unique ID for our window (see GUI.Window)
                 windowID = WindowGUID.GetUniqueWindowID();
             }
 

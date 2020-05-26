@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace UnityVolumeRendering
 {
+    /// <summary>
+    /// Rutnime (play mode) GUI for editing a volume's visualisation.
+    /// </summary>
     public class EditVolumeGUI : MonoBehaviour
     {
         public VolumeRenderedObject targetObject;
@@ -21,6 +24,7 @@ namespace UnityVolumeRendering
 
         private void Awake()
         {
+            // Fetch a unique ID for our window (see GUI.Window)
             windowID = WindowGUID.GetUniqueWindowID();
         }
 
@@ -83,8 +87,10 @@ namespace UnityVolumeRendering
             }
 
             GUILayout.FlexibleSpace();
+
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
+            // Show close button
             if (GUILayout.Button("Close"))
             {
                 GameObject.Destroy(this.gameObject);
