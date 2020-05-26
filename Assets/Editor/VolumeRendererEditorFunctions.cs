@@ -12,12 +12,7 @@ namespace UnityVolumeRendering
             string file = EditorUtility.OpenFilePanel("Select a dataset to load", "DataFiles", "");
             if (File.Exists(file))
             {
-                DatasetImporterEditorWindow wnd = (DatasetImporterEditorWindow)EditorWindow.GetWindow(typeof(DatasetImporterEditorWindow));
-                if (wnd != null)
-                    wnd.Close();
-
-                wnd = new DatasetImporterEditorWindow(file);
-                wnd.Show();
+                EditorDatasetImporter.ImportDataset(file);
             }
             else
             {

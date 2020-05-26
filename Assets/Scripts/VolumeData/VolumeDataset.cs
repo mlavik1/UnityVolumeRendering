@@ -11,6 +11,9 @@ namespace UnityVolumeRendering
         [SerializeField]
         public int dimX, dimY, dimZ;
 
+        [SerializeField]
+        public string datasetName;
+
         private int minDataValue = int.MaxValue;
         private int maxDataValue = int.MinValue;
         private Texture3D dataTexture = null;

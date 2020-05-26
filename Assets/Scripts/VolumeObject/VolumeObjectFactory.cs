@@ -7,7 +7,7 @@ namespace UnityVolumeRendering
     {
         public static VolumeRenderedObject CreateObject(VolumeDataset dataset)
         {
-            GameObject outerObject = new GameObject("VolumeRenderedObject");
+            GameObject outerObject = new GameObject("VolumeRenderedObject_" + dataset.datasetName);
             VolumeRenderedObject volObj = outerObject.AddComponent<VolumeRenderedObject>();
 
             GameObject meshContainer = GameObject.Instantiate((GameObject)Resources.Load("VolumeContainer"));

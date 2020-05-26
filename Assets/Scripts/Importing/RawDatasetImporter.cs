@@ -46,7 +46,7 @@ namespace UnityVolumeRendering
             // Check that the file exists
             if(!File.Exists(filePath))
             {
-                Debug.LogError("The file does not exist.");
+                Debug.LogError("The file does not exist: " + filePath);
                 return null;
             }
 
@@ -64,6 +64,7 @@ namespace UnityVolumeRendering
             }
 
             VolumeDataset dataset = new VolumeDataset();
+            dataset.datasetName = Path.GetFileName(filePath);
             dataset.dimX = dimX;
             dataset.dimY = dimY;
             dataset.dimZ = dimZ;
