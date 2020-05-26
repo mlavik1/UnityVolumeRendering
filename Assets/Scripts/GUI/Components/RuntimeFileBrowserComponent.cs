@@ -18,7 +18,7 @@ namespace UnityVolumeRendering
             public DialogMode dialogMode = DialogMode.OpenFile;
             public DialogCallback callback = null;
 
-            private string currentDirectory;
+            public string currentDirectory;
             private string selectedFile;
             private Vector2 scrollPos = Vector2.zero;
 
@@ -29,9 +29,16 @@ namespace UnityVolumeRendering
             private const int WINDOW_WIDTH = 500;
             private const int WINDOW_HEIGHT = 300;
 
+            private int windowID;
+
+            private void Awake()
+            {
+                windowID = WindowGUID.GetUniqueWindowID();
+            }
+
             private void OnGUI()
             {
-                windowRect = GUI.Window(0, windowRect, UpdateWindow, "File browser");
+                windowRect = GUI.Window(windowID, windowRect, UpdateWindow, "File browser");
             }
 
             private void UpdateWindow(int windowID)
