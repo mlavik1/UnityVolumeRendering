@@ -36,5 +36,21 @@ namespace UnityVolumeRendering
                 Debug.LogError("Directory doesn't exist: " + dir);
             }
         }
+
+        [MenuItem("Volume Rendering/Enable preintegrated texture")]
+        public static void EnablePreintTF()
+        {
+            VolumeRenderedObject volObj = GameObject.FindObjectOfType<VolumeRenderedObject>();
+            Texture2D preintTex = volObj.transferFunction.CalculatePreintegratedTexture();
+            volObj.meshRenderer.sharedMaterial.SetTexture("_TFPreintTex", preintTex);
+            volObj.meshRenderer.sharedMaterial.EnableKeyword("PREINTEGRATED_TF");
+        }
+
+        [MenuItem("Volume Rendering/Disable preintegrated texture")]
+        public static void DisablePreintTF()
+        {
+            VolumeRenderedObject volObj = GameObject.FindObjectOfType<VolumeRenderedObject>();
+            volObj.meshRenderer.sharedMaterial.DisableKeyword("PREINTEGRATED_TF");
+        }
     }
 }

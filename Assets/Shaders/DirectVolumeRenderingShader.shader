@@ -6,6 +6,7 @@
         _GradientTex("Gradient Texture (Generated)", 3D) = "" {}
         _NoiseTex("Noise Texture (Generated)", 2D) = "white" {}
         _TFTex("Transfer Function Texture (Generated)", 2D) = "" {}
+        _TFPreintTex("Transfer Function Preintegrated Texture (Generated)", 2D) = "" {}
         _MinVal("Min val", Range(0.0, 1.0)) = 0.0
         _MaxVal("Max val", Range(0.0, 1.0)) = 1.0
     }
@@ -25,6 +26,7 @@
             #pragma multi_compile __ TF2D_ON
             #pragma multi_compile __ SLICEPLANE_ON
             #pragma multi_compile DEPTHWRITE_ON DEPTHWRITE_OFF
+            #pragma multi_compile __ PREINTEGRATED_TF
             #pragma vertex vert
             #pragma fragment frag
 
@@ -57,6 +59,8 @@
             sampler3D _GradientTex;
             sampler2D _NoiseTex;
             sampler2D _TFTex;
+            sampler2D _TFPreintTex;
+
 
             float _MinVal;
             float _MaxVal;
@@ -76,6 +80,12 @@
             float4 getTF2DColour(float density, float gradientMagnitude)
             {
                 return tex2Dlod(_TFTex, float4(density, gradientMagnitude, 0.0f, 0.0f));
+            }
+
+            // Gets the colour from a 1D Transfer Function (x = density)
+            float4 getTF1DPreintColour(float a, float b)
+            {
+               return tex2Dlod(_TFPreintTex, float4(a, b, 0.0f, 0.0f));
             }
 
             // Gets the density at the specified position
@@ -133,7 +143,7 @@
             // Direct Volume Rendering
             frag_out frag_dvr (frag_in i)
             {
-                #define NUM_STEPS 512
+               #define NUM_STEPS 512
 
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
@@ -189,6 +199,65 @@
                     output.depth = 0;
 #endif
                 return output;
+            }
+
+            // Direct Volume Rendering with preintegrated TF
+            frag_out frag_dvr_preint(frag_in i)
+            {
+               #define NUM_STEPS 512
+
+               const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
+
+               float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
+               float3 rayDir = ObjSpaceViewDir(float4(i.vertexLocal, 0.0f));
+               rayDir = normalize(rayDir);
+
+               // Create a small random offset in order to remove artifacts
+               rayStartPos = rayStartPos + (2.0f * rayDir / NUM_STEPS) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
+
+               float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
+               uint iDepth = 0;
+               float prevDensity = getDensity(rayStartPos + rayDir * (1 * stepSize));
+               for (uint iStep = 1; iStep < NUM_STEPS; iStep++)
+               {
+                  const float t = iStep * stepSize;
+                  const float3 currPos = rayStartPos + rayDir * t;
+                  if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
+                     break;
+
+                  const float density = getDensity(currPos);
+
+                  float4 src = getTF1DPreintColour(prevDensity, density);
+
+                  if (density < _MinVal || density > _MaxVal)
+                     src.a = 0.0f;
+
+#ifdef SLICEPLANE_ON
+                  if (isSliceCulled(currPos))
+                     src.a = 0;
+#endif
+                  col.rgb = src.a * src.rgb + (1.0f - src.a)*col.rgb;
+                  col.a = src.a + (1.0f - src.a)*col.a;
+
+                  prevDensity = density;
+
+                  if (src.a > 0.15f)
+                     iDepth = iStep;
+
+                  if (col.a > 1.0f)
+                     break;
+               }
+
+               // Write fragment output
+               frag_out output;
+               output.colour = col;
+#if DEPTHWRITE_ON
+               if (iDepth != 0)
+                  output.depth = localToDepth(rayStartPos + rayDir * (iDepth * stepSize) - float3(0.5f, 0.5f, 0.5f));
+               else
+                  output.depth = 0;
+#endif
+               return output;
             }
 
             // Maximum Intensity Projection mode
@@ -290,7 +359,11 @@
             frag_out frag(frag_in i)
             {
 #if MODE_DVR
-                return frag_dvr(i);
+#ifdef PREINTEGRATED_TF
+               return frag_dvr_preint(i);
+#else
+               return frag_dvr(i);
+#endif
 #elif MODE_MIP
                 return frag_mip(i);
 #elif MODE_SURF

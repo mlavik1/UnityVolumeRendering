@@ -13,7 +13,9 @@ namespace UnityVolumeRendering
         public List<TFAlphaControlPoint> alphaControlPoints = new List<TFAlphaControlPoint>();
 
         private Texture2D texture = null;
+        private Texture2D preintTexture = null;
         private Color[] tfCols;
+        private Color[] preintTable;
 
         private const int TEXTURE_WIDTH = 512;
         private const int TEXTURE_HEIGHT = 2;
@@ -89,10 +91,39 @@ namespace UnityVolumeRendering
                     tfCols[iX + iY * TEXTURE_WIDTH] = pixCol;
                 }
             }
-
+            texture.filterMode = FilterMode.Trilinear;
             texture.wrapMode = TextureWrapMode.Clamp;
             texture.SetPixels(tfCols);
             texture.Apply();
+        }
+
+        public Texture2D CalculatePreintegratedTexture()
+        {
+            TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RGBAHalf) ? TextureFormat.RGBAHalf : TextureFormat.RGBAFloat;
+            preintTable = new Color[TEXTURE_WIDTH * TEXTURE_WIDTH];
+            preintTexture = new Texture2D(TEXTURE_WIDTH, TEXTURE_WIDTH, texformat, false);
+
+            for (int i = 0; i < TEXTURE_WIDTH; i++)
+            {
+                Color iCol = tfCols[i];
+                Color col = new Color(0.0f, 0.0f, 0.0f, 0.0f);
+
+                for (int j = i; j < TEXTURE_WIDTH; j++)
+                {
+                    Color jCol = tfCols[j];
+                    
+                    col = col + jCol;
+
+                    preintTable[i + (j * TEXTURE_WIDTH)] = col / ((j + 1) - i);
+                    preintTable[j + (i * TEXTURE_WIDTH)] = col / ((j + 1) - i);
+                }
+            }
+
+            preintTexture.wrapMode = TextureWrapMode.Clamp;
+            preintTexture.SetPixels(preintTable);
+            preintTexture.Apply();
+
+            return preintTexture;
         }
 
         private void CreateTexture()
