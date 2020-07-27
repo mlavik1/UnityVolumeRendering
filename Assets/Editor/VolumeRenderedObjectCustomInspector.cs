@@ -16,6 +16,12 @@ namespace UnityVolumeRendering
             if (newRenderMode != oldRenderMode)
                 volrendObj.SetRenderMode(newRenderMode);
 
+            // Lighting settings
+            if (volrendObj.GetRenderMode() == RenderMode.DirectVolumeRendering)
+                volrendObj.SetLightingEnabled(GUILayout.Toggle(volrendObj.GetLightingEnabled(), "Enable lighting"));
+            else
+                volrendObj.SetLightingEnabled(false);
+
             // Visibility window
             Vector2 visibilityWindow = volrendObj.GetVisibilityWindow();
             EditorGUILayout.MinMaxSlider("Visible value range", ref visibilityWindow.x, ref visibilityWindow.y, 0.0f, 1.0f);
