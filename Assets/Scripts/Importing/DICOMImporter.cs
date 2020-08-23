@@ -24,6 +24,7 @@ namespace UnityVolumeRendering
             public float location = 0;
             public float intercept = 0.0f;
             public float slope = 1.0f;
+            public float pixelSpacing = 0.0f;
         }
 
         private string diroctoryPath;
@@ -108,6 +109,13 @@ namespace UnityVolumeRendering
                 }
             }
 
+            if(files[0].pixelSpacing > 0.0f)
+            {
+                dataset.scaleX = files[0].pixelSpacing * dataset.dimX;
+                dataset.scaleY = files[0].pixelSpacing * dataset.dimY;
+                dataset.scaleZ = Mathf.Abs(files[files.Count - 1].location - files[0].location);
+            }
+
             return dataset;
         }
 
@@ -149,6 +157,13 @@ namespace UnityVolumeRendering
                 }
                 else
                     Debug.LogWarning($"The file {filePath} is missing the intercept element. As a result, the default transfer function might not look good.");
+                // Read slope
+                Tag pixelSpacingTag = new Tag("(0028,0030)");
+                if (file.DataSet.Contains(pixelSpacingTag))
+                {
+                    DataElement elemPixelSpacing = file.DataSet[pixelSpacingTag];
+                    slice.pixelSpacing = (float)Convert.ToDouble(elemPixelSpacing.Value[0]);
+                }
 
                 return slice;
             }
