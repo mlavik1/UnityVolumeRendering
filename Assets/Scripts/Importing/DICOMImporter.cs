@@ -157,7 +157,7 @@ namespace UnityVolumeRendering
                 }
                 else
                     Debug.LogWarning($"The file {filePath} is missing the intercept element. As a result, the default transfer function might not look good.");
-                // Read slope
+                // Read pixel spacing
                 Tag pixelSpacingTag = new Tag("(0028,0030)");
                 if (file.DataSet.Contains(pixelSpacingTag))
                 {
