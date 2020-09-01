@@ -35,7 +35,7 @@ namespace UnityVolumeRendering
             sliceMat.SetTexture("_DataTex", dataset.GetDataTexture());
             sliceMat.SetTexture("_TFTex", transferFunction.GetTexture());
             sliceMat.SetMatrix("_parentInverseMat", transform.worldToLocalMatrix);
-            sliceMat.SetMatrix("_planeMat", Matrix4x4.TRS(sliceRenderingPlane.transform.position, sliceRenderingPlane.transform.rotation, Vector3.one)); // TODO: allow changing scale
+            sliceMat.SetMatrix("_planeMat", Matrix4x4.TRS(sliceRenderingPlane.transform.position, sliceRenderingPlane.transform.rotation, transform.lossyScale)); // TODO: allow changing scale
 
             return sliceRenderingPlane.GetComponent<SlicingPlane>();
         }
