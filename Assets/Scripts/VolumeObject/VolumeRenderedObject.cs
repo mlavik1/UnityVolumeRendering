@@ -29,6 +29,7 @@ namespace UnityVolumeRendering
             sliceRenderingPlane.transform.parent = transform;
             sliceRenderingPlane.transform.localPosition = Vector3.zero;
             sliceRenderingPlane.transform.localRotation = Quaternion.identity;
+            sliceRenderingPlane.transform.localScale = Vector3.one * 0.1f; // TODO: Change the plane mesh instead and use Vector3.one
             MeshRenderer sliceMeshRend = sliceRenderingPlane.GetComponent<MeshRenderer>();
             sliceMeshRend.material = new Material(sliceMeshRend.sharedMaterial);
             Material sliceMat = sliceRenderingPlane.GetComponent<MeshRenderer>().sharedMaterial;
