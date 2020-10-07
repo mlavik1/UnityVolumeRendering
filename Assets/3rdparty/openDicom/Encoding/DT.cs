@@ -83,15 +83,15 @@ namespace openDicom.Encoding
                         }
                         catch (Exception e)
                         {
-                            throw new EncodingException(
-                                "Date time format is invalid.", Tag, 
-                                Name + "/item", item);
+                            UnityEngine.Debug.LogWarning($"Date time format is invalid. tag: {Tag}, name: {Name}");
+                            dateTime[i] = System.DateTime.Now;
                         }
                     }
                     else
-                        throw new EncodingException(
-                            "Date time format is invalid.", Tag, Name + "/item",
-                            item);
+                    {
+                        UnityEngine.Debug.LogWarning($"Date time format is invalid. tag: {Tag}, name: {Name}");
+                        dateTime[i] = System.DateTime.Now;
+                    }
                 }
             }
             return dateTime;
@@ -123,30 +123,30 @@ namespace openDicom.Encoding
                         string second = "0";
                         if (item.Length > 12) second = item.Substring(12, 2);
                         string millisecond = "0";
-                        if (item.Length > 14) 
+                        if (item.Length > 14)
                             millisecond = item.Substring(14, 6);
                         string timeZone = "+0";
-                        if (item.Length > 20) 
+                        if (item.Length > 20)
                             timeZone = item.Substring(20, 5);
                         // TODO: What to do with the time zone?
                         try
                         {
-                            dateTime[i] = new System.DateTime(int.Parse(year), 
+                            dateTime[i] = new System.DateTime(int.Parse(year),
                                 int.Parse(month), int.Parse(day), int.Parse(hour),
                                 int.Parse(minute), int.Parse(second),
                                 int.Parse(millisecond));
                         }
                         catch (Exception e)
                         {
-                            throw new EncodingException(
-                                "Date time format is invalid.", Tag, 
-                                Name + "/item", item);
+                            UnityEngine.Debug.LogWarning($"Date time format is invalid. tag: {Tag}, name: {Name}");
+                            dateTime[i] = System.DateTime.Now;
                         }
                     }
                     else
-                        throw new EncodingException(
-                            "Date time format is invalid.", Tag, Name + "/item",
-                            item);
+                    {
+                        UnityEngine.Debug.LogWarning($"Date time format is invalid. tag: {Tag}, name: {Name}");
+                        dateTime[i] = System.DateTime.Now;
+                    }
                 }
             }
             return dateTime;

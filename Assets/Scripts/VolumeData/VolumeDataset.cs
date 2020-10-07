@@ -10,6 +10,8 @@ namespace UnityVolumeRendering
         public int[] data = null;
         [SerializeField]
         public int dimX, dimY, dimZ;
+        [SerializeField]
+        public float scaleX = 0.0f, scaleY = 0.0f, scaleZ = 0.0f;
 
         [SerializeField]
         public string datasetName;
