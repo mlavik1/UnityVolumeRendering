@@ -8,6 +8,7 @@ using openDicom.DataStructure;
 using System.Collections.Generic;
 using openDicom.Image;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace UnityVolumeRendering
 {
@@ -86,7 +87,7 @@ namespace UnityVolumeRendering
             int dimension = dataset.dimX * dataset.dimY * dataset.dimZ;
             dataset.data = new int[dimension];
 
-            for(int iSlice = 0; iSlice < files.Count; iSlice++)
+            for (int iSlice = 0; iSlice < files.Count; iSlice++)
             {
                 DICOMSliceFile slice = files[iSlice];
                 PixelData pixelData = slice.file.PixelData;
@@ -109,7 +110,7 @@ namespace UnityVolumeRendering
                 }
             }
 
-            if(files[0].pixelSpacing > 0.0f)
+            if (files[0].pixelSpacing > 0.0f)
             {
                 dataset.scaleX = files[0].pixelSpacing * dataset.dimX;
                 dataset.scaleY = files[0].pixelSpacing * dataset.dimY;
@@ -203,11 +204,32 @@ namespace UnityVolumeRendering
             }
             else if (pixelData.Data.Value.IsArray)
             {
-                Array arr = (Array)pixelData.Data.Value[0];
-                intArray = new int[arr.Length];
-                for (int i = 0; i < arr.Length; i++)
-                    intArray[i] = Convert.ToInt32(arr.GetValue(i));
-                return intArray;
+                if(pixelData.BitsAllocated == 16)
+                {
+                    byte[][] bytesArray = pixelData.ToBytesArray();
+                    if (bytesArray != null && bytesArray.Length > 0)
+                    {
+                        byte[] bytes = bytesArray[0];
+
+                        Int16[] tmpArr = new Int16[bytes.Length / 2];
+                        Buffer.BlockCopy(bytes, 0, tmpArr, 0, bytes.Length);
+                        intArray = new int[tmpArr.Length];
+                        for (int i = 0; i < tmpArr.Length; i++)
+                            intArray[i] = Convert.ToInt32(tmpArr[i]);
+
+                        return intArray;
+                    }
+                    else
+                        return null;
+                }
+                else
+                {
+                    Array arr = (Array)pixelData.Data.Value[0];
+                    intArray = new int[arr.Length];
+                    for (int i = 0; i < arr.Length; i++)
+                        intArray[i] = Convert.ToInt32(arr.GetValue(i));
+                        return intArray;
+                }
             }
             else
             {
