@@ -204,32 +204,45 @@ namespace UnityVolumeRendering
             }
             else if (pixelData.Data.Value.IsArray)
             {
-                if(pixelData.BitsAllocated == 16)
+                byte[][] bytesArray = pixelData.ToBytesArray();
+                if (bytesArray != null && bytesArray.Length > 0)
                 {
-                    byte[][] bytesArray = pixelData.ToBytesArray();
-                    if (bytesArray != null && bytesArray.Length > 0)
+                    byte[] bytes = bytesArray[0];
+
+                    int cellSize = pixelData.BitsAllocated / 8;
+                    int pixelCount = bytes.Length / cellSize;
+
+                    intArray = new int[pixelCount];
+                    int pixelIndex = 0;
+
+                    // Byte array for a single cell/pixel value
+                    byte[] cellData = new byte[cellSize];
+                    for(int iByte = 0; iByte < bytes.Length; iByte++)
                     {
-                        byte[] bytes = bytesArray[0];
+                        // Collect bytes for one cell (sample)
+                        int index = iByte % cellSize;
+                        cellData[index] = bytes[iByte];
+                        // We have collected enough bytes for one cell => convert and add it to pixel array
+                        if (index == cellSize - 1)
+                        {
+                            int cellValue = 0;
+                            if (pixelData.BitsAllocated == 8)
+                                cellValue = cellData[0];
+                            else if (pixelData.BitsAllocated == 16)
+                                cellValue = BitConverter.ToInt16(cellData, 0);
+                            else if (pixelData.BitsAllocated == 32)
+                                cellValue = BitConverter.ToInt32(cellData, 0);
+                            else
+                                Debug.LogError("Invalid format!");
 
-                        Int16[] tmpArr = new Int16[bytes.Length / 2];
-                        Buffer.BlockCopy(bytes, 0, tmpArr, 0, bytes.Length);
-                        intArray = new int[tmpArr.Length];
-                        for (int i = 0; i < tmpArr.Length; i++)
-                            intArray[i] = Convert.ToInt32(tmpArr[i]);
-
-                        return intArray;
+                            intArray[pixelIndex] = cellValue;
+                            pixelIndex++;
+                        }
                     }
-                    else
-                        return null;
+                    return intArray;
                 }
                 else
-                {
-                    Array arr = (Array)pixelData.Data.Value[0];
-                    intArray = new int[arr.Length];
-                    for (int i = 0; i < arr.Length; i++)
-                        intArray[i] = Convert.ToInt32(arr.GetValue(i));
-                        return intArray;
-                }
+                    return null;
             }
             else
             {
