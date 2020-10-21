@@ -36,5 +36,22 @@ namespace UnityVolumeRendering
                 Debug.LogError("Directory doesn't exist: " + dir);
             }
         }
+
+        [MenuItem("Volume Rendering/Load image sequence")]
+        static void ShowSequenceImporter()
+        {
+            string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
+            if (Directory.Exists(dir))
+            {
+                ImageSequenceImporter importer = new ImageSequenceImporter(dir);
+                VolumeDataset dataset = importer.Import();
+                if (dataset != null)
+                    VolumeObjectFactory.CreateObject(dataset);
+            }
+            else
+            {
+                Debug.LogError("Directory doesn't exist: " + dir);
+            }
+        }
     }
 }
