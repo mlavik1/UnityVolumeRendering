@@ -8,6 +8,7 @@ using openDicom.DataStructure;
 using System.Collections.Generic;
 using openDicom.Image;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace UnityVolumeRendering
 {
@@ -86,7 +87,7 @@ namespace UnityVolumeRendering
             int dimension = dataset.dimX * dataset.dimY * dataset.dimZ;
             dataset.data = new int[dimension];
 
-            for(int iSlice = 0; iSlice < files.Count; iSlice++)
+            for (int iSlice = 0; iSlice < files.Count; iSlice++)
             {
                 DICOMSliceFile slice = files[iSlice];
                 PixelData pixelData = slice.file.PixelData;
@@ -109,7 +110,7 @@ namespace UnityVolumeRendering
                 }
             }
 
-            if(files[0].pixelSpacing > 0.0f)
+            if (files[0].pixelSpacing > 0.0f)
             {
                 dataset.scaleX = files[0].pixelSpacing * dataset.dimX;
                 dataset.scaleY = files[0].pixelSpacing * dataset.dimY;
@@ -203,11 +204,45 @@ namespace UnityVolumeRendering
             }
             else if (pixelData.Data.Value.IsArray)
             {
-                Array arr = (Array)pixelData.Data.Value[0];
-                intArray = new int[arr.Length];
-                for (int i = 0; i < arr.Length; i++)
-                    intArray[i] = Convert.ToInt32(arr.GetValue(i));
-                return intArray;
+                byte[][] bytesArray = pixelData.ToBytesArray();
+                if (bytesArray != null && bytesArray.Length > 0)
+                {
+                    byte[] bytes = bytesArray[0];
+
+                    int cellSize = pixelData.BitsAllocated / 8;
+                    int pixelCount = bytes.Length / cellSize;
+
+                    intArray = new int[pixelCount];
+                    int pixelIndex = 0;
+
+                    // Byte array for a single cell/pixel value
+                    byte[] cellData = new byte[cellSize];
+                    for(int iByte = 0; iByte < bytes.Length; iByte++)
+                    {
+                        // Collect bytes for one cell (sample)
+                        int index = iByte % cellSize;
+                        cellData[index] = bytes[iByte];
+                        // We have collected enough bytes for one cell => convert and add it to pixel array
+                        if (index == cellSize - 1)
+                        {
+                            int cellValue = 0;
+                            if (pixelData.BitsAllocated == 8)
+                                cellValue = cellData[0];
+                            else if (pixelData.BitsAllocated == 16)
+                                cellValue = BitConverter.ToInt16(cellData, 0);
+                            else if (pixelData.BitsAllocated == 32)
+                                cellValue = BitConverter.ToInt32(cellData, 0);
+                            else
+                                Debug.LogError("Invalid format!");
+
+                            intArray[pixelIndex] = cellValue;
+                            pixelIndex++;
+                        }
+                    }
+                    return intArray;
+                }
+                else
+                    return null;
             }
             else
             {
