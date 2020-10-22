@@ -79,7 +79,7 @@ namespace UnityVolumeRendering
             tf.GenerateTexture();
 
             if(histTex == null)
-                histTex = HistogramTextureGenerator.GenerateHistogramTexture(volRendObject.dataset);
+                histTex = HistogramTextureGenerator.GenerateHistogramTextureOnGPU(volRendObject.dataset);
 
             tfGUIMat.SetTexture("_TFTex", tf.GetTexture());
             tfGUIMat.SetTexture("_HistTex", histTex);
