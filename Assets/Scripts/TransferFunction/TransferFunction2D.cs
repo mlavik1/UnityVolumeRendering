@@ -6,7 +6,7 @@ using UnityEngine;
 namespace UnityVolumeRendering
 {
     [Serializable]
-    public class TransferFunction2D : ScriptableObject
+    public class TransferFunction2D
     {
         [System.Serializable]
         public struct TF2DBox

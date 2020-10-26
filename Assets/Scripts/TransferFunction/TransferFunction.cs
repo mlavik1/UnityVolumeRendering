@@ -5,7 +5,7 @@ using System;
 namespace UnityVolumeRendering
 {
     [Serializable]
-    public class TransferFunction : ScriptableObject
+    public class TransferFunction
     {
         [SerializeField]
         public List<TFColourControlPoint> colourControlPoints = new List<TFColourControlPoint>();

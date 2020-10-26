@@ -4,7 +4,7 @@ using UnityEngine;
 namespace UnityVolumeRendering
 {
     [Serializable]
-    public class VolumeDataset : ScriptableObject
+    public class VolumeDataset
     {
         [SerializeField]
         public int[] data = null;
