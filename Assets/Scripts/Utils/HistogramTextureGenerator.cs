@@ -58,13 +58,16 @@ namespace UnityVolumeRendering
         /// <returns></returns>
         public static Texture2D GenerateHistogramTextureOnGPU(VolumeDataset dataset)
         {
+            int numValues = dataset.GetMaxDataValue() - dataset.GetMinDataValue() + 1;
+            int sampleCount = System.Math.Min(numValues, 256);
+
             ComputeShader computeHistogram = Resources.Load("ComputeHistogram") as ComputeShader;
             int handleInitialize = computeHistogram.FindKernel("HistogramInitialize");
             int handleMain = computeHistogram.FindKernel("HistogramMain");
 
-            ComputeBuffer histogramBuffer = new ComputeBuffer(256, sizeof(uint) * 1);
-            uint[] histogramData = new uint[256];
-            Color32 [] histogramCols = new Color32[256];
+            ComputeBuffer histogramBuffer = new ComputeBuffer(sampleCount, sizeof(uint) * 1);
+            uint[] histogramData = new uint[sampleCount];
+            Color32 [] histogramCols = new Color32[sampleCount];
 
             Texture3D dataTexture = dataset.GetDataTexture();
 
@@ -73,27 +76,25 @@ namespace UnityVolumeRendering
                 Debug.LogError("Histogram compute shader initialization failed.");
             }
 
+            computeHistogram.SetFloat("ValueRange", (float)(numValues - 1));
             computeHistogram.SetTexture(handleMain, "VolumeTexture", dataTexture);
             computeHistogram.SetBuffer(handleMain, "HistogramBuffer", histogramBuffer);
             computeHistogram.SetBuffer(handleInitialize, "HistogramBuffer", histogramBuffer);
 
-            computeHistogram.Dispatch(handleInitialize, 256 / 8, 1, 1);
+            computeHistogram.Dispatch(handleInitialize, sampleCount / 8, 1, 1);
             computeHistogram.Dispatch(handleMain, (dataTexture.width + 7) / 8, (dataTexture.height + 7) / 8, (dataTexture.depth + 7) / 8);
 
             histogramBuffer.GetData(histogramData);
 
             int maxValue = (int)histogramData.Max();
             
-            Texture2D texture = new Texture2D(256, 1, TextureFormat.RGBA32, false);
-            for (int iSample = 0; iSample < 256; iSample++)
+            Texture2D texture = new Texture2D(sampleCount, 1, TextureFormat.RGBA32, false);
+            for (int iSample = 0; iSample < sampleCount; iSample++)
             {
                 histogramCols[iSample] = new Color(Mathf.Log10((float)histogramData[iSample]) / Mathf.Log10((float)maxValue), 0.0f, 0.0f, 1.0f);
-               //if (histogramData[iSample] == 0)
-               //     Debug.Log (iSample);
             }
 
             texture.SetPixels32(histogramCols);
-            //texture.filterMode = FilterMode.Point;
             texture.Apply();
 
             return texture;
