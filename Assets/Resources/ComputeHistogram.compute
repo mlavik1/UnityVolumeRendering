@@ -1,0 +1,24 @@
+﻿#pragma kernel HistogramInitialize
+#pragma kernel HistogramMain
+
+Texture3D<float> VolumeTexture;
+float ValueRange;
+
+struct histStruct {
+	uint cnt;
+};
+RWStructuredBuffer<histStruct> HistogramBuffer;
+
+[numthreads(8, 1, 1)]
+void HistogramInitialize(uint3 id : SV_DispatchThreadID)
+{
+	HistogramBuffer[id.x].cnt = uint(0);
+}
+
+[numthreads(8, 8, 8)]
+void HistogramMain(uint3 id : SV_DispatchThreadID)
+{
+	uint col = uint(floor(ValueRange * VolumeTexture[id.xyz] + 0.5f));
+
+	InterlockedAdd(HistogramBuffer[col].cnt, 1);
+}
