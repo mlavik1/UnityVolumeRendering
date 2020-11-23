@@ -160,7 +160,6 @@ namespace UnityVolumeRendering
 
             VolumeDataset dataset = new VolumeDataset()
             {
-                name = name,
                 datasetName = name,
                 data = data,
                 dimX = dimensions.x,

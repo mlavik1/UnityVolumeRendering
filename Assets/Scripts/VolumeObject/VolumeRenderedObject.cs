@@ -5,17 +5,17 @@ namespace UnityVolumeRendering
     [ExecuteInEditMode]
     public class VolumeRenderedObject : MonoBehaviour
     {
-        [HideInInspector]
-        public TransferFunction transferFunction;
-
-        [HideInInspector]
-        public TransferFunction2D transferFunction2D;
-
-        [HideInInspector]
-        public VolumeDataset dataset;
-
-        [HideInInspector]
-        public MeshRenderer meshRenderer;
+        /*
+         * Getters and setters are required for these public fields
+         * in order to force Unity not to serialise their values on
+         * inspector GUI updates. The [HideInInspector] flag hides
+         * them but does not stop serialisation.
+         */
+            
+        public TransferFunction transferFunction { get; set; }
+        public TransferFunction2D transferFunction2D { get; set; }
+        public VolumeDataset dataset { get; set; }
+        public MeshRenderer meshRenderer { get; set; }
 
         private RenderMode renderMode;
         private TFRenderMode tfRenderMode;
