@@ -1,6 +1,9 @@
 ﻿using UnityEditor;
 using UnityEngine;
 using System.IO;
+using System.Collections.Generic;
+using System;
+using System.Linq;
 
 namespace UnityVolumeRendering
 {
@@ -26,10 +29,34 @@ namespace UnityVolumeRendering
             string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
             if (Directory.Exists(dir))
             {
-                DICOMImporter importer = new DICOMImporter(dir, true);
-                VolumeDataset dataset = importer.Import();
-                if(dataset != null)
-                    VolumeObjectFactory.CreateObject(dataset);
+                bool recursive = true;
+
+                // Read all files
+                IEnumerable<string> fileCandidates = Directory.EnumerateFiles(dir, "*.*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
+                    .Where(p => p.EndsWith(".dcm", StringComparison.InvariantCultureIgnoreCase) || p.EndsWith(".dicom", StringComparison.InvariantCultureIgnoreCase) || p.EndsWith(".dicm", StringComparison.InvariantCultureIgnoreCase));
+
+                if (!fileCandidates.Any())
+                {
+#if UNITY_EDITOR
+                    if (UnityEditor.EditorUtility.DisplayDialog("Could not find any DICOM files",
+                        $"Failed to find any files with DICOM file extension.{Environment.NewLine}Do you want to include files without DICOM file extension?", "Yes", "No"))
+                    {
+                        fileCandidates = Directory.EnumerateFiles(dir, "*.*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+                    }
+#endif
+                }
+
+                if (fileCandidates.Any())
+                {
+                    DICOMImporter importer = new DICOMImporter(fileCandidates, Path.GetFileName(dir));
+                    VolumeDataset dataset = importer.Import();
+                    if (dataset != null)
+                        VolumeObjectFactory.CreateObject(dataset);
+                }    
+                else
+                    Debug.LogError("Could not find any DICOM files to import.");
+
+                
             }
             else
             {
