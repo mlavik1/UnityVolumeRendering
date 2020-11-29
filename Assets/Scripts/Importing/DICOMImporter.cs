@@ -23,9 +23,11 @@ namespace UnityVolumeRendering
         {
             public AcrNemaFile file;
             public float location = 0;
+            public Vector3 position = Vector3.zero;
             public float intercept = 0.0f;
             public float slope = 1.0f;
             public float pixelSpacing = 0.0f;
+            public bool missingLocation = false;
         }
 
         private IEnumerable<string> fileCandidates;
@@ -53,12 +55,21 @@ namespace UnityVolumeRendering
             }
 
             List<DICOMSliceFile> files = new List<DICOMSliceFile>();
+            bool needsCalcLoc = false;
             foreach (string filePath in fileCandidates)
             {
                 DICOMSliceFile sliceFile = ReadDICOMFile(filePath);
                 if(sliceFile != null)
+                {
+                    needsCalcLoc |= sliceFile.missingLocation;
                     files.Add(sliceFile);
+                }
             }
+
+            // Calculate slice location from "Image Position" (0020,0032)
+            if (needsCalcLoc)
+                CalcSliceLocFromPos(files);
+
             // Sort files by slice location
             files.Sort((DICOMSliceFile a, DICOMSliceFile b) => { return a.location.CompareTo(b.location); });
 
@@ -125,20 +136,37 @@ namespace UnityVolumeRendering
             {
                 DICOMSliceFile slice = new DICOMSliceFile();
                 slice.file = file;
-                // Read location
+                
                 Tag locTag = new Tag("(0020,1041)");
+                Tag posTag = new Tag("(0020,0032)");
+                Tag interceptTag = new Tag("(0028,1052)");
+                Tag slopeTag = new Tag("(0028,1053)");
+                Tag pixelSpacingTag = new Tag("(0028,0030)");
+
+                // Read location (optional)
                 if (file.DataSet.Contains(locTag))
                 {
                     DataElement elemLoc = file.DataSet[locTag];
                     slice.location = (float)Convert.ToDouble(elemLoc.Value[0]);
                 }
+                // If no location tag, read position tag (will need to calculate location afterwards)
+                else if (file.DataSet.Contains(posTag))
+                {
+                    DataElement elemLoc = file.DataSet[posTag];
+                    Vector3 pos = Vector3.zero;
+                    pos.x = (float)Convert.ToDouble(elemLoc.Value[0]);
+                    pos.y = (float)Convert.ToDouble(elemLoc.Value[1]);
+                    pos.z = (float)Convert.ToDouble(elemLoc.Value[2]);
+                    slice.position = pos;
+                    slice.missingLocation = true;
+                }
                 else
                 {
-                    Debug.LogError($"Missing location tag in file: {filePath}.\n The file will not be imported");
+                    Debug.LogError($"Missing location/position tag in file: {filePath}.\n The file will not be imported");
                     return null;
                 }
+                
                 // Read intercept
-                Tag interceptTag = new Tag("(0028,1052)");
                 if (file.DataSet.Contains(interceptTag))
                 {
                     DataElement elemIntercept = file.DataSet[interceptTag];
@@ -146,8 +174,8 @@ namespace UnityVolumeRendering
                 }
                 else
                     Debug.LogWarning($"The file {filePath} is missing the intercept element. As a result, the default transfer function might not look good.");
+                
                 // Read slope
-                Tag slopeTag = new Tag("(0028,1053)");
                 if (file.DataSet.Contains(slopeTag))
                 {
                     DataElement elemSlope = file.DataSet[slopeTag];
@@ -155,8 +183,8 @@ namespace UnityVolumeRendering
                 }
                 else
                     Debug.LogWarning($"The file {filePath} is missing the intercept element. As a result, the default transfer function might not look good.");
+                
                 // Read pixel spacing
-                Tag pixelSpacingTag = new Tag("(0028,0030)");
                 if (file.DataSet.Contains(pixelSpacingTag))
                 {
                     DataElement elemPixelSpacing = file.DataSet[pixelSpacingTag];
@@ -245,6 +273,23 @@ namespace UnityVolumeRendering
             {
                 Debug.LogError("Pixel array is invalid");
                 return null;
+            }
+        }
+
+        private void CalcSliceLocFromPos(List<DICOMSliceFile> slices)
+        {
+            // We use the first slice as a starting point (a), andthe normalised vector (v) between the first and second slice as a direction.
+            Vector3 v = (slices[1].position - slices[0].position).normalized;
+            Vector3 a = slices[0].position;
+            slices[0].location = 0.0f;
+
+            for(int i = 1; i < slices.Count; i++)
+            {
+                // Calculate the vector between a and p (ap) and dot it with v to get the distance along the v vector (distance when projected onto v)
+                Vector3 p = slices[i].position;
+                Vector3 ap = p - a;
+                float dot = Vector3.Dot(ap, v);
+                slices[i].location = dot;
             }
         }
     }
