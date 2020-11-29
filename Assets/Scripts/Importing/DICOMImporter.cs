@@ -28,13 +28,13 @@ namespace UnityVolumeRendering
             public float pixelSpacing = 0.0f;
         }
 
-        private string diroctoryPath;
-        private bool recursive;
+        private IEnumerable<string> fileCandidates;
+        private string datasetName;
 
-        public DICOMImporter(string diroctoryPath, bool recursive)
+        public DICOMImporter(IEnumerable<string> files, string name = "DICOM_Dataset")
         {
-            this.diroctoryPath = diroctoryPath;
-            this.recursive = recursive;
+            this.fileCandidates = files;
+            datasetName = name;
         }
 
         public override VolumeDataset Import()
@@ -52,9 +52,6 @@ namespace UnityVolumeRendering
                 return null;
             }
 
-            // Read all files
-            IEnumerable<string> fileCandidates = Directory.EnumerateFiles(diroctoryPath, "*.*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
-                .Where(p => p.EndsWith(".dcm") || p.EndsWith(".dicom") || p.EndsWith(".dicm"));
             List<DICOMSliceFile> files = new List<DICOMSliceFile>();
             foreach (string filePath in fileCandidates)
             {
@@ -79,7 +76,7 @@ namespace UnityVolumeRendering
 
             // Create dataset
             VolumeDataset dataset = new VolumeDataset();
-            dataset.name = Path.GetFileName(Path.GetDirectoryName(diroctoryPath));
+            dataset.datasetName = Path.GetFileName(datasetName);
             dataset.dimX = files[0].file.PixelData.Columns;
             dataset.dimY = files[0].file.PixelData.Rows;
             dataset.dimZ = files.Count;
