@@ -33,6 +33,12 @@ namespace UnityVolumeRendering
                 EditVolumeGUI.ShowWindow(GameObject.FindObjectOfType<VolumeRenderedObject>());
             }
 
+            // Show button for opening the slicing plane editor (for changing the orientation and position)
+            if (GameObject.FindObjectOfType<SlicingPlane>() != null && GUILayout.Button("Edit slicing plane"))
+            {
+                EditSliceGUI.ShowWindow(GameObject.FindObjectOfType<SlicingPlane>());
+            }
+
             GUILayout.EndVertical();
         }
 
