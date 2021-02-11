@@ -54,6 +54,19 @@ namespace UnityVolumeRendering
 
             imagePaths.Sort();
 
+            // HACK FOR TIFF SUPPORT
+            if(imagePaths.Count > 0 && (Path.GetExtension(imagePaths[0]) == ".tif" || Path.GetExtension(imagePaths[0]) == ".tiff"))
+            {
+                for (int iPath = 0; iPath < imagePaths.Count; iPath++)
+                {
+                    string sourcePath = imagePaths[iPath];
+                    string destPath = Path.Combine(Application.temporaryCachePath, Path.GetFileNameWithoutExtension(sourcePath) + ".jpg");
+                    IntPtr texHandle = AsyncTextureImport.FreeImage.FreeImage_Load(AsyncTextureImport.FREE_IMAGE_FORMAT.FIF_TIFF, sourcePath, 0);
+                    AsyncTextureImport.FreeImage.FreeImage_Save(AsyncTextureImport.FREE_IMAGE_FORMAT.FIF_JPEG, texHandle, destPath,  0);
+                    imagePaths[iPath] = destPath;
+                }
+            }
+
             return imagePaths;
         }
 
