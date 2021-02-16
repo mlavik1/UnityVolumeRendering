@@ -15,6 +15,8 @@ namespace UnityVolumeRendering
         {
             "*.png",
             "*.jpg",
+            "*.tif",
+            "*.tiff",
         };
 
         public ImageSequenceImporter(string directoryPath)
@@ -60,9 +62,11 @@ namespace UnityVolumeRendering
                 for (int iPath = 0; iPath < imagePaths.Count; iPath++)
                 {
                     string sourcePath = imagePaths[iPath];
-                    string destPath = Path.Combine(Application.temporaryCachePath, Path.GetFileNameWithoutExtension(sourcePath) + ".jpg");
+                    string destPath = Path.Combine(Application.temporaryCachePath, Path.GetFileNameWithoutExtension(sourcePath) + ".png");
                     IntPtr texHandle = AsyncTextureImport.FreeImage.FreeImage_Load(AsyncTextureImport.FREE_IMAGE_FORMAT.FIF_TIFF, sourcePath, 0);
-                    AsyncTextureImport.FreeImage.FreeImage_Save(AsyncTextureImport.FREE_IMAGE_FORMAT.FIF_JPEG, texHandle, destPath,  0);
+                    bool saved = AsyncTextureImport.FreeImage.FreeImage_Save(AsyncTextureImport.FREE_IMAGE_FORMAT.FIF_PNG, texHandle, destPath,  0);
+                    if (saved == false)
+                        Debug.LogError("Failed to convert TIFF");
                     imagePaths[iPath] = destPath;
                 }
             }
