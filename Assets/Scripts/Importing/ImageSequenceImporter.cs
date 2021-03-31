@@ -68,6 +68,7 @@ namespace UnityVolumeRendering
                     if (saved == false)
                         Debug.LogError("Failed to convert TIFF");
                     imagePaths[iPath] = destPath;
+                    Debug.Log(destPath);
                 }
             }
 

@@ -59,7 +59,8 @@ namespace UnityVolumeRendering
                 case DensitySource.Grey:
                     return Mathf.RoundToInt(color.r * 255f);
                 default:
-                    throw new ArgumentOutOfRangeException(source.ToString());
+                    return 0;
+                    //throw new ArgumentOutOfRangeException(source.ToString());
             }
         }
 
