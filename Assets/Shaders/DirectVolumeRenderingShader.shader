@@ -63,8 +63,7 @@
             float _MaxVal;
 
 #if SLICEPLANE_ON
-            float3 _PlanePos;
-            float3 _PlaneNormal;
+            float4x4 _CrossSectionMatrix;
 #endif
 
             // Gets the colour from a 1D Transfer Function (x = density)
@@ -119,15 +118,11 @@
             {
 #if SLICEPLANE_ON
                 // Move the reference in the middle of the mesh, like the pivot
-                float3 pivotPos = currPos - float3(0.5f, 0.5f, 0.5f);
+                float3 pos = currPos - float3(0.5f, 0.5f, 0.5f);
 
-                // Convert to world position
-                float3 pivotWorldPos = mul(unity_ObjectToWorld, -pivotPos);
-
-                // If the dot product is < 0, the current position is "below" the plane, if it's > 0 it's "above"
-                // Then cull if the current position is below
-                float cull = dot(_PlaneNormal, pivotWorldPos - _PlanePos);
-                return cull < 0;
+                // Convert from model space to plane's vector space
+                float3 planeSpacePos = mul(_CrossSectionMatrix, float4(pos, 1.0f));
+                return planeSpacePos.z > 0.0f;
 #else
                 return false;
 #endif
@@ -170,7 +165,7 @@
                     // Perform slice culling (cross section plane)
 #ifdef SLICEPLANE_ON
                     if(isSliceCulled(currPos))
-                    	break;
+                    	continue;
 #endif
 
                     // Get the dansity/sample value of the current position
@@ -240,7 +235,7 @@
 
 #ifdef SLICEPLANE_ON
                     if (isSliceCulled(currPos))
-                        break;
+                        continue;
 #endif
 
                     const float density = getDensity(currPos);
