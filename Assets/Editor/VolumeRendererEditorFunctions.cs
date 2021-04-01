@@ -80,5 +80,13 @@ namespace UnityVolumeRendering
                 Debug.LogError("Directory doesn't exist: " + dir);
             }
         }
+
+        [MenuItem("Volume Rendering/Box cutout")]
+        static void SpawnCutoutBox()
+        {
+            VolumeRenderedObject[] objects = GameObject.FindObjectsOfType<VolumeRenderedObject>();
+            if (objects.Length == 1)
+                VolumeObjectFactory.SpawnCutoutBox(objects[0]);
+        }
     }
 }
