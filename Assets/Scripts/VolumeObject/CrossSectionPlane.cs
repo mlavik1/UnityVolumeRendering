@@ -17,7 +17,7 @@ namespace UnityVolumeRendering
         private void OnDisable()
         {
             if (targetObject != null)
-                targetObject.meshRenderer.sharedMaterial.DisableKeyword("SLICEPLANE_ON");
+                targetObject.meshRenderer.sharedMaterial.DisableKeyword("CUTOUT_PLANE");
         }
 
         private void Update()
@@ -27,9 +27,8 @@ namespace UnityVolumeRendering
 
             Material mat = targetObject.meshRenderer.sharedMaterial;
 
-            mat.EnableKeyword("SLICEPLANE_ON");
-            mat.SetVector("_PlanePos", targetObject.transform.position - transform.position);
-            mat.SetVector("_PlaneNormal", transform.forward);
+            mat.EnableKeyword("CUTOUT_PLANE");
+            mat.SetMatrix("_CrossSectionMatrix", transform.worldToLocalMatrix * targetObject.transform.localToWorldMatrix);
         }
     }
 }

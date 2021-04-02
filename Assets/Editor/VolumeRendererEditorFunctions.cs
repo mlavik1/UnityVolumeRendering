@@ -80,5 +80,26 @@ namespace UnityVolumeRendering
                 Debug.LogError("Directory doesn't exist: " + dir);
             }
         }
+
+        [MenuItem("Volume Rendering/Cross section/Cross section plane")]
+        static void OnMenuItemClick()
+        {
+            VolumeRenderedObject[] objects = GameObject.FindObjectsOfType<VolumeRenderedObject>();
+            if (objects.Length == 1)
+                VolumeObjectFactory.SpawnCrossSectionPlane(objects[0]);
+            else
+            {
+                CrossSectionPlaneEditorWindow wnd = new CrossSectionPlaneEditorWindow();
+                wnd.Show();
+            }
+        }
+
+        [MenuItem("Volume Rendering/Cross section/Box cutout")]
+        static void SpawnCutoutBox()
+        {
+            VolumeRenderedObject[] objects = GameObject.FindObjectsOfType<VolumeRenderedObject>();
+            if (objects.Length == 1)
+                VolumeObjectFactory.SpawnCutoutBox(objects[0]);
+        }
     }
 }

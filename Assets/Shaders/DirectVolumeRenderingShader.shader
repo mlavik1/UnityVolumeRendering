@@ -23,13 +23,15 @@
             CGPROGRAM
             #pragma multi_compile MODE_DVR MODE_MIP MODE_SURF
             #pragma multi_compile __ TF2D_ON
-            #pragma multi_compile __ SLICEPLANE_ON
+            #pragma multi_compile __ CUTOUT_PLANE CUTOUT_BOX_INCL CUTOUT_BOX_EXCL
             #pragma multi_compile __ LIGHTING_ON
             #pragma multi_compile DEPTHWRITE_ON DEPTHWRITE_OFF
             #pragma vertex vert
             #pragma fragment frag
 
             #include "UnityCG.cginc"
+
+            #define CUTOUT_ON CUTOUT_PLANE || CUTOUT_BOX_INCL || CUTOUT_BOX_EXCL
 
             struct vert_in
             {
@@ -62,9 +64,8 @@
             float _MinVal;
             float _MaxVal;
 
-#if SLICEPLANE_ON
-            float3 _PlanePos;
-            float3 _PlaneNormal;
+#if CUTOUT_ON
+            float4x4 _CrossSectionMatrix;
 #endif
 
             // Gets the colour from a 1D Transfer Function (x = density)
@@ -115,19 +116,22 @@
 #endif
             }
 
-            bool isSliceCulled(float3 currPos)
+            bool IsCutout(float3 currPos)
             {
-#if SLICEPLANE_ON
+#if CUTOUT_ON
                 // Move the reference in the middle of the mesh, like the pivot
-                float3 pivotPos = currPos - float3(0.5f, 0.5f, 0.5f);
+                float3 pos = currPos - float3(0.5f, 0.5f, 0.5f);
 
-                // Convert to world position
-                float3 pivotWorldPos = mul(unity_ObjectToWorld, -pivotPos);
-
-                // If the dot product is < 0, the current position is "below" the plane, if it's > 0 it's "above"
-                // Then cull if the current position is below
-                float cull = dot(_PlaneNormal, pivotWorldPos - _PlanePos);
-                return cull < 0;
+                // Convert from model space to plane's vector space
+                float3 planeSpacePos = mul(_CrossSectionMatrix, float4(pos, 1.0f));
+                
+    #if CUTOUT_PLANE
+                return planeSpacePos.z > 0.0f;
+    #elif CUTOUT_BOX_INCL
+                return !(planeSpacePos.x >= -0.5f && planeSpacePos.x <= 0.5f && planeSpacePos.y >= -0.5f && planeSpacePos.y <= 0.5f && planeSpacePos.z >= -0.5f && planeSpacePos.z <= 0.5f);
+    #elif CUTOUT_BOX_EXCL
+                return planeSpacePos.x >= -0.5f && planeSpacePos.x <= 0.5f && planeSpacePos.y >= -0.5f && planeSpacePos.y <= 0.5f && planeSpacePos.z >= -0.5f && planeSpacePos.z <= 0.5f;
+    #endif
 #else
                 return false;
 #endif
@@ -168,9 +172,9 @@
                         break;
 
                     // Perform slice culling (cross section plane)
-#ifdef SLICEPLANE_ON
-                    if(isSliceCulled(currPos))
-                    	break;
+#ifdef CUTOUT_ON
+                    if(IsCutout(currPos))
+                    	continue;
 #endif
 
                     // Get the dansity/sample value of the current position
@@ -238,9 +242,9 @@
                     if (currPos.x < -0.0001f || currPos.x >= 1.0001f || currPos.y < -0.0001f || currPos.y > 1.0001f || currPos.z < -0.0001f || currPos.z > 1.0001f) // TODO: avoid branch?
                         break;
 
-#ifdef SLICEPLANE_ON
-                    if (isSliceCulled(currPos))
-                        break;
+#ifdef CUTOUT_ON
+                    if (IsCutout(currPos))
+                        continue;
 #endif
 
                     const float density = getDensity(currPos);
@@ -282,8 +286,8 @@
                     if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
                         continue;
 
-#ifdef SLICEPLANE_ON
-                    if (isSliceCulled(currPos))
+#ifdef CUTOUT_ON
+                    if (IsCutout(currPos))
                         continue;
 #endif
 
