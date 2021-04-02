@@ -5,3 +5,4 @@ released under LGPL Version 2.1.
 http://opendicom.sourceforge.net/index.html
 
 Copyright (C) 2006-2007  Albert Gnandt
+
