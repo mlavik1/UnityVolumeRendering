@@ -24,6 +24,7 @@ namespace UnityVolumeRendering
             public string currentDirectory;
             private string selectedFile;
             private Vector2 scrollPos = Vector2.zero;
+            private Vector2 dirScrollPos = Vector2.zero;
 
             private Rect windowRect = new Rect(100, 50, WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -92,11 +93,12 @@ namespace UnityVolumeRendering
 
                 GUILayout.EndHorizontal();
             }
-
+            
             private void DrawLeftSideMenu()
             {
                 GUILayout.BeginVertical(GUILayout.Width(LEFT_PANEL_WIDTH));
 
+                dirScrollPos = GUILayout.BeginScrollView(dirScrollPos);
                 foreach (DriveInfo driveInfo in DriveInfo.GetDrives())
                 {
                     if (GUILayout.Button(driveInfo.Name))
@@ -116,6 +118,7 @@ namespace UnityVolumeRendering
                     currentDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                     scrollPos = Vector2.zero;
                 }
+                GUILayout.EndScrollView();
 
                 GUILayout.EndVertical();
             }
