@@ -14,7 +14,7 @@ I also have [a tutorial video that shows how to use the project](https://bittube
 - Open "TestScene.unity"
 - Click "Volume Rendering" in the menu bar
 - Select "Load Asset"
-- Pick a file in the "DataFiles" folder (I recommend manix.dat)
+- Pick a file in the "DataFiles" folder (I recommend vismale.dat)
 - Click the "import"-button
 
 # Step-by-step instructions
