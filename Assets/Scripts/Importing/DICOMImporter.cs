@@ -33,6 +33,8 @@ namespace UnityVolumeRendering
         private IEnumerable<string> fileCandidates;
         private string datasetName;
 
+        private int iFallbackLoc = 0;
+
         public DICOMImporter(IEnumerable<string> files, string name = "DICOM_Dataset")
         {
             this.fileCandidates = files;
@@ -162,8 +164,9 @@ namespace UnityVolumeRendering
                 }
                 else
                 {
-                    Debug.LogError($"Missing location/position tag in file: {filePath}.\n The file will not be imported");
-                    return null;
+                    Debug.LogError($"Missing location/position tag in file: {filePath}.\n The file will not be imported correctly.");
+                    // Fallback: use counter as location
+                    slice.location = (float)iFallbackLoc++;
                 }
                 
                 // Read intercept
