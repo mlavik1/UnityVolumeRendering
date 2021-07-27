@@ -102,7 +102,7 @@ namespace UnityVolumeRendering
                 x = texture.width,
                 y = texture.height
             };
-
+            Texture2D.DestroyImmediate(texture);
             return dimensions;
         }
 
@@ -144,7 +144,7 @@ namespace UnityVolumeRendering
 
                 data.AddRange(imageData);
             }
-
+            Texture2D.DestroyImmediate(texture);
             return data.ToArray();
         }
 
