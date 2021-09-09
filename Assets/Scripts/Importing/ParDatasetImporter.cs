@@ -1,5 +1,6 @@
 /*----------------------------------------------------------------------------
-#   file made by Jason 
+#   file made by Jason (jasonks2)
+#   task - view VASP 5 output file PARCHG.*.vasp
 #   project start 8-7-2021
 #   finished 9-7-2021
 #
