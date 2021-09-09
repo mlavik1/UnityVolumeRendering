@@ -11,7 +11,6 @@ namespace UnityVolumeRendering
         public static void ImportDataset(string filePath)
         {
             DatasetType datasetType = DatasetImporterUtility.GetDatasetType(filePath);
-
             switch (datasetType)
             {
                 case DatasetType.Raw:
@@ -39,6 +38,17 @@ namespace UnityVolumeRendering
                         {
                             VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
                         }
+                        break;
+                    }
+                case DatasetType.PARCHG:
+                    {
+                        ParDatasetImporterEditorWindow pnd = (ParDatasetImporterEditorWindow)EditorWindow.GetWindow(typeof(ParDatasetImporterEditorWindow));
+                        if (pnd != null)
+                            {
+                                pnd.Close();
+                            }
+                        pnd = new ParDatasetImporterEditorWindow(filePath);
+                        pnd.Show();
                         break;
                     }
             }

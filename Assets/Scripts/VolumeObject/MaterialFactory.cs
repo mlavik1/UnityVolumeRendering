@@ -13,7 +13,7 @@ namespace UnityVolumeRendering
             const int noiseDimY = 512;
             Texture2D noiseTexture = NoiseTextureGenerator.GenerateNoiseTexture(noiseDimX, noiseDimY);
             material.SetTexture("_NoiseTex", noiseTexture);
-            material.SetTexture("_DataTex", dataset.GetDataTexture());
+            material.SetTexture("_DataTex", dataset.GetDataTexturePar());
 
             return material;
         }
