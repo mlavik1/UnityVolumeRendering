@@ -65,6 +65,7 @@ namespace UnityVolumeRendering
 
             VolumeDataset dataset = new VolumeDataset();
             dataset.datasetName = Path.GetFileName(filePath);
+            dataset.filePath = filePath;
             dataset.dimX = dimX;
             dataset.dimY = dimY;
             dataset.dimZ = dimZ;

@@ -23,7 +23,14 @@ namespace UnityVolumeRendering
 
             // Check file extension
             string extension = Path.GetExtension(filePath);
-            if (extension == ".dat" || extension == ".raw" || extension == ".vol")
+            string vasp  = ".vasp";
+
+            if (String.Equals(vasp ,extension.ToString() ) )
+            {
+                datasetType = DatasetType.PARCHG;
+            }
+
+            else if (extension == ".dat" || extension == ".raw" || extension == ".vol")
                 datasetType = DatasetType.Raw;
             
             else if (extension == ".ini")
@@ -36,14 +43,11 @@ namespace UnityVolumeRendering
                 datasetType = DatasetType.DICOM;
             }
 
-            else if (extension == ".vasp")
+            else 
             {
-                datasetType = DatasetType.PARCHG;
+                datasetType = DatasetType.Unknown;
             }
-
-            else
-                datasetType = DatasetType.PARCHG;
-
+        
             return datasetType;
         }
     }
