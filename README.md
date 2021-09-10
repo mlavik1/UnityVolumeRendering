@@ -12,6 +12,7 @@ I also have [a tutorial video that shows how to use the project](https://bittube
 
 # How to use sample scene
 - Open "TestScene.unity"
+- Move dataset file into folder "DataFiles"
 - Click "Volume Rendering" in the menu bar
 - Select "Load Asset"
 - Pick a file in the "DataFiles" folder (I recommend vismale.dat)
