@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using UnityEngine;
 
 namespace UnityVolumeRendering
@@ -32,16 +33,36 @@ namespace UnityVolumeRendering
 
         private Texture3D dataTexturePar = null;
         private Texture3D gradientTexturePar = null;
-
+        private string vasp;
+        private string ext;
+        public bool PARCHG;
+        
+        
         public Texture3D GetDataTexture()
-        {
-            if (dataTexture == null)
+        { 
+            vasp = ".vasp";
+            ext = Path.GetExtension(filePath);
+            
+            var equals = String.Equals(vasp,ext.ToString());
+            if (equals)
+            {
+                PARCHG = true;
+            }
+
+            if (PARCHG)
+            {
+                dataTexturePar = CreateTextureInternalParChg();
+                return dataTexturePar;
+            }
+
+            else if (!PARCHG)
             {
                 dataTexture = CreateTextureInternal();
+                return dataTexture;
             }
             return dataTexture;
         }
-
+        /*
         public Texture3D GetDataTexturePar() //par chg
         {
             if (dataTexturePar == null)
@@ -49,17 +70,24 @@ namespace UnityVolumeRendering
                 dataTexturePar = CreateTextureInternalParChg();
             }
             return dataTexturePar;
-        }
+        }*/
 
         public Texture3D GetGradientTexture()
         {
-            if (gradientTexture == null)
+            if (PARCHG)
+            {
+                gradientTexturePar = CreateGradientTextureInternalParChg();
+                return gradientTexturePar;
+            }
+
+            else if (!PARCHG)
             {
                 gradientTexture = CreateGradientTextureInternal();
+                return gradientTexture;
             }
-            return gradientTexture;
+            return null;
         }
-
+        /*
         public Texture3D GetGradientTexturePar() //par chg
         {
             if (gradientTexturePar == null)
@@ -68,7 +96,7 @@ namespace UnityVolumeRendering
             }
             return gradientTexturePar;
         }
-
+    */
 
 
         public int GetMinDataValue()
@@ -118,8 +146,17 @@ namespace UnityVolumeRendering
                     maxDataValueDouble = Math.Max(maxDataValueDouble, value);
                 }
             }
-
-  
+            
+            for (int i = 0; i < dimX * dimY * dimZ; i++)
+            {
+                if (data != null)
+                {
+                    int val = data[i];
+                    minDataValue = Math.Min(minDataValue, val);
+                     maxDataValue = Math.Max(maxDataValue, val);
+                }
+            }
+            
         }
 
         private Texture3D CreateTextureInternal()
