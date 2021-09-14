@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using UnityEngine;
 
@@ -80,7 +80,7 @@ namespace UnityVolumeRendering
                 return gradientTexturePar;
             }
 
-            else if (!PARCHG)
+            else
             {
                 gradientTexture = CreateGradientTextureInternal();
                 return gradientTexture;
@@ -153,7 +153,7 @@ namespace UnityVolumeRendering
                 {
                     int val = data[i];
                     minDataValue = Math.Min(minDataValue, val);
-                     maxDataValue = Math.Max(maxDataValue, val);
+                    maxDataValue = Math.Max(maxDataValue, val);
                 }
             }
             
@@ -262,7 +262,9 @@ namespace UnityVolumeRendering
             texture.wrapMode = TextureWrapMode.Clamp;
 
             double minValue = GetMinDataValueDouble();
-            double maxValue = GetMinDataValueDouble();
+            double maxValue = GetMaxDataValueDouble();
+
+            Debug.Log(minValue +  " " + maxValue);
 
             double maxRange  = maxValue - minValue;
 
@@ -278,14 +280,17 @@ namespace UnityVolumeRendering
 
                         double x1 = dataGrid[Math.Min(x + 1, dimX - 1) + y * dimX + z * (dimX * dimY)] - minValue;
                         double x2 = dataGrid[Math.Max(x - 1, 0) + y * dimX + z * (dimX * dimY)] - minValue;
+                        
                         double y1 = dataGrid[x + Math.Min(y + 1, dimY - 1) * dimX + z * (dimX * dimY)] - minValue;
                         double y2 = dataGrid[x + Math.Max(y - 1, 0) * dimX + z * (dimX * dimY)] - minValue;
+
                         double z1 = dataGrid[x + y * dimX + Math.Min(z + 1, dimZ - 1) * (dimX * dimY)] - minValue;
                         double z2 = dataGrid[x + y * dimX + Math.Max(z - 1, 0) * (dimX * dimY)] - minValue;
-
                         Vector3 grad = new Vector3((float)(x2 - x1) / (float)maxRange, (float)(y2 - y1) / (float)maxRange, (float)(z2 - z1) / (float)maxRange);
 
                         gradColors[iData] = new Color(grad.x, grad.y, grad.z, (float)(dataGrid[iData] - (float)minValue) / (float)maxRange);
+
+                    
                     }
                 }
             }
