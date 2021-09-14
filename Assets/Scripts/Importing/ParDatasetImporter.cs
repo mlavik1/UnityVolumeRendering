@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------
-#   file made by Jason (jasonks2)
-#   task - volume render partial charge densities
+#   file made by Jason 
 #   project start 8-7-2021
 #   finished 9-7-2021
 #
@@ -148,8 +147,11 @@ namespace UnityVolumeRendering
             }
             for (int i = 0; i < dimTotal; i++)
             {
-                dataFiller.dataGrid[i] = volumeScaledData[i];
+                //dataFiller.dataGrid[i] = volumeScaledData[i];
+                dataFiller.dataGrid[i] = dataGrid[i];
             }
+
+            Debug.Log("Loaded dataset in range: " + dataFiller.GetMinDataValueDouble() + "  -  " + dataFiller.GetMaxDataValueDouble());
             
             return dataFiller;
         }
