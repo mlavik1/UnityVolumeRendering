@@ -107,17 +107,15 @@ The importer takes the following parameters:
 - skipBytes: Number of bytes to skip (offset to where the data begins). This is usually the same as the header size, and will be 0 if there is no header.
 
 All this info can be added to a ".ini"-file, which the importer will use (if it finds any). See the sample files (in the  "DataFiles" folder for an example).
-# Todo:
-- Improve 2D Transfer Function editor: Better GUI, more shapes (triangles)
-- Optimise histogram generation
-- Support very large datasets (currently we naively try to create 3D textures with the same dimension as the data)
+# PARCHG IMPLEMENTATION EXAMPLES:
+- Parsing only works on VASP 5 output (parchg.*.vasp)
+- Screenshots are examples of using M. Lavik's volume renderer along with Histogram Texture generation.
+- 500k data points
 
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/slices.gif)
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/1.png)
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/2.png)
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/3.png)
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/4.png)
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/5.png)
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/6.png)
+![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/master/Screenshots/upper.png)
+![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/master/Screenshots/top.png)
+![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/master/Screenshots/dist.png)
+![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/master/Screenshots/vert.png)
+![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/master/Screenshots/bottom.png)
 
 See ACKNOWLEDGEMENTS.txt for libraries used by this project.
