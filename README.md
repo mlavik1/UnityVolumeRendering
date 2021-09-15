@@ -10,7 +10,7 @@ Please see example screenshots towards the end of the README
 ----------
 I also have [a tutorial video that shows how to use the project](https://bittube.video/videos/watch/d9f34e1e-ee05-41fe-85de-7429d76f5de1)
 
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/front.jpg)
+![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/master/Screenshots/dist.png)
 
 # Requirements:
 - Unity 2018 1.5 or newer (should also work with some older versions, but I haven't tested)
