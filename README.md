@@ -3,16 +3,19 @@ A volume renderer, made in Unity3D.
 I (Matias Lavik) have written a [tutorial explaining the basic implementation](https://matiaslavik.wordpress.com/2020/01/19/volume-rendering-in-unity/).
 Have any questions? [Find my contact info here](https://matiaslavik.wordpress.com/contact-me/).
 ---------
-Thank you to Matias Lavik for creating this amazing extension for rendering large datasets. I have implemented in this build a method for parsing a VASP 5 file. My additions include 500 raw lines of code (ParDatasetImporter.cs) and around 200 lines of editting scripts previously made by mlavik. 
+Thank you to Matias Lavik for creating this amazing extension for rendering large datasets. 
+I have implemented, in this build, a method for parsing a VASP 5 output file. My additions include 500 raw lines of code (ParDatasetImporter.cs) and around 200 lines of editting scripts previously made by mlavik. 
 
 Please see example screenshots towards the end of the README
 -Jason
 
 Why VASP 5?
 --
-The purpose is to visualize partial charge densities of a molecule. What you see below is the visualization of density data that has been scaled by angstrom/eV and the volume of the molecule.
+The purpose is to visualize partial charge densities of a molecule. What you see below is the visualization of density data that has been scaled by angstrom/eV and the volume of the basis vectors.
 
-Obviously this phenomenon cannot be seen by the naked eye.
+The VASP 5 file format can be viewed in plain text encoding in the "Datafiles" folder
+
+Obviously, this phenomenon cannot be seen by the naked eye and in hopes to further develop
 
 ![alt tag](https://media.giphy.com/media/3H9GoelNYWSjU1aDRb/giphy.gif?cid=790b7611a9e80545a28d2d8e280f3f2b5ed55412b8445685&rid=giphy.gif&ct=g)
 
