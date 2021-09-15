@@ -1,7 +1,9 @@
 # UnityVolumeRendering
 A volume renderer, made in Unity3D.
-I have written a [tutorial explaining the basic implementation](https://matiaslavik.wordpress.com/2020/01/19/volume-rendering-in-unity/).
+I (Matias Lavik) have written a [tutorial explaining the basic implementation](https://matiaslavik.wordpress.com/2020/01/19/volume-rendering-in-unity/).
 Have any questions? [Find my contact info here](https://matiaslavik.wordpress.com/contact-me/).
+
+Thank you to Matias Lavik for creating this amazing extension for rendering large datasets. I have implemented in this build a method for parsing a VASP 5 file. My additions include 500 raw lines of code and around 200 lines of editting scripts previously made by mlavik.
 
 I also have [a tutorial video that shows how to use the project](https://bittube.video/videos/watch/d9f34e1e-ee05-41fe-85de-7429d76f5de1)
 
