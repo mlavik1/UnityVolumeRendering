@@ -11,11 +11,11 @@ Please see example screenshots towards the end of the README
 
 Why VASP 5?
 --
-The purpose is to visualize partial charge densities of a molecule. What you see below is the visualization of density data that has been scaled by angstrom/eV and the volume of the basis vectors.
+The purpose is to visualize partial charge densities of a molecule. Seen below is the visualization of density data that has been scaled by angstrom/eV and the volume of the basis vectors. 
 
-The VASP 5 file format can be viewed in plain text encoding in the "Datafiles" folder
+The VASP 5 file format can be viewed in plain text encoding in the "Datafiles" folder. The size is 7MB and contains ~55k lines of information
 
-Obviously, this phenomenon cannot be seen by the naked eye and in hopes to further develop
+Obviously, this phenomenon cannot be seen by the naked eye and visualization is a crucial tool in understanding the probabilistic behavior of electrons.
 
 ![alt tag](https://media.giphy.com/media/3H9GoelNYWSjU1aDRb/giphy.gif?cid=790b7611a9e80545a28d2d8e280f3f2b5ed55412b8445685&rid=giphy.gif&ct=g)
 
