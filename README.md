@@ -1,4 +1,4 @@
-# UnityVolumeRendering
+# UnityVolumeRendering (mlavik1) + PARCHG Visualization (jasonks2)
 A volume renderer, made in Unity3D.
 I (Matias Lavik) have written a [tutorial explaining the basic implementation](https://matiaslavik.wordpress.com/2020/01/19/volume-rendering-in-unity/).
 Have any questions? [Find my contact info here](https://matiaslavik.wordpress.com/contact-me/).
