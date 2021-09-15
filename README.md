@@ -7,7 +7,13 @@ Thank you to Matias Lavik for creating this amazing extension for rendering larg
 
 Please see example screenshots towards the end of the README
 -Jason
-----------
+
+Why VASP 5?
+--
+The purpose is to visualize partial charge densities of a molecule. What you see below is the visualization of density data that has been scaled by angstrom/eV and the volume of the molecule.
+
+Obviously this phenomenon cannot be seen by the naked eye.
+
 I also have [a tutorial video that shows how to use the project](https://bittube.video/videos/watch/d9f34e1e-ee05-41fe-85de-7429d76f5de1)
 
 ![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/master/Screenshots/dist.png)
