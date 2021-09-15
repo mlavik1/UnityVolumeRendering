@@ -14,7 +14,7 @@ The purpose is to visualize partial charge densities of a molecule. What you see
 
 Obviously this phenomenon cannot be seen by the naked eye.
 
-![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/master/Screenshots/dist.png)
+![alt tag](https://media.giphy.com/media/3H9GoelNYWSjU1aDRb/giphy.gif?cid=790b7611a9e80545a28d2d8e280f3f2b5ed55412b8445685&rid=giphy.gif&ct=g)
 
 # Requirements:
 - Unity 2018 1.5 or newer (should also work with some older versions, but I haven't tested)
