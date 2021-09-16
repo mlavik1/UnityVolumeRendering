@@ -35,9 +35,9 @@ Obviously, this phenomenon cannot be seen by the naked eye and visualization is 
 
 **Raw datasets:**
 
-In the menu bar, click "Volume Rendering" and "Load raw dataset"
+In the menu bar, click "Volume Rendering" and "Load PARCHG dataset"
 
-<img src="Screenshots/menubar2.png" width="200px">
+<img src="Screenshots/Screen Shot 2021-09-16 at 6.34.50 PM.png" width="200px">
 
 Then select the dataset you wish to import. Currently only raw datasets are supported (you can add your own importer for other datasets).
 
@@ -50,13 +50,10 @@ In the next menu you can optionally set the import setting for the raw dataset. 
 To import a DICOM dataset, click "Volume Rendering" and "Load DICOM" and select the folder containing your DICOM files.
 The dataset must be of 3D nature, and contain several files - each being a slice along the Z axis.
 
-**2. Moving the model**
-
-You can move the model like any other GameObject. Simply select it in the scene view or scene hierarchy, and move/rotate it like normal.
 
 <img src="Screenshots/movement.gif" width="400px">
 
-**3. Changing the visualisation**
+**2. Changing the visualisation**
 
 Select the model and find the "Volume Render Object" in the inspector.
 
@@ -108,17 +105,14 @@ Since VR requires two cameras to render each frame, you can expect worse perform
 
 See "DatasetImporterEditorWindow.cs" for an example.
 
-# Explanation of the raw dataset importer:
-The _RawDatasetImporter_ imports raw datasets, where the data is stored sequentially. Some raw datasets contain a header where you can read information about how the data is stored (content format, dimension, etc.), while some datasets expect you to know the layout and format.
+# Explanation of the PARCHG dataset importer:
+The _ParDatasetImporter_ imports PARCHG datasets, where the data is stored given header information and then a FFT grid of data points. See https://www.vasp.at/wiki/index.php/CHGCAR
 The importer takes the following parameters:
 - filePath: Filepath of the dataset
 - dimX: X-dimension (number of samples in the X-axis)
 - dimY: Y-dimension
 - dimZ: Z-dimension
-- contentFormat: Value type of the data (Int8, Uint8, Int16, Uint16, etc..)
-- skipBytes: Number of bytes to skip (offset to where the data begins). This is usually the same as the header size, and will be 0 if there is no header.
 
-All this info can be added to a ".ini"-file, which the importer will use (if it finds any). See the sample files (in the  "DataFiles" folder for an example).
 # PARCHG IMPLEMENTATION EXAMPLES:
 - Parsing only works on VASP 5 output (parchg.*.vasp)
 - Screenshots are examples of using M. Lavik's volume renderer along with Histogram Texture generation.
