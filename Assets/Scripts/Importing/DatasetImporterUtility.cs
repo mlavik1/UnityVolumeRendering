@@ -1,5 +1,8 @@
-﻿
+
 using System.IO;
+using UnityEngine;
+using System;
+using UnityEditor;
 
 namespace UnityVolumeRendering
 {
@@ -7,7 +10,8 @@ namespace UnityVolumeRendering
     {
         Unknown,
         Raw,
-        DICOM
+        DICOM,
+        PARCHG
     }
 
     public class DatasetImporterUtility
@@ -19,18 +23,31 @@ namespace UnityVolumeRendering
 
             // Check file extension
             string extension = Path.GetExtension(filePath);
-            if (extension == ".dat" || extension == ".raw" || extension == ".vol")
+            string vasp  = ".vasp";
+
+            if (String.Equals(vasp ,extension.ToString() ) )
+            {
+                datasetType = DatasetType.PARCHG;
+            }
+
+            else if (extension == ".dat" || extension == ".raw" || extension == ".vol")
                 datasetType = DatasetType.Raw;
+            
             else if (extension == ".ini")
             {
                 filePath = filePath.Substring(0, filePath.LastIndexOf("."));
                 datasetType = DatasetType.Raw;
             }
             else if (extension == ".dicom" || extension == ".dcm")
+            {
                 datasetType = DatasetType.DICOM;
-            else
-                datasetType = DatasetType.Unknown;
+            }
 
+            else 
+            {
+                datasetType = DatasetType.Unknown;
+            }
+        
             return datasetType;
         }
     }
