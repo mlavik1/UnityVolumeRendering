@@ -118,10 +118,10 @@ The importer takes the following parameters:
 - Screenshots are examples of using M. Lavik's volume renderer along with Histogram Texture generation.
 - 500k data points
 
-![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/master/Screenshots/upper.png)
-![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/master/Screenshots/top.png)
-![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/master/Screenshots/dist.png)
-![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/master/Screenshots/vert.png)
-![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/master/Screenshots/bottom.png)
+![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/PARCHG---Electron-Density-Volume-Renderer/Screenshots/upper.png)
+![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/PARCHG---Electron-Density-Volume-Renderer/Screenshots/top.png)
+![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/PARCHG---Electron-Density-Volume-Renderer/Screenshots/dist.png)
+![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/PARCHG---Electron-Density-Volume-Renderer/Screenshots/vert.png)
+![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/PARCHG---Electron-Density-Volume-Renderer/Screenshots/bottom.png)
 
 See ACKNOWLEDGEMENTS.txt for libraries used by this project.
