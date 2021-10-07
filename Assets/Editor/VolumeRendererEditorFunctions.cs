@@ -49,9 +49,13 @@ namespace UnityVolumeRendering
                 if (fileCandidates.Any())
                 {
                     DICOMImporter importer = new DICOMImporter(fileCandidates, Path.GetFileName(dir));
-                    VolumeDataset dataset = importer.Import();
-                    if (dataset != null)
-                        VolumeObjectFactory.CreateObject(dataset);
+                    List<DICOMImporter.DICOMSeries> seriesList = importer.LoadDICOMSeries();
+                    foreach(DICOMImporter.DICOMSeries series in seriesList)
+                    {
+                        VolumeDataset dataset = importer.ImportDICOMSeries(series);
+                        if (dataset != null)    
+                            VolumeObjectFactory.CreateObject(dataset);
+                    }
                 }    
                 else
                     Debug.LogError("Could not find any DICOM files to import.");
