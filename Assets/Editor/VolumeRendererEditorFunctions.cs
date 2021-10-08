@@ -9,7 +9,7 @@ namespace UnityVolumeRendering
 {
     public class VolumeRendererEditorFunctions
     {
-        [MenuItem("Volume Rendering/Load raw dataset")]
+        [MenuItem("Volume Rendering/Load dataset/Load raw dataset")]
         static void ShowDatasetImporter()
         {
             string file = EditorUtility.OpenFilePanel("Select a dataset to load", "DataFiles", "");
@@ -23,7 +23,7 @@ namespace UnityVolumeRendering
             }
         }
 
-        [MenuItem("Volume Rendering/Load DICOM")]
+        [MenuItem("Volume Rendering/Load dataset/Load DICOM")]
         static void ShowDICOMImporter()
         {
             string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
@@ -49,9 +49,18 @@ namespace UnityVolumeRendering
                 if (fileCandidates.Any())
                 {
                     DICOMImporter importer = new DICOMImporter(fileCandidates, Path.GetFileName(dir));
-                    VolumeDataset dataset = importer.Import();
-                    if (dataset != null)
-                        VolumeObjectFactory.CreateObject(dataset);
+                    List<DICOMImporter.DICOMSeries> seriesList = importer.LoadDICOMSeries();
+                    float numVolumesCreated = 0;
+                    foreach (DICOMImporter.DICOMSeries series in seriesList)
+                    {
+                        VolumeDataset dataset = importer.ImportDICOMSeries(series);
+                        if (dataset != null)
+                        {
+                            VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
+                            obj.transform.position = new Vector3(numVolumesCreated, 0, 0);
+                            numVolumesCreated++;
+                        }
+                    }
                 }    
                 else
                     Debug.LogError("Could not find any DICOM files to import.");
@@ -64,7 +73,7 @@ namespace UnityVolumeRendering
             }
         }
 
-        [MenuItem("Volume Rendering/Load image sequence")]
+        [MenuItem("Volume Rendering/Load dataset/Load image sequence")]
         static void ShowSequenceImporter()
         {
             string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
@@ -100,6 +109,30 @@ namespace UnityVolumeRendering
             VolumeRenderedObject[] objects = GameObject.FindObjectsOfType<VolumeRenderedObject>();
             if (objects.Length == 1)
                 VolumeObjectFactory.SpawnCutoutBox(objects[0]);
+        }
+
+        [MenuItem("Volume Rendering/1D Transfer Function")]
+        public static void Show1DTFWindow()
+        {
+            TransferFunction2DEditorWindow.ShowWindow();
+        }
+
+        [MenuItem("Volume Rendering/2D Transfer Function")]
+        public static void Show2DTFWindow()
+        {
+            TransferFunctionEditorWindow.ShowWindow();
+        }
+
+        [MenuItem("Volume Rendering/Slice renderer")]
+        static void ShowSliceRenderer()
+        {
+            SliceRenderingEditorWindow.ShowWindow();
+        }
+
+        [MenuItem("Volume Rendering/Value range")]
+        static void ShowValueRangeWindow()
+        {
+            ValueRangeEditorWindow.ShowWindow();
         }
     }
 }

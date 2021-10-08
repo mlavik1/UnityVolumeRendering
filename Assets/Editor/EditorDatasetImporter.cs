@@ -32,12 +32,21 @@ namespace UnityVolumeRendering
                         IEnumerable<string> fileCandidates = Directory.EnumerateFiles(directoryPath, "*.*", SearchOption.TopDirectoryOnly)
                             .Where(p => p.EndsWith(".dcm", StringComparison.InvariantCultureIgnoreCase) || p.EndsWith(".dicom", StringComparison.InvariantCultureIgnoreCase) || p.EndsWith(".dicm", StringComparison.InvariantCultureIgnoreCase));
 
-                        DatasetImporterBase importer = new DICOMImporter(fileCandidates, Path.GetFileName(directoryPath));
-                        VolumeDataset dataset = importer.Import();
+                        DICOMImporter importer = new DICOMImporter(fileCandidates, Path.GetFileName(directoryPath));
 
-                        if (dataset != null)
+                        List<DICOMImporter.DICOMSeries> seriesList = importer.LoadDICOMSeries();
+                        foreach (DICOMImporter.DICOMSeries series in seriesList)
                         {
-                            VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
+                            // Only import the series that contains the selected file
+                            if(series.dicomFiles.Any(f => Path.GetFileName(f.filePath) == Path.GetFileName(filePath)))
+                            {
+                                VolumeDataset dataset = importer.ImportDICOMSeries(series);
+
+                                if (dataset != null)
+                                {
+                                    VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
+                                }
+                            }
                         }
                         break;
                     }
