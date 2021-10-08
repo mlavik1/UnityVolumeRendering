@@ -9,7 +9,7 @@ namespace UnityVolumeRendering
 {
     public class VolumeRendererEditorFunctions
     {
-        [MenuItem("Volume Rendering/Load raw dataset")]
+        [MenuItem("Volume Rendering/Load dataset/Load raw dataset")]
         static void ShowDatasetImporter()
         {
             string file = EditorUtility.OpenFilePanel("Select a dataset to load", "DataFiles", "");
@@ -23,7 +23,7 @@ namespace UnityVolumeRendering
             }
         }
 
-        [MenuItem("Volume Rendering/Load DICOM")]
+        [MenuItem("Volume Rendering/Load dataset/Load DICOM")]
         static void ShowDICOMImporter()
         {
             string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
@@ -73,7 +73,7 @@ namespace UnityVolumeRendering
             }
         }
 
-        [MenuItem("Volume Rendering/Load image sequence")]
+        [MenuItem("Volume Rendering/Load dataset/Load image sequence")]
         static void ShowSequenceImporter()
         {
             string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
@@ -109,6 +109,30 @@ namespace UnityVolumeRendering
             VolumeRenderedObject[] objects = GameObject.FindObjectsOfType<VolumeRenderedObject>();
             if (objects.Length == 1)
                 VolumeObjectFactory.SpawnCutoutBox(objects[0]);
+        }
+
+        [MenuItem("Volume Rendering/1D Transfer Function")]
+        public static void Show1DTFWindow()
+        {
+            TransferFunction2DEditorWindow.ShowWindow();
+        }
+
+        [MenuItem("Volume Rendering/2D Transfer Function")]
+        public static void Show2DTFWindow()
+        {
+            TransferFunctionEditorWindow.ShowWindow();
+        }
+
+        [MenuItem("Volume Rendering/Slice renderer")]
+        static void ShowSliceRenderer()
+        {
+            SliceRenderingEditorWindow.ShowWindow();
+        }
+
+        [MenuItem("Volume Rendering/Value range")]
+        static void ShowValueRangeWindow()
+        {
+            ValueRangeEditorWindow.ShowWindow();
         }
     }
 }

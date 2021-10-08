@@ -9,8 +9,7 @@ namespace UnityVolumeRendering
         private bool handleMouseMovement = false;
         private Vector2 prevMousePos;
 
-        [MenuItem("Volume Rendering/Slice renderer")]
-        static void ShowWindow()
+        public static void ShowWindow()
         {
             SliceRenderingEditorWindow wnd = new SliceRenderingEditorWindow();
             wnd.Show();
