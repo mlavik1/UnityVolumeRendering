@@ -116,10 +116,6 @@ namespace UnityVolumeRendering
                 return null;
             }
 
-            float minLoc = (float)files[0].location;
-            float maxLoc = (float)files[files.Count - 1].location;
-            float locRange = maxLoc - minLoc;
-
             // Create dataset
             VolumeDataset dataset = new VolumeDataset();
             dataset.datasetName = Path.GetFileName(datasetName);
@@ -151,35 +147,6 @@ namespace UnityVolumeRendering
                         dataset.data[dataIndex] = (int)Mathf.Clamp(hounsfieldValue, -1024.0f, 3071.0f);
                     }
                 }
-            }
-
-            int MAX_DIM = 2048;
-
-            if (Mathf.Max(dataset.dimX, dataset.dimY, dataset.dimZ) > MAX_DIM)
-            {
-                Debug.Log("Downsampling dataset");
-
-                int dimX = Mathf.Min(dataset.dimX, MAX_DIM);
-                int dimY = Mathf.Min(dataset.dimY, MAX_DIM);
-                int dimZ = Mathf.Min(dataset.dimZ, MAX_DIM);
-                int[] data = new int[dimX * dimY * dimZ];
-
-                for (int z = 0; z < dimZ; z++)
-                {
-                    for (int y = 0; y < dimY; y++)
-                    {
-                        for (int x = 0; x < dimX; x++)
-                        {
-                            int oldIndex = (z * dataset.dimX * dataset.dimY) + (y * dataset.dimX) + x;
-                            int newIndex = (z * dimX * dimY) + (y * dimX) + x;
-                            data[newIndex] = dataset.data[oldIndex];
-                        }
-                    }
-                }
-                dataset.data = data;
-                dataset.dimX = dimX;
-                dataset.dimY = dimY;
-                dataset.dimZ = dimZ;
             }
 
             if (files[0].pixelSpacing > 0.0f)
