@@ -85,6 +85,9 @@ namespace UnityVolumeRendering
 
             reader.Close();
             fs.Close();
+
+            dataset.FixDimensions();
+            
             return dataset;
         }
 

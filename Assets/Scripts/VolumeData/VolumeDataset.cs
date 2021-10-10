@@ -3,13 +3,19 @@ using UnityEngine;
 
 namespace UnityVolumeRendering
 {
+    /// <summary>
+    /// An imported dataset. Has a dimension and a 3D pixel array.
+    /// </summary>
     [Serializable]
     public class VolumeDataset : ScriptableObject
     {
+        // Flattened 3D array of data sample values.
         [SerializeField]
         public int[] data = null;
+
         [SerializeField]
         public int dimX, dimY, dimZ;
+        
         [SerializeField]
         public float scaleX = 0.0f, scaleY = 0.0f, scaleZ = 0.0f;
 
@@ -51,6 +57,41 @@ namespace UnityVolumeRendering
             if (maxDataValue == int.MinValue)
                 CalculateValueBounds();
             return maxDataValue;
+        }
+
+        /// <summary>
+        /// Ensures that the dataset is not too large.
+        /// </summary>
+        public void FixDimensions()
+        {
+            int MAX_DIM = 2048; // 3D texture max size. See: https://docs.unity3d.com/Manual/class-Texture3D.html
+
+            if (Mathf.Max(dimX, dimY, dimZ) > MAX_DIM)
+            {
+                Debug.LogWarning("Dimension exceeds limits. Cropping dataset. This might result in an incomplete dataset.");
+
+                int newDimX = Mathf.Min(dimX, MAX_DIM);
+                int newDimY = Mathf.Min(dimY, MAX_DIM);
+                int newDimZ = Mathf.Min(dimZ, MAX_DIM);
+                int[] newData = new int[dimX * dimY * dimZ];
+
+                for (int z = 0; z < newDimZ; z++)
+                {
+                    for (int y = 0; y < newDimY; y++)
+                    {
+                        for (int x = 0; x < newDimX; x++)
+                        {
+                            int oldIndex = (z * dimX * dimY) + (y * dimX) + x;
+                            int newIndex = (z * newDimX * newDimY) + (y * newDimX) + x;
+                            newData[newIndex] = data[oldIndex];
+                        }
+                    }
+                }
+                data = newData;
+                dimX = newDimX;
+                dimY = newDimY;
+                dimZ = newDimZ;
+            }
         }
 
         private void CalculateValueBounds()

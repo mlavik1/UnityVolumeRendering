@@ -156,6 +156,8 @@ namespace UnityVolumeRendering
                 dataset.scaleZ = Mathf.Abs(files[files.Count - 1].location - files[0].location);
             }
 
+            dataset.FixDimensions();
+
             return dataset;
         }
 

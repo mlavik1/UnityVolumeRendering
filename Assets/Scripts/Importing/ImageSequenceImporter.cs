@@ -36,6 +36,8 @@ namespace UnityVolumeRendering
             int[] data = FillSequentialData(dimensions, imagePaths);
             VolumeDataset dataset = FillVolumeDataset(data, dimensions);
 
+            dataset.FixDimensions();
+
             return dataset;
         }
 
