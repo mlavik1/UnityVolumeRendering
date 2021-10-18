@@ -31,7 +31,7 @@ namespace UnityVolumeRendering
         private void ImportDataset()
         {
             
-            DatasetImporterBase importer = new ParDatasetImporter(fileToImport, nx, ny, nz);
+            ParDatasetImporter importer = new ParDatasetImporter(fileToImport, nx, ny, nz);
             VolumeDataset dataset = importer.Import();
 
             if (dataset != null)
