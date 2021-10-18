@@ -43,7 +43,7 @@ namespace UnityVolumeRendering
 
         private void ImportDataset()
         {
-            DatasetImporterBase importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, endianness, bytesToSkip);
+            RawDatasetImporter importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, endianness, bytesToSkip);
             
             VolumeDataset dataset = importer.Import();
 

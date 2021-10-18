@@ -111,11 +111,18 @@ namespace UnityVolumeRendering
 
                 // Import the dataset
                 DICOMImporter importer = new DICOMImporter(fileCandidates, Path.GetFileName(result.path));
-                VolumeDataset dataset = importer.Import();
-                // Spawn the object
-                if (dataset != null)
+                List<DICOMImporter.DICOMSeries> seriesList = importer.LoadDICOMSeries();
+                float numVolumesCreated = 0;
+                foreach (DICOMImporter.DICOMSeries series in seriesList)
                 {
-                    VolumeObjectFactory.CreateObject(dataset);
+                    VolumeDataset dataset = importer.ImportDICOMSeries(series);
+                    // Spawn the object
+                    if (dataset != null)
+                    {
+                        VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
+                        obj.transform.position = new Vector3(numVolumesCreated, 0, 0);
+                        numVolumesCreated++;
+                    }
                 }
             }
         }

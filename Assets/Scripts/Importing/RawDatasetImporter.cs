@@ -20,7 +20,7 @@ namespace UnityVolumeRendering
         BigEndian
     }
 
-    public class RawDatasetImporter : DatasetImporterBase
+    public class RawDatasetImporter
     {
         string filePath;
         private int dimX;
@@ -41,7 +41,7 @@ namespace UnityVolumeRendering
             this.skipBytes = skipBytes;
         }
 
-        public override VolumeDataset Import()
+        public VolumeDataset Import()
         {
             // Check that the file exists
             if(!File.Exists(filePath))
@@ -86,6 +86,9 @@ namespace UnityVolumeRendering
 
             reader.Close();
             fs.Close();
+
+            dataset.FixDimensions();
+            
             return dataset;
         }
 

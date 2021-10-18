@@ -17,17 +17,24 @@ namespace UnityVolumeRendering
     /// Reads a 3D DICOM dataset from a folder.
     /// The folder needs to contain several .dcm/.dicom files, where each file is a slice of the same dataset.
     /// </summary>
-    public class DICOMImporter : DatasetImporterBase
+    public class DICOMImporter
     {
-        private class DICOMSliceFile
+        public class DICOMSliceFile
         {
             public AcrNemaFile file;
+            public string filePath;
             public float location = 0;
             public Vector3 position = Vector3.zero;
             public float intercept = 0.0f;
             public float slope = 1.0f;
             public float pixelSpacing = 0.0f;
+            public string seriesUID = "";
             public bool missingLocation = false;
+        }
+
+        public class DICOMSeries
+        {
+            public List<DICOMSliceFile> dicomFiles = new List<DICOMSliceFile>();
         }
 
         private IEnumerable<string> fileCandidates;
@@ -41,7 +48,7 @@ namespace UnityVolumeRendering
             datasetName = name;
         }
 
-        public override VolumeDataset Import()
+        public List<DICOMSeries> LoadDICOMSeries()
         {
             DataElementDictionary dataElementDictionary = new DataElementDictionary();
             UidDictionary uidDictionary = new UidDictionary();
@@ -56,36 +63,58 @@ namespace UnityVolumeRendering
                 return null;
             }
 
+            // Load all DICOM files
             List<DICOMSliceFile> files = new List<DICOMSliceFile>();
-            bool needsCalcLoc = false;
             foreach (string filePath in fileCandidates)
             {
                 DICOMSliceFile sliceFile = ReadDICOMFile(filePath);
                 if(sliceFile != null)
                 {
-                    needsCalcLoc |= sliceFile.missingLocation;
                     files.Add(sliceFile);
                 }
+            }
+
+            // Split parsed DICOM files into series (by DICOM series UID)
+            Dictionary<string, DICOMSeries> seriesByUID = new Dictionary<string, DICOMSeries>();
+            foreach(DICOMSliceFile file in files)
+            {
+                if(!seriesByUID.ContainsKey(file.seriesUID))
+                {
+                    seriesByUID.Add(file.seriesUID, new DICOMSeries());
+                }
+                seriesByUID[file.seriesUID].dicomFiles.Add(file);
+            }
+
+            Debug.Log($"Loaded {seriesByUID.Count} DICOM series");
+
+            return new List<DICOMSeries>(seriesByUID.Values);
+        }
+
+        public VolumeDataset ImportDICOMSeries(DICOMSeries series)
+        {
+            List<DICOMSliceFile> files = series.dicomFiles;
+
+            // Sort files by slice location
+            files.Sort((DICOMSliceFile a, DICOMSliceFile b) => { return a.location.CompareTo(b.location); });
+
+            // Check if the series is missing the slice location tag
+            bool needsCalcLoc = false;
+            foreach (DICOMSliceFile file in files)
+            {
+                needsCalcLoc |= file.missingLocation;
             }
 
             // Calculate slice location from "Image Position" (0020,0032)
             if (needsCalcLoc)
                 CalcSliceLocFromPos(files);
 
-            // Sort files by slice location
-            files.Sort((DICOMSliceFile a, DICOMSliceFile b) => { return a.location.CompareTo(b.location); });
+            Debug.Log($"Importing {files.Count} DICOM slices");
 
-            Debug.Log($"Imported {files.Count} datasets");
-            
-            if(files.Count <= 1)
+            if (files.Count <= 1)
             {
                 Debug.LogError("Insufficient number of slices.");
                 return null;
             }
-
-            float minLoc = (float)files[0].location;
-            float maxLoc = (float)files[files.Count - 1].location;
-            float locRange = maxLoc - minLoc;
 
             // Create dataset
             VolumeDataset dataset = new VolumeDataset();
@@ -104,10 +133,10 @@ namespace UnityVolumeRendering
                 int[] pixelArr = ToPixelArray(pixelData);
                 if (pixelArr == null) // This should not happen
                     pixelArr = new int[pixelData.Rows * pixelData.Columns];
-                
-                for(int iRow = 0; iRow < pixelData.Rows; iRow++)
+
+                for (int iRow = 0; iRow < pixelData.Rows; iRow++)
                 {
-                    for(int iCol = 0; iCol < pixelData.Columns; iCol++)
+                    for (int iCol = 0; iCol < pixelData.Columns; iCol++)
                     {
                         int pixelIndex = (iRow * pixelData.Columns) + iCol;
                         int dataIndex = (iSlice * pixelData.Columns * pixelData.Rows) + (iRow * pixelData.Columns) + iCol;
@@ -127,6 +156,8 @@ namespace UnityVolumeRendering
                 dataset.scaleZ = Mathf.Abs(files[files.Count - 1].location - files[0].location);
             }
 
+            dataset.FixDimensions();
+
             return dataset;
         }
 
@@ -138,12 +169,14 @@ namespace UnityVolumeRendering
             {
                 DICOMSliceFile slice = new DICOMSliceFile();
                 slice.file = file;
-                
+                slice.filePath = filePath;
+
                 Tag locTag = new Tag("(0020,1041)");
                 Tag posTag = new Tag("(0020,0032)");
                 Tag interceptTag = new Tag("(0028,1052)");
                 Tag slopeTag = new Tag("(0028,1053)");
                 Tag pixelSpacingTag = new Tag("(0028,0030)");
+                Tag seriesUIDTag = new Tag("(0020,000E)");
 
                 // Read location (optional)
                 if (file.DataSet.Contains(locTag))
@@ -192,6 +225,13 @@ namespace UnityVolumeRendering
                 {
                     DataElement elemPixelSpacing = file.DataSet[pixelSpacingTag];
                     slice.pixelSpacing = (float)Convert.ToDouble(elemPixelSpacing.Value[0]);
+                }
+
+                // Read series UID
+                if (file.DataSet.Contains(seriesUIDTag))
+                {
+                    DataElement elemSeriesUID = file.DataSet[seriesUIDTag];
+                    slice.seriesUID = Convert.ToString(elemSeriesUID.Value[0]);
                 }
 
                 return slice;

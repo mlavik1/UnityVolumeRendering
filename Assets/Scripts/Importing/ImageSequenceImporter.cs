@@ -8,7 +8,7 @@ namespace UnityVolumeRendering
     /// <summary>
     /// Converts a directory of image slices into a VolumeDataset for volumetric rendering.
     /// </summary>
-    public class ImageSequenceImporter : DatasetImporterBase
+    public class ImageSequenceImporter
     {
         private string directoryPath;
         private string[] supportedImageTypes = new string[] 
@@ -22,7 +22,7 @@ namespace UnityVolumeRendering
             this.directoryPath = directoryPath;
         }
 
-        public override VolumeDataset Import()
+        public VolumeDataset Import()
         {
             if (!Directory.Exists(directoryPath))
                 throw new NullReferenceException("No directory found: " + directoryPath);
@@ -35,6 +35,8 @@ namespace UnityVolumeRendering
             Vector3Int dimensions = GetVolumeDimensions(imagePaths);
             int[] data = FillSequentialData(dimensions, imagePaths);
             VolumeDataset dataset = FillVolumeDataset(data, dimensions);
+
+            dataset.FixDimensions();
 
             return dataset;
         }

@@ -5,8 +5,7 @@ namespace UnityVolumeRendering
 {
     public class ValueRangeEditorWindow : EditorWindow
     {
-        [MenuItem("Volume Rendering/Value range")]
-        static void ShowWindow()
+        public static void ShowWindow()
         {
             ValueRangeEditorWindow wnd = new ValueRangeEditorWindow();
             wnd.Show();

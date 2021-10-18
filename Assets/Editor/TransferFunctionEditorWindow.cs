@@ -15,7 +15,6 @@ namespace UnityVolumeRendering
         private VolumeRenderedObject volRendObject = null;
         private Texture2D histTex = null;
 
-        [MenuItem("Volume Rendering/1D Transfer Function")]
         public static void ShowWindow()
         {
             // Close all (if any) 2D TF editor windows
