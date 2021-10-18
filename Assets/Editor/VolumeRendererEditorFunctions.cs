@@ -128,13 +128,13 @@ namespace UnityVolumeRendering
         [MenuItem("Volume Rendering/1D Transfer Function")]
         public static void Show1DTFWindow()
         {
-            TransferFunction2DEditorWindow.ShowWindow();
+            TransferFunctionEditorWindow.ShowWindow();
         }
 
         [MenuItem("Volume Rendering/2D Transfer Function")]
         public static void Show2DTFWindow()
         {
-            TransferFunctionEditorWindow.ShowWindow();
+            TransferFunction2DEditorWindow.ShowWindow();
         }
 
         [MenuItem("Volume Rendering/Slice renderer")]

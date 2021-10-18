@@ -164,7 +164,7 @@ namespace UnityVolumeRendering
             {
                 name = name,
                 datasetName = name,
-                data = data,
+                data = Array.ConvertAll(data, new Converter<int, float>((int val) => { return Convert.ToSingle(val); })),
                 dimX = dimensions.x,
                 dimY = dimensions.y,
                 dimZ = dimensions.z,

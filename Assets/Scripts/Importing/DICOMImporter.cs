@@ -124,7 +124,7 @@ namespace UnityVolumeRendering
             dataset.dimZ = files.Count;
 
             int dimension = dataset.dimX * dataset.dimY * dataset.dimZ;
-            dataset.data = new int[dimension];
+            dataset.data = new float[dimension];
 
             for (int iSlice = 0; iSlice < files.Count; iSlice++)
             {
@@ -144,7 +144,7 @@ namespace UnityVolumeRendering
                         int pixelValue = pixelArr[pixelIndex];
                         float hounsfieldValue = pixelValue * slice.slope + slice.intercept;
 
-                        dataset.data[dataIndex] = (int)Mathf.Clamp(hounsfieldValue, -1024.0f, 3071.0f);
+                        dataset.data[dataIndex] = Mathf.Clamp(hounsfieldValue, -1024.0f, 3071.0f);
                     }
                 }
             }

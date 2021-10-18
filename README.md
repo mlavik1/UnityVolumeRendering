@@ -1,30 +1,17 @@
-# UnityVolumeRendering (mlavik1) + VASP PARCHG Visualization (jasonks2)
+# UnityVolumeRendering
 A volume renderer, made in Unity3D.
-I (Matias Lavik) have written a [tutorial explaining the basic implementation](https://matiaslavik.wordpress.com/2020/01/19/volume-rendering-in-unity/).
-Have any questions? [Find my contact info here](https://matiaslavik.wordpress.com/contact-me/).
----------
-Thank you to Matias Lavik for creating this amazing extension for rendering large datasets. 
-I have implemented, in this build, a method for parsing a VASP 5 output file. My additions include 500 raw lines of code (ParDatasetImporter.cs) and around 200 lines of editting scripts previously made by mlavik. 
+I have written a [tutorial explaining the basic implementation](https://matiaslavik.wordpress.com/2020/01/19/volume-rendering-in-unity/).
+Have any questions? Create an issue or [contact me on Mastodon](https://fosstodon.org/web/accounts/106931417271268077).
 
-Please see example screenshots towards the end of the README
--Jason
+I also have [a tutorial video that shows how to use the project](https://bittube.video/videos/watch/d9f34e1e-ee05-41fe-85de-7429d76f5de1)
 
-Why VASP 5?
---
-The purpose is to visualize partial charge densities of a molecule. Seen below is the visualization of density data that has been scaled by angstrom/eV and the volume of the basis vectors. 
-
-The VASP 5 file format can be viewed in plain text encoding in the "Datafiles" folder. The size is 7MB and contains ~55k lines of information
-
-Obviously, this phenomenon cannot be seen by the naked eye and visualization is a crucial tool in understanding the probabilistic behavior of electrons.
-
-![alt tag](https://media.giphy.com/media/3H9GoelNYWSjU1aDRb/giphy.gif?cid=790b7611a9e80545a28d2d8e280f3f2b5ed55412b8445685&rid=giphy.gif&ct=g)
+![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/front.jpg)
 
 # Requirements:
 - Unity 2018 1.5 or newer (should also work with some older versions, but I haven't tested)
 
 # How to use sample scene
 - Open "TestScene.unity"
-- Move dataset file into folder "DataFiles"
 - Click "Volume Rendering" in the menu bar
 - Select "Load Asset"
 - Pick a file in the "DataFiles" folder (I recommend vismale.dat)
@@ -35,9 +22,9 @@ Obviously, this phenomenon cannot be seen by the naked eye and visualization is 
 
 **Raw datasets:**
 
-In the menu bar, click "Volume Rendering" and "Load PARCHG dataset"
+In the menu bar, click "Volume Rendering" and "Load raw dataset"
 
-<img src="Screenshots/Screen Shot 2021-09-16 at 6.34.50 PM.png" width="200px">
+<img src="Screenshots/menubar2.png" width="200px">
 
 Then select the dataset you wish to import. Currently only raw datasets are supported (you can add your own importer for other datasets).
 
@@ -50,10 +37,13 @@ In the next menu you can optionally set the import setting for the raw dataset. 
 To import a DICOM dataset, click "Volume Rendering" and "Load DICOM" and select the folder containing your DICOM files.
 The dataset must be of 3D nature, and contain several files - each being a slice along the Z axis.
 
+**2. Moving the model**
+
+You can move the model like any other GameObject. Simply select it in the scene view or scene hierarchy, and move/rotate it like normal.
 
 <img src="Screenshots/movement.gif" width="400px">
 
-**2. Changing the visualisation**
+**3. Changing the visualisation**
 
 Select the model and find the "Volume Render Object" in the inspector.
 
@@ -105,23 +95,34 @@ Since VR requires two cameras to render each frame, you can expect worse perform
 
 See "DatasetImporterEditorWindow.cs" for an example.
 
-# Explanation of the PARCHG dataset importer:
-The _ParDatasetImporter_ imports PARCHG datasets, where the data is stored given header information and then a FFT grid of data points. See https://www.vasp.at/wiki/index.php/CHGCAR
+# Explanation of the raw dataset importer:
+The _RawDatasetImporter_ imports raw datasets, where the data is stored sequentially. Some raw datasets contain a header where you can read information about how the data is stored (content format, dimension, etc.), while some datasets expect you to know the layout and format.
 The importer takes the following parameters:
 - filePath: Filepath of the dataset
 - dimX: X-dimension (number of samples in the X-axis)
 - dimY: Y-dimension
 - dimZ: Z-dimension
+- contentFormat: Value type of the data (Int8, Uint8, Int16, Uint16, etc..)
+- skipBytes: Number of bytes to skip (offset to where the data begins). This is usually the same as the header size, and will be 0 if there is no header.
 
-# PARCHG IMPLEMENTATION EXAMPLES:
-- Parsing only works on VASP 5 output (parchg.*.vasp)
-- Screenshots are examples of using M. Lavik's volume renderer along with Histogram Texture generation.
-- 500k data points
+All this info can be added to a ".ini"-file, which the importer will use (if it finds any). See the sample files (in the  "DataFiles" folder for an example).
 
-![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/PARCHG---Electron-Density-Volume-Renderer/Screenshots/upper.png)
-![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/PARCHG---Electron-Density-Volume-Renderer/Screenshots/top.png)
-![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/PARCHG---Electron-Density-Volume-Renderer/Screenshots/dist.png)
-![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/PARCHG---Electron-Density-Volume-Renderer/Screenshots/vert.png)
-![alt tag](https://github.com/jasonks2/UnityVolumeRendering/blob/PARCHG---Electron-Density-Volume-Renderer/Screenshots/bottom.png)
+# Todo:
+- Improve 2D Transfer Function editor: Better GUI, more shapes (triangles)
+- Optimise histogram generation
+- Support very large datasets (currently we naively try to create 3D textures with the same dimension as the data)
+
+![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/slices.gif)
+![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/1.png)
+![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/2.png)
+![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/3.png)
+![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/4.png)
+![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/5.png)
+![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/6.png)
+
+# Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute.
+
+Thanks to [everyone who have contributed so far](CREDITS.md).
 
 See ACKNOWLEDGEMENTS.txt for libraries used by this project.

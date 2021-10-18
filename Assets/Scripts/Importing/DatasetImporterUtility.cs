@@ -22,9 +22,8 @@ namespace UnityVolumeRendering
 
             // Check file extension
             string extension = Path.GetExtension(filePath);
-            string vasp  = ".vasp";
 
-            if (String.Equals(vasp ,extension.ToString() ) )
+            if (String.Equals(extension, ".vasp"))
             {
                 datasetType = DatasetType.PARCHG;
             }

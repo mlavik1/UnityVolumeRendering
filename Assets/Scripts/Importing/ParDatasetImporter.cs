@@ -73,7 +73,7 @@ namespace UnityVolumeRendering
         int[] list;
 
         string gridRow;
-        double[] dataGrid;
+        float[] dataGrid;
         string[] densityLine;
 
         int[] dimArray;
@@ -81,7 +81,7 @@ namespace UnityVolumeRendering
         double[] data;
         string currentLine;
         string[] densityTrim;
-        double[] volumeScaledData;
+        float[] volumeScaledData;
 
         public ParDatasetImporter(string filePath, int nx, int ny, int nz)
         {
@@ -127,12 +127,9 @@ namespace UnityVolumeRendering
             dataFiller.dimX = nx;
             dataFiller.dimY = ny;
             dataFiller.dimZ = nz;
-            dataFiller.nx = nx;
-            dataFiller.ny = ny;
-            dataFiller.nz = nz;
             dataFiller.volumeScale = (float) (1 / volumeScale);
-            dataFiller.dataGrid = new double[dimTotal];
-            volumeScaledData = new double[dimTotal];
+            dataFiller.data = new float[dimTotal];
+            volumeScaledData = new float[dimTotal];
             
             for (int ix = 0; ix < nx; ix++)
             {
@@ -147,11 +144,10 @@ namespace UnityVolumeRendering
             }
             for (int i = 0; i < dimTotal; i++)
             {
-                //dataFiller.dataGrid[i] = volumeScaledData[i];
-                dataFiller.dataGrid[i] = dataGrid[i];
+                dataFiller.data[i] = dataGrid[i];
             }
 
-            Debug.Log("Loaded dataset in range: " + dataFiller.GetMinDataValueDouble() + "  -  " + dataFiller.GetMaxDataValueDouble());
+            Debug.Log("Loaded dataset in range: " + dataFiller.GetMinDataValue() + "  -  " + dataFiller.GetMaxDataValue());
             
             return dataFiller;
         }
@@ -162,7 +158,6 @@ namespace UnityVolumeRendering
             string title = null; 
             string line = null; 
             int lines = 0;
-            //string line = stream.ReadLine().Skip(0).Take().First().ToString(); //read first line
             counterLine = 1;
 
             for (int i  = 0; i < counterLine; ++i) // read first line
@@ -476,13 +471,13 @@ namespace UnityVolumeRendering
             gridDataLines = dimTotal / 10;
             return gridDataLines;
         } 
-        public double[] readGrid() 
+        public float[] readGrid() 
         {
             StreamReader stream = new StreamReader(filePath);
 
-            dataGrid = new double[dimTotal]; 
+            dataGrid = new float[dimTotal]; 
 
-            List<double> data = new List<double>();
+            List<float> data = new List<float>();
 
             for (int i = 0; i < 8 + sum + 2 + gridDataLines; i++)
              {
@@ -493,7 +488,6 @@ namespace UnityVolumeRendering
                         currentLine = stream.ReadLine();
                         gridRow = currentLine.Trim();
 
-                        //densityLine = Regex.Split(gridRow, @"(?<=\d)\s*[+*/-]\s*(?=-|\d)"); // regex split stores into densityLine[0] .. Maybe append .ToArray()?
                         densityLine = Regex.Split(gridRow, @"(/^[+\-]?(?=.)(0|[1-9]\d*)?(\.\d*)?(?:(\d)[eE][+\-]?\d+)?$/)"); //thank stackoverflow
                         densityTrim = densityLine[0].Trim().Split(' ');
 
@@ -501,7 +495,7 @@ namespace UnityVolumeRendering
                         {
                             if (!string.IsNullOrEmpty(densityTrim[r]) && (Regex.IsMatch(densityTrim[r], @"\d")) && !string.IsNullOrWhiteSpace(densityTrim[r]))
                             {
-                                data.Add(double.Parse(densityTrim[r]));
+                                data.Add(float.Parse(densityTrim[r]));
                             }
                         }
                    }

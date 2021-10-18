@@ -75,12 +75,12 @@ namespace UnityVolumeRendering
                 reader.ReadBytes(skipBytes);
 
             int uDimension = dimX * dimY * dimZ;
-            dataset.data = new int[uDimension];
+            dataset.data = new float[uDimension];
 
             // Read the data/sample values
             for (int i = 0; i < uDimension; i++)
             {
-                dataset.data[i] = ReadDataValue(reader);
+                dataset.data[i] = (float)ReadDataValue(reader);
             }
             Debug.Log("Loaded dataset in range: " + dataset.GetMinDataValue() + "  -  " + dataset.GetMaxDataValue());
 
