@@ -25,7 +25,7 @@ using UnityEditor;
 namespace UnityVolumeRendering
 {
 
-    public class ParDatasetImporter : DatasetImporterBase // : DatasetImporterBase to use Import()
+    public class ParDatasetImporter
     {
         string filePath;
         string fileName;
@@ -91,7 +91,7 @@ namespace UnityVolumeRendering
             this.nz = nz;
         }
 
-        public override VolumeDataset Import() //fills VolumeDataset object
+        public VolumeDataset Import() //fills VolumeDataset object
         {
             var extension = Path.GetExtension(filePath);
             if(!File.Exists(filePath))
