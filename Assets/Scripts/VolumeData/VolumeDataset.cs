@@ -120,7 +120,7 @@ namespace UnityVolumeRendering
             bool isHalfFloat = texformat == TextureFormat.RHalf;
             try
             {
-                // Create a bute array for filling the texture. Store has half (16 bit) or single (32 bit) float values.
+                // Create a byte array for filling the texture. Store has half (16 bit) or single (32 bit) float values.
                 int sampleSize = isHalfFloat ? 2 : 4;
                 byte[] bytes = new byte[data.Length * sampleSize]; // This can cause OutOfMemoryException
                 for (int iData = 0; iData < data.Length; iData++)
