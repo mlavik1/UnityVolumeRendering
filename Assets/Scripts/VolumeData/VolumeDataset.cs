@@ -117,7 +117,15 @@ namespace UnityVolumeRendering
             int maxValue = GetMaxDataValue();
             int maxRange = maxValue - minValue;
 
-            Color[] cols = new Color[data.Length];
+            Color[] cols;
+            try
+            {
+                cols = new Color[data.Length];
+            }
+            catch (OutOfMemoryException ex)
+            {
+                cols = null;
+            }
             for (int x = 0; x < dimX; x++)
             {
                 for (int y = 0; y < dimY; y++)
@@ -125,11 +133,18 @@ namespace UnityVolumeRendering
                     for (int z = 0; z < dimZ; z++)
                     {
                         int iData = x + y * dimX + z * (dimX * dimY);
-                        cols[iData] = new Color((float)(data[iData] - minValue) / maxRange, 0.0f, 0.0f, 0.0f);
+                        if (cols == null)
+                        {
+                            texture.SetPixel(x, y, z, new Color((float)(data[iData] - minValue) / maxRange, 0.0f, 0.0f, 0.0f));
+                        }
+                        else
+                        {
+                            cols[iData] = new Color((float)(data[iData] - minValue) / maxRange, 0.0f, 0.0f, 0.0f);
+                        }
                     }
                 }
             }
-            texture.SetPixels(cols);
+            if(cols != null) texture.SetPixels(cols);
             texture.Apply();
             return texture;
         }
@@ -144,7 +159,15 @@ namespace UnityVolumeRendering
             int maxValue = GetMaxDataValue();
             int maxRange = maxValue - minValue;
 
-            Color[] cols = new Color[data.Length];
+            Color[] cols;
+            try
+            {
+                cols = new Color[data.Length];
+            }
+            catch (OutOfMemoryException ex)
+            {
+                cols = null;
+            }
             for (int x = 0; x < dimX; x++)
             {
                 for (int y = 0; y < dimY; y++)
@@ -162,11 +185,18 @@ namespace UnityVolumeRendering
 
                         Vector3 grad = new Vector3((x2 - x1) / (float)maxRange, (y2 - y1) / (float)maxRange, (z2 - z1) / (float)maxRange);
 
-                        cols[iData] = new Color(grad.x, grad.y, grad.z, (float)(data[iData] - minValue) / maxRange);
+                        if (cols == null)
+                        {
+                            texture.SetPixel(x, y, z, new Color(grad.x, grad.y, grad.z, (float)(data[iData] - minValue) / maxRange));
+                        }
+                        else
+                        {
+                            cols[iData] = new Color(grad.x, grad.y, grad.z, (float)(data[iData] - minValue) / maxRange);
+                        }
                     }
                 }
             }
-            texture.SetPixels(cols);
+            if (cols != null) texture.SetPixels(cols);
             texture.Apply();
             return texture;
         }
