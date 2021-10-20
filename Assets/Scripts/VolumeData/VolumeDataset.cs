@@ -112,24 +112,36 @@ namespace UnityVolumeRendering
             TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RHalf) ? TextureFormat.RHalf : TextureFormat.RFloat;
             Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
             texture.wrapMode = TextureWrapMode.Clamp;
-
+            
             int minValue = GetMinDataValue();
             int maxValue = GetMaxDataValue();
             int maxRange = maxValue - minValue;
 
-            Color[] cols = new Color[data.Length];
-            for (int x = 0; x < dimX; x++)
+            bool isHalfFloat = texformat == TextureFormat.RHalf;
+            try
             {
-                for (int y = 0; y < dimY; y++)
+                // Create a byte array for filling the texture. Store has half (16 bit) or single (32 bit) float values.
+                int sampleSize = isHalfFloat ? 2 : 4;
+                byte[] bytes = new byte[data.Length * sampleSize]; // This can cause OutOfMemoryException
+                for (int iData = 0; iData < data.Length; iData++)
                 {
-                    for (int z = 0; z < dimZ; z++)
-                    {
-                        int iData = x + y * dimX + z * (dimX * dimY);
-                        cols[iData] = new Color((float)(data[iData] - minValue) / maxRange, 0.0f, 0.0f, 0.0f);
-                    }
+                    float pixelValue = (float)(data[iData] - minValue) / maxRange;
+                    byte[] pixelBytes = isHalfFloat ? BitConverter.GetBytes(Mathf.FloatToHalf(pixelValue)) : BitConverter.GetBytes(pixelValue);
+
+                    Array.Copy(pixelBytes, 0, bytes, iData * sampleSize, sampleSize);
                 }
+
+                texture.SetPixelData(bytes, 0);
             }
-            texture.SetPixels(cols);
+            catch (OutOfMemoryException ex)
+            {
+                Debug.LogWarning("Out of memory when creating texture. Using fallback method.");
+                for (int x = 0; x < dimX; x++)
+                    for (int y = 0; y < dimY; y++)
+                        for (int z = 0; z < dimZ; z++)
+                            texture.SetPixel(x, y, z, new Color((float)(data[x + y * dimX + z * (dimX * dimY)] - minValue) / maxRange, 0.0f, 0.0f, 0.0f));
+            }
+
             texture.Apply();
             return texture;
         }
@@ -144,7 +156,15 @@ namespace UnityVolumeRendering
             int maxValue = GetMaxDataValue();
             int maxRange = maxValue - minValue;
 
-            Color[] cols = new Color[data.Length];
+            Color[] cols;
+            try
+            {
+                cols = new Color[data.Length];
+            }
+            catch (OutOfMemoryException ex)
+            {
+                cols = null;
+            }
             for (int x = 0; x < dimX; x++)
             {
                 for (int y = 0; y < dimY; y++)
@@ -162,11 +182,18 @@ namespace UnityVolumeRendering
 
                         Vector3 grad = new Vector3((x2 - x1) / (float)maxRange, (y2 - y1) / (float)maxRange, (z2 - z1) / (float)maxRange);
 
-                        cols[iData] = new Color(grad.x, grad.y, grad.z, (float)(data[iData] - minValue) / maxRange);
+                        if (cols == null)
+                        {
+                            texture.SetPixel(x, y, z, new Color(grad.x, grad.y, grad.z, (float)(data[iData] - minValue) / maxRange));
+                        }
+                        else
+                        {
+                            cols[iData] = new Color(grad.x, grad.y, grad.z, (float)(data[iData] - minValue) / maxRange);
+                        }
                     }
                 }
             }
-            texture.SetPixels(cols);
+            if (cols != null) texture.SetPixels(cols);
             texture.Apply();
             return texture;
         }
