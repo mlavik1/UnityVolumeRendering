@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace UnityVolumeRendering
@@ -13,9 +13,13 @@ namespace UnityVolumeRendering
         [SerializeField]
         public int[] data = null;
 
+        // Flattened 3D array of downscaled data sample values.
         [SerializeField]
-        public int dimX, dimY, dimZ;
-        
+        public float[] downScaledData = null;
+
+        [SerializeField]
+        public int dimX, dimY, dimZ, halfDimX, halfDimY, halfDimZ;
+
         [SerializeField]
         public float scaleX = 0.0f, scaleY = 0.0f, scaleZ = 0.0f;
 
@@ -26,12 +30,23 @@ namespace UnityVolumeRendering
         private int maxDataValue = int.MinValue;
         private Texture3D dataTexture = null;
         private Texture3D gradientTexture = null;
+        private bool downScaled = false;
 
         public Texture3D GetDataTexture()
         {
+            return GetDataTexture(false);
+        }
+
+        public Texture3D GetDataTexture(bool forceDownscaling)
+        {
             if (dataTexture == null)
             {
-                dataTexture = CreateTextureInternal();
+                if (forceDownscaling /* || some conditions */)
+                {
+                    dataTexture = CreateDownScaledTextureInternal();
+                    downScaled = true;
+                }
+                else dataTexture = CreateTextureInternal();
             }
             return dataTexture;
         }
@@ -40,7 +55,8 @@ namespace UnityVolumeRendering
         {
             if (gradientTexture == null)
             {
-                gradientTexture = CreateGradientTextureInternal();
+                if (downScaled) gradientTexture = CreateDownScaledGradientTextureInternal();
+                else gradientTexture = CreateGradientTextureInternal();
             }
             return gradientTexture;
         }
@@ -112,7 +128,7 @@ namespace UnityVolumeRendering
             TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RHalf) ? TextureFormat.RHalf : TextureFormat.RFloat;
             Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
             texture.wrapMode = TextureWrapMode.Clamp;
-            
+
             int minValue = GetMinDataValue();
             int maxValue = GetMaxDataValue();
             int maxRange = maxValue - minValue;
@@ -196,6 +212,148 @@ namespace UnityVolumeRendering
             if (cols != null) texture.SetPixels(cols);
             texture.Apply();
             return texture;
+        }
+
+
+        private Texture3D CreateDownScaledTextureInternal()
+        {
+            halfDimX = dimX / 2 + dimX % 2;
+            halfDimY = dimY / 2 + dimY % 2;
+            halfDimZ = dimZ / 2 + dimZ % 2;
+
+            TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RHalf) ? TextureFormat.RHalf : TextureFormat.RFloat;
+
+            Texture3D texture = new Texture3D(halfDimX, halfDimY, halfDimZ, texformat, false);
+            texture.wrapMode = TextureWrapMode.Clamp;
+
+            downScaledData = new float[halfDimX * halfDimY * halfDimZ];
+
+            int minValue = GetMinDataValue();
+            int maxValue = GetMaxDataValue();
+            int maxRange = maxValue - minValue;
+
+            bool isHalfFloat = texformat == TextureFormat.RHalf;
+            int sampleSize = isHalfFloat ? 2 : 4;
+            byte[] bytes;
+            try
+            {
+                // Create a byte array for filling the texture. Store has half (16 bit) or single (32 bit) float values.
+                bytes = new byte[halfDimX * halfDimY * halfDimZ * sampleSize]; // This can cause OutOfMemoryException
+            }
+            catch (OutOfMemoryException ex)
+            {
+                Debug.LogWarning("Out of memory when creating texture. Using fallback method.");
+                bytes = null;
+            }
+
+            for (int x = 0; x < halfDimX; x++)
+            {
+                for (int y = 0; y < halfDimY; y++)
+                {
+                    for (int z = 0; z < halfDimZ; z++)
+                    {
+                        float avg = GetAvgerageVoxelValues(x * 2, y * 2, z * 2);
+                        int index = x + y * halfDimX + z * (halfDimX * halfDimY);
+                        downScaledData[index] = (avg - minValue) / maxRange; //Store downscaled data for gradient texture generation, etc.
+
+                        if (bytes == null)
+                        {
+                            texture.SetPixel(x, y, z, new Color(downScaledData[index], 0.0f, 0.0f, 0.0f));
+                        }
+                        else
+                        {
+                            byte[] pixelBytes = isHalfFloat ? BitConverter.GetBytes(Mathf.FloatToHalf(downScaledData[index])) : BitConverter.GetBytes(downScaledData[index]);
+                            Array.Copy(pixelBytes, 0, bytes, index * sampleSize, sampleSize);
+                        }
+                    }
+                }
+            }
+
+            if (bytes != null) texture.SetPixelData(bytes, 0);
+
+            texture.Apply();
+            return texture;
+        }
+
+        private Texture3D CreateDownScaledGradientTextureInternal()
+        {
+            if (!downScaled || downScaledData == null) throw new InvalidOperationException("Downscaled gradient texture must be generated after downscaled main texture!");
+
+            TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RGBAHalf) ? TextureFormat.RGBAHalf : TextureFormat.RGBAFloat;
+            Texture3D texture = new Texture3D(halfDimX, halfDimY, halfDimZ, texformat, false);
+            texture.wrapMode = TextureWrapMode.Clamp;
+
+            Color[] cols;
+            try
+            {
+                cols = new Color[downScaledData.Length];
+            }
+            catch (OutOfMemoryException ex)
+            {
+                cols = null;
+            }
+            for (int x = 0; x < halfDimX; x++)
+            {
+                for (int y = 0; y < halfDimY; y++)
+                {
+                    for (int z = 0; z < halfDimZ; z++)
+                    {
+                        int iData = x + y * halfDimX + z * (halfDimX * halfDimY);
+
+                        float x1 = downScaledData[Math.Min(x + 1, halfDimX - 1) + y * halfDimX + z * (halfDimX * halfDimY)];
+                        float x2 = downScaledData[Math.Max(x - 1, 0) + y * halfDimX + z * (halfDimX * halfDimY)];
+                        float y1 = downScaledData[x + Math.Min(y + 1, halfDimY - 1) * halfDimX + z * (halfDimX * halfDimY)];
+                        float y2 = downScaledData[x + Math.Max(y - 1, 0) * halfDimX + z * (halfDimX * halfDimY)];
+                        float z1 = downScaledData[x + y * halfDimX + Math.Min(z + 1, halfDimZ - 1) * (halfDimX * halfDimY)];
+                        float z2 = downScaledData[x + y * halfDimX + Math.Max(z - 1, 0) * (halfDimX * halfDimY)];
+
+                        Vector3 grad = new Vector3(x2 - x1, y2 - y1, z2 - z1);
+
+                        if (cols == null)
+                        {
+                            texture.SetPixel(x, y, z, new Color(grad.x, grad.y, grad.z, downScaledData[iData]));
+                        }
+                        else
+                        {
+                            cols[iData] = new Color(grad.x, grad.y, grad.z, downScaledData[iData]);
+                        }
+                    }
+                }
+            }
+            if (cols != null) texture.SetPixels(cols);
+            texture.Apply();
+            return texture;
+        }
+
+        public float GetAvgerageVoxelValues(int x, int y, int z)
+        {
+            // if a dimension length is not an even number
+            bool xC = x + 1 == dimX;
+            bool yC = y + 1 == dimY;
+            bool zC = z + 1 == dimZ;
+
+            //if expression can only be true on the edges of the texture
+            if (xC || yC || zC)
+            {
+                if (!xC && yC && zC) return (GetData(x, y, z) + GetData(x + 1, y, z)) / 2.0f;
+                else if (xC && !yC && zC) return (GetData(x, y, z) + GetData(x, y + 1, z)) / 2.0f;
+                else if (xC && yC && !zC) return (GetData(x, y, z) + GetData(x, y, z + 1)) / 2.0f;
+                else if (!xC && !yC && zC) return (GetData(x, y, z) + GetData(x + 1, y, z) + GetData(x, y + 1, z) + GetData(x + 1, y + 1, z)) / 4.0f;
+                else if (!xC && yC && !zC) return (GetData(x, y, z) + GetData(x + 1, y, z) + GetData(x, y, z + 1) + GetData(x + 1, y, z + 1)) / 4.0f;
+                else if (xC && !yC && !zC) return (GetData(x, y, z) + GetData(x, y + 1, z) + GetData(x, y, z + 1) + GetData(x, y + 1, z + 1)) / 4.0f;
+                else return GetData(x, y, z); // if xC && yC && zC
+            }
+            return (GetData(x, y, z) + GetData(x + 1, y, z) + GetData(x, y + 1, z) + GetData(x + 1, y + 1, z)
+                    + GetData(x, y, z + 1) + GetData(x, y + 1, z + 1) + GetData(x + 1, y, z + 1) + GetData(x + 1, y + 1, z + 1)) / 8.0f;
+        }
+
+        public int GetData(int x, int y, int z)
+        {
+            return data[x + y * dimX + z * (dimX * dimY)];
+        }
+        public float GetDownScaledData(int x, int y, int z)
+        {
+            return downScaledData[x + y * halfDimX + z * (halfDimX * halfDimY)];
         }
     }
 }
