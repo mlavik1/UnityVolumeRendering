@@ -43,14 +43,10 @@ namespace UnityVolumeRendering
             {
                 if (forceDownscaling /* || some conditions */)
                 {
-                    halfDimX = dimX / 2 + dimX % 2;
-                    halfDimY = dimY / 2 + dimY % 2;
-                    halfDimZ = dimZ / 2 + dimZ % 2;
-
                     dataTexture = CreateDownScaledTextureInternal();
                     downScaled = true;
                 }
-                else dataTexture = CreateDownScaledTextureInternal();
+                else dataTexture = CreateTextureInternal();
             }
             return dataTexture;
         }
@@ -221,6 +217,10 @@ namespace UnityVolumeRendering
 
         private Texture3D CreateDownScaledTextureInternal()
         {
+            halfDimX = dimX / 2 + dimX % 2;
+            halfDimY = dimY / 2 + dimY % 2;
+            halfDimZ = dimZ / 2 + dimZ % 2;
+
             TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RHalf) ? TextureFormat.RHalf : TextureFormat.RFloat;
 
             Texture3D texture = new Texture3D(halfDimX, halfDimY, halfDimZ, texformat, false);
