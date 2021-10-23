@@ -93,7 +93,7 @@ namespace UnityVolumeRendering
             return new List<DICOMSeries>(seriesByUID.Values);
         }
 
-        public VolumeDataset ImportDICOMSeries(DICOMSeries series)
+        public VolumeDataset ImportDICOMSeries(DICOMSeries series, bool forceDownScaling = false)
         {
             List<DICOMSliceFile> files = series.dicomFiles;
 
@@ -157,6 +157,11 @@ namespace UnityVolumeRendering
                 dataset.scaleX = files[0].pixelSpacing * dataset.dimX;
                 dataset.scaleY = files[0].pixelSpacing * dataset.dimY;
                 dataset.scaleZ = Mathf.Abs(files[files.Count - 1].location - files[0].location);
+            }
+
+            if (forceDownScaling)
+            {
+                dataset.DownScaleData();
             }
 
             dataset.FixDimensions();

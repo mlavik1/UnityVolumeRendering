@@ -43,8 +43,17 @@ namespace UnityVolumeRendering
 
         private void ImportDataset()
         {
-            RawDatasetImporter importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, endianness, bytesToSkip);
-            
+            RawDatasetImporter importer;
+            if (EditorUtility.DisplayDialog("Optional DownScaling",
+                        "Do you want to downscale texture even if the dimensions are within the limits?", "Yes", "No"))
+            {
+                importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, endianness, bytesToSkip, true);
+            }
+            else
+            {
+                importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, endianness, bytesToSkip, false);
+            }
+
             VolumeDataset dataset = importer.Import();
 
             if (dataset != null)
