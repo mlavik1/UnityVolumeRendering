@@ -51,9 +51,17 @@ namespace UnityVolumeRendering
                     DICOMImporter importer = new DICOMImporter(fileCandidates, Path.GetFileName(dir));
                     List<DICOMImporter.DICOMSeries> seriesList = importer.LoadDICOMSeries();
                     float numVolumesCreated = 0;
+
+                    bool forceDownScaling = false;
+                    if (EditorUtility.DisplayDialog("Optional DownScaling",
+                        "Do you want to downscale texture even if the dimensions are within the limits?", "Yes", "No"))
+                    {
+                        forceDownScaling = true;
+                    }
+
                     foreach (DICOMImporter.DICOMSeries series in seriesList)
                     {
-                        VolumeDataset dataset = importer.ImportDICOMSeries(series);
+                        VolumeDataset dataset = importer.ImportDICOMSeries(series, forceDownScaling);
                         if (dataset != null)
                         {
                             VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
@@ -77,9 +85,19 @@ namespace UnityVolumeRendering
         static void ShowSequenceImporter()
         {
             string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
+            
             if (Directory.Exists(dir))
             {
-                ImageSequenceImporter importer = new ImageSequenceImporter(dir);
+                ImageSequenceImporter importer;
+                if (EditorUtility.DisplayDialog("Optional DownScaling",
+                        "Do you want to downscale texture even if the dimensions are within the limits?", "Yes", "No"))
+                {
+                    importer = new ImageSequenceImporter(dir,true);
+                }
+                else
+                {
+                    importer = new ImageSequenceImporter(dir,false);
+                }
                 VolumeDataset dataset = importer.Import();
                 if (dataset != null)
                     VolumeObjectFactory.CreateObject(dataset);
