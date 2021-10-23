@@ -65,7 +65,10 @@ namespace UnityVolumeRendering
 
             // Load all DICOM files
             List<DICOMSliceFile> files = new List<DICOMSliceFile>();
-            foreach (string filePath in fileCandidates)
+            
+            IEnumerable<string> sortedFiles = fileCandidates.OrderBy(s => s);
+            
+            foreach (string filePath in sortedFiles)
             {
                 DICOMSliceFile sliceFile = ReadDICOMFile(filePath);
                 if(sliceFile != null)
@@ -90,12 +93,9 @@ namespace UnityVolumeRendering
             return new List<DICOMSeries>(seriesByUID.Values);
         }
 
-        public VolumeDataset ImportDICOMSeries(DICOMSeries series)
+        public VolumeDataset ImportDICOMSeries(DICOMSeries series, bool forceDownScaling = false)
         {
             List<DICOMSliceFile> files = series.dicomFiles;
-
-            // Sort files by slice location
-            files.Sort((DICOMSliceFile a, DICOMSliceFile b) => { return a.location.CompareTo(b.location); });
 
             // Check if the series is missing the slice location tag
             bool needsCalcLoc = false;
@@ -107,6 +107,9 @@ namespace UnityVolumeRendering
             // Calculate slice location from "Image Position" (0020,0032)
             if (needsCalcLoc)
                 CalcSliceLocFromPos(files);
+            
+            // Sort files by slice location
+            files.Sort((DICOMSliceFile a, DICOMSliceFile b) => { return a.location.CompareTo(b.location); });
 
             Debug.Log($"Importing {files.Count} DICOM slices");
 
@@ -154,6 +157,11 @@ namespace UnityVolumeRendering
                 dataset.scaleX = files[0].pixelSpacing * dataset.dimX;
                 dataset.scaleY = files[0].pixelSpacing * dataset.dimY;
                 dataset.scaleZ = Mathf.Abs(files[files.Count - 1].location - files[0].location);
+            }
+
+            if (forceDownScaling)
+            {
+                dataset.DownScaleData();
             }
 
             dataset.FixDimensions();
