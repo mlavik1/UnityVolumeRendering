@@ -11,7 +11,6 @@ namespace UnityVolumeRendering
     public class ImageSequenceImporter
     {
         private string directoryPath;
-        private bool forceDownScaling;
         private string[] supportedImageTypes = new string[] 
         {
             "*.png",
@@ -19,10 +18,9 @@ namespace UnityVolumeRendering
             "*.jpeg"
         };
 
-        public ImageSequenceImporter(string directoryPath, bool forceDownScaling = false)
+        public ImageSequenceImporter(string directoryPath)
         {
             this.directoryPath = directoryPath;
-            this.forceDownScaling = forceDownScaling;
         }
 
         public VolumeDataset Import()
@@ -38,11 +36,6 @@ namespace UnityVolumeRendering
             Vector3Int dimensions = GetVolumeDimensions(imagePaths);
             int[] data = FillSequentialData(dimensions, imagePaths);
             VolumeDataset dataset = FillVolumeDataset(data, dimensions);
-
-            if (forceDownScaling)
-            {
-                dataset.DownScaleData();
-            }
 
             dataset.FixDimensions();
 

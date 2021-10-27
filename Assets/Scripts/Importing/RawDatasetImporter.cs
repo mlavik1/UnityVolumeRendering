@@ -29,8 +29,7 @@ namespace UnityVolumeRendering
         private DataContentFormat contentFormat;
         private Endianness endianness;
         private int skipBytes;
-        private bool forceDownScaling;
-        public RawDatasetImporter(string filePath, int dimX, int dimY, int dimZ, DataContentFormat contentFormat, Endianness endianness, int skipBytes, bool forceDownScaling = false)
+        public RawDatasetImporter(string filePath, int dimX, int dimY, int dimZ, DataContentFormat contentFormat, Endianness endianness, int skipBytes)
         {
             this.filePath = filePath;
             this.dimX = dimX;
@@ -39,7 +38,6 @@ namespace UnityVolumeRendering
             this.contentFormat = contentFormat;
             this.endianness = endianness;
             this.skipBytes = skipBytes;
-            this.forceDownScaling = forceDownScaling;
         }
 
         public VolumeDataset Import()
@@ -86,11 +84,6 @@ namespace UnityVolumeRendering
 
             reader.Close();
             fs.Close();
-
-            if (forceDownScaling)
-            {
-                dataset.DownScaleData();
-            }
 
             dataset.FixDimensions();
 

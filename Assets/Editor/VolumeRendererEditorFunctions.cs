@@ -52,18 +52,20 @@ namespace UnityVolumeRendering
                     List<DICOMImporter.DICOMSeries> seriesList = importer.LoadDICOMSeries();
                     float numVolumesCreated = 0;
 
-                    bool forceDownScaling = false;
-                    if (EditorUtility.DisplayDialog("Optional DownScaling",
-                        "Do you want to downscale texture even if the dimensions are within the limits?", "Yes", "No"))
-                    {
-                        forceDownScaling = true;
-                    }
-
                     foreach (DICOMImporter.DICOMSeries series in seriesList)
                     {
-                        VolumeDataset dataset = importer.ImportDICOMSeries(series, forceDownScaling);
+                        VolumeDataset dataset = importer.ImportDICOMSeries(series);
                         if (dataset != null)
                         {
+                            if (EditorPrefs.GetBool("DownscaleVolumePrompt"))
+                            {
+                                if (EditorUtility.DisplayDialog("Optional DownScaling",
+                                    $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
+                                {
+                                    dataset.DownScaleData();
+                                }
+                            }
+
                             VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
                             obj.transform.position = new Vector3(numVolumesCreated, 0, 0);
                             numVolumesCreated++;
@@ -88,19 +90,21 @@ namespace UnityVolumeRendering
             
             if (Directory.Exists(dir))
             {
-                ImageSequenceImporter importer;
-                if (EditorUtility.DisplayDialog("Optional DownScaling",
-                        "Do you want to downscale texture even if the dimensions are within the limits?", "Yes", "No"))
-                {
-                    importer = new ImageSequenceImporter(dir,true);
-                }
-                else
-                {
-                    importer = new ImageSequenceImporter(dir,false);
-                }
+                ImageSequenceImporter importer = new ImageSequenceImporter(dir);
+
                 VolumeDataset dataset = importer.Import();
                 if (dataset != null)
+                {
+                    if (EditorPrefs.GetBool("DownscaleVolumePrompt"))
+                    {
+                        if (EditorUtility.DisplayDialog("Optional DownScaling",
+                            $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
+                        {
+                            dataset.DownScaleData();
+                        }
+                    }
                     VolumeObjectFactory.CreateObject(dataset);
+                }
             }
             else
             {
@@ -151,6 +155,12 @@ namespace UnityVolumeRendering
         static void ShowValueRangeWindow()
         {
             ValueRangeEditorWindow.ShowWindow();
+        }
+
+        [MenuItem("Volume Rendering/Settigs")]
+        static void ShowSettingsWindow()
+        {
+            ImportSettingsEditorWindow.ShowWindow();
         }
     }
 }
