@@ -57,7 +57,7 @@ namespace UnityVolumeRendering
                         VolumeDataset dataset = importer.ImportDICOMSeries(series);
                         if (dataset != null)
                         {
-                            if (EditorPrefs.GetBool("DownscaleVolumePrompt"))
+                            if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
                             {
                                 if (EditorUtility.DisplayDialog("Optional DownScaling",
                                     $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
@@ -95,7 +95,7 @@ namespace UnityVolumeRendering
                 VolumeDataset dataset = importer.Import();
                 if (dataset != null)
                 {
-                    if (EditorPrefs.GetBool("DownscaleVolumePrompt"))
+                    if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
                     {
                         if (EditorUtility.DisplayDialog("Optional DownScaling",
                             $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))

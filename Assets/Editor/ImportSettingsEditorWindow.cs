@@ -14,8 +14,8 @@ namespace UnityVolumeRendering
         private void OnGUI()
         {
             EditorGUILayout.LabelField("Show promt asking if you want to downscale the dataset on import?");
-            bool showDownscalePrompt = EditorGUILayout.Toggle("Show downscale prompt", EditorPrefs.GetBool("DownscaleVolumePrompt"));
-            EditorPrefs.SetBool("DownscaleVolumePrompt", showDownscalePrompt);
+            bool showDownscalePrompt = EditorGUILayout.Toggle("Show downscale prompt", EditorPrefs.GetBool("DownscaleDatasetPrompt"));
+            EditorPrefs.SetBool("DownscaleDatasetPrompt", showDownscalePrompt);
         }
     }
 }
