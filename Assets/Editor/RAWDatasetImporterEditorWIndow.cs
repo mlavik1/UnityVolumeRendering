@@ -44,11 +44,18 @@ namespace UnityVolumeRendering
         private void ImportDataset()
         {
             RawDatasetImporter importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, endianness, bytesToSkip);
-            
             VolumeDataset dataset = importer.Import();
 
             if (dataset != null)
             {
+                if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
+                {
+                    if (EditorUtility.DisplayDialog("Optional DownScaling",
+                        $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
+                    {
+                        dataset.DownScaleData();
+                    }
+                }
                 VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
             }
             else

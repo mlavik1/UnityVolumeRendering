@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace UnityVolumeRendering
@@ -15,7 +15,7 @@ namespace UnityVolumeRendering
 
         [SerializeField]
         public int dimX, dimY, dimZ;
-        
+
         [SerializeField]
         public float scaleX = 0.0f, scaleY = 0.0f, scaleZ = 0.0f;
 
@@ -66,32 +66,40 @@ namespace UnityVolumeRendering
         {
             int MAX_DIM = 2048; // 3D texture max size. See: https://docs.unity3d.com/Manual/class-Texture3D.html
 
-            if (Mathf.Max(dimX, dimY, dimZ) > MAX_DIM)
+            while (Mathf.Max(dimX, dimY, dimZ) > MAX_DIM)
             {
-                Debug.LogWarning("Dimension exceeds limits. Cropping dataset. This might result in an incomplete dataset.");
+                Debug.LogWarning("Dimension exceeds limits (maximum: "+MAX_DIM+"). Dataset is downscaled by 2 on each axis!");
+                DownScaleData();
+            }
+        }
 
-                int newDimX = Mathf.Min(dimX, MAX_DIM);
-                int newDimY = Mathf.Min(dimY, MAX_DIM);
-                int newDimZ = Mathf.Min(dimZ, MAX_DIM);
-                int[] newData = new int[dimX * dimY * dimZ];
+        /// <summary>
+        /// Downscales the data by averaging 8 voxels per each new voxel,
+        /// and replaces downscaled data with the original data
+        /// </summary>
+        public void DownScaleData()
+        {
+            int halfDimX = dimX / 2 + dimX % 2;
+            int halfDimY = dimY / 2 + dimY % 2;
+            int halfDimZ = dimZ / 2 + dimZ % 2;
+            int[] downScaledData = new int[halfDimX * halfDimY * halfDimZ];
 
-                for (int z = 0; z < newDimZ; z++)
+            for (int x = 0; x < halfDimX; x++)
+            {
+                for (int y = 0; y < halfDimY; y++)
                 {
-                    for (int y = 0; y < newDimY; y++)
+                    for (int z = 0; z < halfDimZ; z++)
                     {
-                        for (int x = 0; x < newDimX; x++)
-                        {
-                            int oldIndex = (z * dimX * dimY) + (y * dimX) + x;
-                            int newIndex = (z * newDimX * newDimY) + (y * newDimX) + x;
-                            newData[newIndex] = data[oldIndex];
-                        }
+                        downScaledData[x + y * halfDimX + z * (halfDimX * halfDimY)] = Mathf.RoundToInt(GetAvgerageVoxelValues(x * 2, y * 2, z * 2));
                     }
                 }
-                data = newData;
-                dimX = newDimX;
-                dimY = newDimY;
-                dimZ = newDimZ;
             }
+
+            //Update data & data dimensions
+            data = downScaledData;
+            dimX = halfDimX;
+            dimY = halfDimY;
+            dimZ = halfDimZ;
         }
 
         private void CalculateValueBounds()
@@ -112,7 +120,7 @@ namespace UnityVolumeRendering
             TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RHalf) ? TextureFormat.RHalf : TextureFormat.RFloat;
             Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
             texture.wrapMode = TextureWrapMode.Clamp;
-            
+
             int minValue = GetMinDataValue();
             int maxValue = GetMaxDataValue();
             int maxRange = maxValue - minValue;
@@ -196,6 +204,33 @@ namespace UnityVolumeRendering
             if (cols != null) texture.SetPixels(cols);
             texture.Apply();
             return texture;
+        }
+
+        public float GetAvgerageVoxelValues(int x, int y, int z)
+        {
+            // if a dimension length is not an even number
+            bool xC = x + 1 == dimX;
+            bool yC = y + 1 == dimY;
+            bool zC = z + 1 == dimZ;
+
+            //if expression can only be true on the edges of the texture
+            if (xC || yC || zC)
+            {
+                if (!xC && yC && zC) return (GetData(x, y, z) + GetData(x + 1, y, z)) / 2.0f;
+                else if (xC && !yC && zC) return (GetData(x, y, z) + GetData(x, y + 1, z)) / 2.0f;
+                else if (xC && yC && !zC) return (GetData(x, y, z) + GetData(x, y, z + 1)) / 2.0f;
+                else if (!xC && !yC && zC) return (GetData(x, y, z) + GetData(x + 1, y, z) + GetData(x, y + 1, z) + GetData(x + 1, y + 1, z)) / 4.0f;
+                else if (!xC && yC && !zC) return (GetData(x, y, z) + GetData(x + 1, y, z) + GetData(x, y, z + 1) + GetData(x + 1, y, z + 1)) / 4.0f;
+                else if (xC && !yC && !zC) return (GetData(x, y, z) + GetData(x, y + 1, z) + GetData(x, y, z + 1) + GetData(x, y + 1, z + 1)) / 4.0f;
+                else return GetData(x, y, z); // if xC && yC && zC
+            }
+            return (GetData(x, y, z) + GetData(x + 1, y, z) + GetData(x, y + 1, z) + GetData(x + 1, y + 1, z)
+                    + GetData(x, y, z + 1) + GetData(x, y + 1, z + 1) + GetData(x + 1, y, z + 1) + GetData(x + 1, y + 1, z + 1)) / 8.0f;
+        }
+
+        public int GetData(int x, int y, int z)
+        {
+            return data[x + y * dimX + z * (dimX * dimY)];
         }
     }
 }

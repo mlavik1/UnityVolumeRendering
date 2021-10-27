@@ -15,6 +15,7 @@ namespace UnityVolumeRendering
         {
             "*.png",
             "*.jpg",
+            "*.jpeg"
         };
 
         public ImageSequenceImporter(string directoryPath)

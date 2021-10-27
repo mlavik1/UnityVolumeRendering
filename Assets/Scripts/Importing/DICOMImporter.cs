@@ -65,7 +65,10 @@ namespace UnityVolumeRendering
 
             // Load all DICOM files
             List<DICOMSliceFile> files = new List<DICOMSliceFile>();
-            foreach (string filePath in fileCandidates)
+            
+            IEnumerable<string> sortedFiles = fileCandidates.OrderBy(s => s);
+            
+            foreach (string filePath in sortedFiles)
             {
                 DICOMSliceFile sliceFile = ReadDICOMFile(filePath);
                 if(sliceFile != null)
@@ -94,9 +97,6 @@ namespace UnityVolumeRendering
         {
             List<DICOMSliceFile> files = series.dicomFiles;
 
-            // Sort files by slice location
-            files.Sort((DICOMSliceFile a, DICOMSliceFile b) => { return a.location.CompareTo(b.location); });
-
             // Check if the series is missing the slice location tag
             bool needsCalcLoc = false;
             foreach (DICOMSliceFile file in files)
@@ -107,6 +107,9 @@ namespace UnityVolumeRendering
             // Calculate slice location from "Image Position" (0020,0032)
             if (needsCalcLoc)
                 CalcSliceLocFromPos(files);
+            
+            // Sort files by slice location
+            files.Sort((DICOMSliceFile a, DICOMSliceFile b) => { return a.location.CompareTo(b.location); });
 
             Debug.Log($"Importing {files.Count} DICOM slices");
 
