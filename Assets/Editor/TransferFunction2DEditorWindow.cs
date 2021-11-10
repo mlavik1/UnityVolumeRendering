@@ -121,6 +121,7 @@ namespace UnityVolumeRendering
                 if (GUI.Button(new Rect(startX, startY + 140, 110.0f, 30.0f), "Remove selected shape"))
                 {
                     tf2d.boxes.RemoveAt(selectedBoxIndex);
+                    selectedBoxIndex = -1;
                     needsRegenTexture = true;
                 }
             }
@@ -151,8 +152,6 @@ namespace UnityVolumeRendering
                 tf2d.GenerateTexture();
                 needsRegenTexture = false;
             }
-
-            return;
         }
 
         private void OnSelectionChange()
