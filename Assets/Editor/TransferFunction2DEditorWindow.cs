@@ -93,10 +93,10 @@ namespace UnityVolumeRendering
                 TransferFunction2D.TF2DBox box = tf2d.boxes[selectedBoxIndex];
                 float oldX = box.rect.x;
                 float oldY = box.rect.y;
-                box.rect.x = EditorGUI.Slider(new Rect(startX, startY, 200.0f, 20.0f), "x", box.rect.x, 0.0f, 0.99f);
-                box.rect.width = EditorGUI.Slider(new Rect(startX + 220.0f, startY, 200.0f, 20.0f), "width", oldX + box.rect.width, box.rect.x + 0.01f, 1.0f) - box.rect.x;
-                box.rect.y = EditorGUI.Slider(new Rect(startX, startY + 50, 200.0f, 20.0f), "y", box.rect.y, 0.0f, 1.0f);
-                box.rect.height = EditorGUI.Slider(new Rect(startX + 220.0f, startY + 50, 200.0f, 20.0f), "height", oldY + box.rect.height, box.rect.y + 0.01f, 1.0f) - box.rect.y;
+                box.rect.x = EditorGUI.Slider(new Rect(startX, startY, 200.0f, 20.0f), "min x", box.rect.x, 0.0f, 0.99f);
+                box.rect.width = EditorGUI.Slider(new Rect(startX + 220.0f, startY, 200.0f, 20.0f), "max x", oldX + box.rect.width, box.rect.x + 0.01f, 1.0f) - box.rect.x;
+                box.rect.y = EditorGUI.Slider(new Rect(startX, startY + 50, 200.0f, 20.0f), "min y", box.rect.y, 0.0f, 1.0f);
+                box.rect.height = EditorGUI.Slider(new Rect(startX + 220.0f, startY + 50, 200.0f, 20.0f), "max y", oldY + box.rect.height, box.rect.y + 0.01f, 1.0f) - box.rect.y;
                 box.colour = EditorGUI.ColorField(new Rect(startX + 450.0f, startY + 10, 100.0f, 20.0f), box.colour);
                 box.minAlpha = EditorGUI.Slider(new Rect(startX + 450.0f, startY + 30, 200.0f, 20.0f), "min alpha", box.minAlpha, 0.0f, 1.0f);
                 box.alpha = EditorGUI.Slider(new Rect(startX + 450.0f, startY + 60, 200.0f, 20.0f), "max alpha", box.alpha, 0.0f, 1.0f);
