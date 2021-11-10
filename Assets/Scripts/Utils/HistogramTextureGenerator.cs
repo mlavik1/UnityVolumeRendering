@@ -110,11 +110,20 @@ namespace UnityVolumeRendering
         /// <returns></returns>
         public static Texture2D Generate2DHistogramTexture(VolumeDataset dataset)
         {
-            int numSamples = dataset.GetMaxDataValue() + 1;
-            int numGradientSamples = 256;
-            Color[] cols = new Color[numSamples * numGradientSamples];
-            Texture2D texture = new Texture2D(numSamples, numGradientSamples, TextureFormat.RGBAFloat, false);
+            int minValue = dataset.GetMinDataValue();
+            int maxValue = dataset.GetMaxDataValue();
 
+            // Value range of the density values.
+            int densityValRange = maxValue - minValue + 1;
+            float densityRangeRecip = 1.0f / (maxValue - minValue); // reciprocal
+            // Clamp density value samples.
+            int numDensitySamples = System.Math.Min(densityValRange, 512);
+            int numGradientSamples = 256;
+
+            Color[] cols = new Color[numDensitySamples * numGradientSamples];
+            Texture2D texture = new Texture2D(numDensitySamples, numGradientSamples, TextureFormat.RGBAFloat, false);
+
+            // Zero-initialise colours.
             for (int iCol = 0; iCol < cols.Length; iCol++)
                 cols[iCol] = new Color(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -137,8 +146,16 @@ namespace UnityVolumeRendering
                         int z1 = dataset.data[x + y * dataset.dimX + (z + 1) * (dataset.dimX * dataset.dimY)];
                         int z2 = dataset.data[x + y * dataset.dimX + (z - 1) * (dataset.dimX * dataset.dimY)];
 
+                        // Calculate gradient
                         Vector3 grad = new Vector3((x2 - x1) / (float)maxRange, (y2 - y1) / (float)maxRange, (z2 - z1) / (float)maxRange);
-                        cols[density + (int)(grad.magnitude * numGradientSamples / maxNormalisedMagnitude) * numSamples] = Color.white;
+
+                        // Calculate density and gradient value indices (in flattened 2D array)
+                        float tDensity = (density - minValue) * densityRangeRecip;
+                        int iDensity = Mathf.RoundToInt((numDensitySamples - 1) * tDensity);
+                        int iGrad = (int)(grad.magnitude * numGradientSamples / maxNormalisedMagnitude);
+
+                        // Assign a white colour to all samples (in a histogram where x = density and y = gradient magnitude).
+                        cols[iDensity + iGrad * numDensitySamples] = Color.white;
                     }
                 }
             }
