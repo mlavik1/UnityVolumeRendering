@@ -93,10 +93,10 @@ namespace UnityVolumeRendering
                 TransferFunction2D.TF2DBox box = tf2d.boxes[selectedBoxIndex];
                 float oldX = box.rect.x;
                 float oldY = box.rect.y;
-                box.rect.x = EditorGUI.Slider(new Rect(startX, startY, 200.0f, 20.0f), "x", box.rect.x, 0.0f, 0.99f);
-                box.rect.width = EditorGUI.Slider(new Rect(startX + 220.0f, startY, 200.0f, 20.0f), "width", oldX + box.rect.width, box.rect.x + 0.01f, 1.0f) - box.rect.x;
-                box.rect.y = EditorGUI.Slider(new Rect(startX, startY + 50, 200.0f, 20.0f), "y", box.rect.y, 0.0f, 1.0f);
-                box.rect.height = EditorGUI.Slider(new Rect(startX + 220.0f, startY + 50, 200.0f, 20.0f), "height", oldY + box.rect.height, box.rect.y + 0.01f, 1.0f) - box.rect.y;
+                box.rect.x = EditorGUI.Slider(new Rect(startX, startY, 200.0f, 20.0f), "min x", box.rect.x, 0.0f, 0.99f);
+                box.rect.width = EditorGUI.Slider(new Rect(startX + 220.0f, startY, 200.0f, 20.0f), "max x", oldX + box.rect.width, box.rect.x + 0.01f, 1.0f) - box.rect.x;
+                box.rect.y = EditorGUI.Slider(new Rect(startX, startY + 50, 200.0f, 20.0f), "min y", box.rect.y, 0.0f, 1.0f);
+                box.rect.height = EditorGUI.Slider(new Rect(startX + 220.0f, startY + 50, 200.0f, 20.0f), "max y", oldY + box.rect.height, box.rect.y + 0.01f, 1.0f) - box.rect.y;
                 box.colour = EditorGUI.ColorField(new Rect(startX + 450.0f, startY + 10, 100.0f, 20.0f), box.colour);
                 box.minAlpha = EditorGUI.Slider(new Rect(startX + 450.0f, startY + 30, 200.0f, 20.0f), "min alpha", box.minAlpha, 0.0f, 1.0f);
                 box.alpha = EditorGUI.Slider(new Rect(startX + 450.0f, startY + 60, 200.0f, 20.0f), "max alpha", box.alpha, 0.0f, 1.0f);
@@ -110,7 +110,7 @@ namespace UnityVolumeRendering
             }
 
             // Add new rectangle
-            if (GUI.Button(new Rect(startX, startY + 100, 110.0f, 30.0f), "Add rectangle"))
+            if (GUI.Button(new Rect(startX, startY + 100, 150.0f, 30.0f), "Add rectangle"))
             {
                 tf2d.AddBox(0.1f, 0.1f, 0.8f, 0.8f, Color.white, 0.5f);
                 needsRegenTexture = true;
@@ -118,20 +118,21 @@ namespace UnityVolumeRendering
             // Remove selected shape
             if (selectedBoxIndex != -1)
             {
-                if (GUI.Button(new Rect(startX, startY + 140, 110.0f, 30.0f), "Remove selected shape"))
+                if (GUI.Button(new Rect(startX, startY + 140, 150.0f, 30.0f), "Remove selected shape"))
                 {
                     tf2d.boxes.RemoveAt(selectedBoxIndex);
+                    selectedBoxIndex = -1;
                     needsRegenTexture = true;
                 }
             }
 
-            if(GUI.Button(new Rect(startX, startY + 180, 110.0f, 30.0f), "Save"))
+            if(GUI.Button(new Rect(startX, startY + 180, 150.0f, 30.0f), "Save"))
             {
                 string filepath = EditorUtility.SaveFilePanel("Save transfer function", "", "default.tf2d", "tf2d");
                 if(filepath != "")
                     TransferFunctionDatabase.SaveTransferFunction2D(tf2d, filepath);
             }
-            if(GUI.Button(new Rect(startX, startY + 220, 110.0f, 30.0f), "Load"))
+            if(GUI.Button(new Rect(startX, startY + 220, 150.0f, 30.0f), "Load"))
             {
                 string filepath = EditorUtility.OpenFilePanel("Save transfer function", "", "tf2d");
                 if(filepath != "")
@@ -151,8 +152,6 @@ namespace UnityVolumeRendering
                 tf2d.GenerateTexture();
                 needsRegenTexture = false;
             }
-
-            return;
         }
 
         private void OnSelectionChange()
