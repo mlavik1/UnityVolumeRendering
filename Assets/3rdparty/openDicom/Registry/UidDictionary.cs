@@ -308,6 +308,25 @@ namespace openDicom.Registry
             if (global == null) Global = this;
         }
 
+        public void LoadFromMemory(MemoryStream memStream, DictionaryFileFormat fileFormat)
+        {
+            if (!IsEmpty) Clear();
+            StreamReader streamReader = new StreamReader(memStream);
+            switch (fileFormat)
+            {
+                case DictionaryFileFormat.BinaryFile:
+                    LoadFromBinary(streamReader); break;
+                case DictionaryFileFormat.PropertyFile:
+                    LoadFromProperty(streamReader); break;
+                case DictionaryFileFormat.CsvFile:
+                    LoadFromCsv(streamReader); break;
+                case DictionaryFileFormat.XmlFile:
+                    LoadFromXml(streamReader); break;
+            }
+            streamReader.Close();
+            if (global == null) Global = this;
+        }
+
         private void SaveAsBinary(StreamWriter streamWriter, 
             UidDictionaryEntry[] entryArray)
         {

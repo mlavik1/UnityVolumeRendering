@@ -54,8 +54,14 @@ namespace UnityVolumeRendering
             UidDictionary uidDictionary = new UidDictionary();
             try
             {
-                dataElementDictionary.LoadFrom(Path.Combine(Application.streamingAssetsPath, "dicom-elements-2007.dic"), DictionaryFileFormat.BinaryFile);
-                uidDictionary.LoadFrom(Path.Combine(Application.streamingAssetsPath, "dicom-uids-2007.dic"), DictionaryFileFormat.BinaryFile);
+                // Load .dic files from Resources
+                TextAsset dcmElemAsset = (TextAsset)Resources.Load("dicom-elements-2007.dic");
+                Debug.Assert(dcmElemAsset != null, "dicom-elements-2007.dic is missing from the Resources folder");
+                TextAsset dcmUidsAsset = (TextAsset)Resources.Load("dicom-uids-2007.dic");
+                Debug.Assert(dcmUidsAsset != null, "dicom-uids-2007.dic is missing from the Resources folder");
+
+                dataElementDictionary.LoadFromMemory(new MemoryStream(dcmElemAsset.bytes), DictionaryFileFormat.BinaryFile);
+                uidDictionary.LoadFromMemory(new MemoryStream(dcmUidsAsset.bytes), DictionaryFileFormat.BinaryFile);
             }
             catch (Exception dictionaryException)
             {
