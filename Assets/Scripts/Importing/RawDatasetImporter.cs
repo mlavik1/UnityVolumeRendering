@@ -29,7 +29,6 @@ namespace UnityVolumeRendering
         private DataContentFormat contentFormat;
         private Endianness endianness;
         private int skipBytes;
-
         public RawDatasetImporter(string filePath, int dimX, int dimY, int dimZ, DataContentFormat contentFormat, Endianness endianness, int skipBytes)
         {
             this.filePath = filePath;
@@ -44,7 +43,7 @@ namespace UnityVolumeRendering
         public VolumeDataset Import()
         {
             // Check that the file exists
-            if(!File.Exists(filePath))
+            if (!File.Exists(filePath))
             {
                 Debug.LogError("The file does not exist: " + filePath);
                 return null;
@@ -88,7 +87,7 @@ namespace UnityVolumeRendering
             fs.Close();
 
             dataset.FixDimensions();
-            
+
             return dataset;
         }
 

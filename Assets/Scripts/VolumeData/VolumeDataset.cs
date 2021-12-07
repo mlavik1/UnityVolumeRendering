@@ -18,7 +18,7 @@ namespace UnityVolumeRendering
 
         [SerializeField]
         public int dimX, dimY, dimZ;
-        
+
         [SerializeField]
         public float scaleX = 0.0f, scaleY = 0.0f, scaleZ = 0.0f;
         public float volumeScale;
@@ -66,32 +66,40 @@ namespace UnityVolumeRendering
         {
             int MAX_DIM = 2048; // 3D texture max size. See: https://docs.unity3d.com/Manual/class-Texture3D.html
 
-            if (Mathf.Max(dimX, dimY, dimZ) > MAX_DIM)
+            while (Mathf.Max(dimX, dimY, dimZ) > MAX_DIM)
             {
-                Debug.LogWarning("Dimension exceeds limits. Cropping dataset. This might result in an incomplete dataset.");
+                Debug.LogWarning("Dimension exceeds limits (maximum: "+MAX_DIM+"). Dataset is downscaled by 2 on each axis!");
+                DownScaleData();
+            }
+        }
 
-                int newDimX = Mathf.Min(dimX, MAX_DIM);
-                int newDimY = Mathf.Min(dimY, MAX_DIM);
-                int newDimZ = Mathf.Min(dimZ, MAX_DIM);
-                float[] newData = new float[dimX * dimY * dimZ];
+        /// <summary>
+        /// Downscales the data by averaging 8 voxels per each new voxel,
+        /// and replaces downscaled data with the original data
+        /// </summary>
+        public void DownScaleData()
+        {
+            int halfDimX = dimX / 2 + dimX % 2;
+            int halfDimY = dimY / 2 + dimY % 2;
+            int halfDimZ = dimZ / 2 + dimZ % 2;
+            int[] downScaledData = new int[halfDimX * halfDimY * halfDimZ];
 
-                for (int z = 0; z < newDimZ; z++)
+            for (int x = 0; x < halfDimX; x++)
+            {
+                for (int y = 0; y < halfDimY; y++)
                 {
-                    for (int y = 0; y < newDimY; y++)
+                    for (int z = 0; z < halfDimZ; z++)
                     {
-                        for (int x = 0; x < newDimX; x++)
-                        {
-                            int oldIndex = (z * dimX * dimY) + (y * dimX) + x;
-                            int newIndex = (z * newDimX * newDimY) + (y * newDimX) + x;
-                            newData[newIndex] = data[oldIndex];
-                        }
+                        downScaledData[x + y * halfDimX + z * (halfDimX * halfDimY)] = Mathf.RoundToInt(GetAvgerageVoxelValues(x * 2, y * 2, z * 2));
                     }
                 }
-                data = newData;
-                dimX = newDimX;
-                dimY = newDimY;
-                dimZ = newDimZ;
             }
+
+            //Update data & data dimensions
+            data = downScaledData;
+            dimX = halfDimX;
+            dimY = halfDimY;
+            dimZ = halfDimZ;
         }
 
         private void CalculateValueBounds()
@@ -120,22 +128,31 @@ namespace UnityVolumeRendering
             float minValue = GetMinDataValue();
             float maxValue = GetMaxDataValue();
 
-            float maxRange = maxValue - minValue;
-
-            Color[] cols = new Color[data.Length]; // data exists
-            for (int x = 0; x < dimX; x++)
+            bool isHalfFloat = texformat == TextureFormat.RHalf;
+            try
             {
-                for (int y = 0; y < dimY; y++)
+                // Create a byte array for filling the texture. Store has half (16 bit) or single (32 bit) float values.
+                int sampleSize = isHalfFloat ? 2 : 4;
+                byte[] bytes = new byte[data.Length * sampleSize]; // This can cause OutOfMemoryException
+                for (int iData = 0; iData < data.Length; iData++)
                 {
-                    for (int z = 0; z < dimZ; z++)
-                    {
-                        int iData = x + y * dimX + z * (dimX * dimY);
-                        cols[iData] = new Color((data[iData] - minValue) / maxRange, 0.0f, 0.0f, 0.0f);
-                    }
+                    float pixelValue = (float)(data[iData] - minValue) / maxRange;
+                    byte[] pixelBytes = isHalfFloat ? BitConverter.GetBytes(Mathf.FloatToHalf(pixelValue)) : BitConverter.GetBytes(pixelValue);
+
+                    Array.Copy(pixelBytes, 0, bytes, iData * sampleSize, sampleSize);
                 }
+
+                texture.SetPixelData(bytes, 0);
             }
             
-            texture.SetPixels(cols);
+            catch (OutOfMemoryException ex)
+            {
+                Debug.LogWarning("Out of memory when creating texture. Using fallback method.");
+                for (int x = 0; x < dimX; x++)
+                    for (int y = 0; y < dimY; y++)
+                        for (int z = 0; z < dimZ; z++)
+                            texture.SetPixel(x, y, z, new Color((float)(data[x + y * dimX + z * (dimX * dimY)] - minValue) / maxRange, 0.0f, 0.0f, 0.0f));
+            }
             texture.Apply();
             return texture;
         }
@@ -150,7 +167,15 @@ namespace UnityVolumeRendering
             float maxValue = GetMaxDataValue();
             float maxRange = maxValue - minValue;
 
-            Color[] cols = new Color[data.Length];
+            Color[] cols;
+            try
+            {
+                cols = new Color[data.Length];
+            }
+            catch (OutOfMemoryException ex)
+            {
+                cols = null;
+            }
             for (int x = 0; x < dimX; x++)
             {
                 for (int y = 0; y < dimY; y++)
@@ -167,14 +192,48 @@ namespace UnityVolumeRendering
                         float z2 = data[x + y * dimX + Math.Max(z - 1, 0) * (dimX * dimY)] - minValue;
 
                         Vector3 grad = new Vector3((x2 - x1) / maxRange, (y2 - y1) / maxRange, (z2 - z1) / maxRange);
-
-                        cols[iData] = new Color(grad.x, grad.y, grad.z, (data[iData] - minValue) / maxRange);
+                        
+                        if (cols == null)
+                        {
+                            texture.SetPixel(x, y, z, new Color(grad.x, grad.y, grad.z, (float)(data[iData] - minValue) / maxRange));
+                        }
+                        else
+                        {
+                            cols[iData] = new Color(grad.x, grad.y, grad.z, (float)(data[iData] - minValue) / maxRange);
+                        }
                     }
                 }
             }
-            texture.SetPixels(cols);
+            if (cols != null) texture.SetPixels(cols);
             texture.Apply();
             return texture;
+        }
+
+        public float GetAvgerageVoxelValues(int x, int y, int z)
+        {
+            // if a dimension length is not an even number
+            bool xC = x + 1 == dimX;
+            bool yC = y + 1 == dimY;
+            bool zC = z + 1 == dimZ;
+
+            //if expression can only be true on the edges of the texture
+            if (xC || yC || zC)
+            {
+                if (!xC && yC && zC) return (GetData(x, y, z) + GetData(x + 1, y, z)) / 2.0f;
+                else if (xC && !yC && zC) return (GetData(x, y, z) + GetData(x, y + 1, z)) / 2.0f;
+                else if (xC && yC && !zC) return (GetData(x, y, z) + GetData(x, y, z + 1)) / 2.0f;
+                else if (!xC && !yC && zC) return (GetData(x, y, z) + GetData(x + 1, y, z) + GetData(x, y + 1, z) + GetData(x + 1, y + 1, z)) / 4.0f;
+                else if (!xC && yC && !zC) return (GetData(x, y, z) + GetData(x + 1, y, z) + GetData(x, y, z + 1) + GetData(x + 1, y, z + 1)) / 4.0f;
+                else if (xC && !yC && !zC) return (GetData(x, y, z) + GetData(x, y + 1, z) + GetData(x, y, z + 1) + GetData(x, y + 1, z + 1)) / 4.0f;
+                else return GetData(x, y, z); // if xC && yC && zC
+            }
+            return (GetData(x, y, z) + GetData(x + 1, y, z) + GetData(x, y + 1, z) + GetData(x + 1, y + 1, z)
+                    + GetData(x, y, z + 1) + GetData(x, y + 1, z + 1) + GetData(x + 1, y, z + 1) + GetData(x + 1, y + 1, z + 1)) / 8.0f;
+        }
+
+        public int GetData(int x, int y, int z)
+        {
+            return data[x + y * dimX + z * (dimX * dimY)];
         }
     }
 }

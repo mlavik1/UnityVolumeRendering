@@ -65,11 +65,21 @@ namespace UnityVolumeRendering
                     DICOMImporter importer = new DICOMImporter(fileCandidates, Path.GetFileName(dir));
                     List<DICOMImporter.DICOMSeries> seriesList = importer.LoadDICOMSeries();
                     float numVolumesCreated = 0;
+
                     foreach (DICOMImporter.DICOMSeries series in seriesList)
                     {
                         VolumeDataset dataset = importer.ImportDICOMSeries(series);
                         if (dataset != null)
                         {
+                            if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
+                            {
+                                if (EditorUtility.DisplayDialog("Optional DownScaling",
+                                    $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
+                                {
+                                    dataset.DownScaleData();
+                                }
+                            }
+
                             VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
                             obj.transform.position = new Vector3(numVolumesCreated, 0, 0);
                             numVolumesCreated++;
@@ -91,12 +101,24 @@ namespace UnityVolumeRendering
         static void ShowSequenceImporter()
         {
             string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
+            
             if (Directory.Exists(dir))
             {
                 ImageSequenceImporter importer = new ImageSequenceImporter(dir);
+
                 VolumeDataset dataset = importer.Import();
                 if (dataset != null)
+                {
+                    if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
+                    {
+                        if (EditorUtility.DisplayDialog("Optional DownScaling",
+                            $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
+                        {
+                            dataset.DownScaleData();
+                        }
+                    }
                     VolumeObjectFactory.CreateObject(dataset);
+                }
             }
             else
             {
@@ -147,6 +169,12 @@ namespace UnityVolumeRendering
         static void ShowValueRangeWindow()
         {
             ValueRangeEditorWindow.ShowWindow();
+        }
+
+        [MenuItem("Volume Rendering/Settigs")]
+        static void ShowSettingsWindow()
+        {
+            ImportSettingsEditorWindow.ShowWindow();
         }
     }
 }

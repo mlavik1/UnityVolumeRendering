@@ -15,6 +15,7 @@ namespace UnityVolumeRendering
         {
             "*.png",
             "*.jpg",
+            "*.jpeg"
         };
 
         public ImageSequenceImporter(string directoryPath)
@@ -28,9 +29,6 @@ namespace UnityVolumeRendering
                 throw new NullReferenceException("No directory found: " + directoryPath);
 
             List<string> imagePaths = GetSortedImagePaths();
-
-            if (!ImageSetHasUniformDimensions(imagePaths))
-                throw new IndexOutOfRangeException("Image sequence has non-uniform dimensions");
 
             Vector3Int dimensions = GetVolumeDimensions(imagePaths);
             int[] data = FillSequentialData(dimensions, imagePaths);
@@ -57,34 +55,6 @@ namespace UnityVolumeRendering
             imagePaths.Sort();
 
             return imagePaths;
-        }
-
-        /// <summary>
-        /// Checks if every image in the set has the same XY dimensions.
-        /// </summary>
-        /// <param name="imagePaths">The list of image paths to check.</param>
-        /// <returns>True if at least one image differs from another.</returns>
-        private bool ImageSetHasUniformDimensions(List<string> imagePaths)
-        {
-            bool hasUniformDimension = true;
-
-            Vector2Int previous, current;
-            previous = GetImageDimensions(imagePaths[0]);
-
-            foreach (var path in imagePaths)
-            {
-                current = GetImageDimensions(path);
-
-                if (current.x != previous.x || current.y != previous.y)
-                {
-                    hasUniformDimension = false;
-                    break;
-                }
-
-                previous = current;
-            }
-
-            return hasUniformDimension;
         }
 
         /// <summary>
@@ -140,6 +110,12 @@ namespace UnityVolumeRendering
             {
                 byte[] bytes = File.ReadAllBytes(path);
                 texture.LoadImage(bytes);
+
+                if (texture.width != dimensions.x || texture.height != dimensions.y)
+                {
+                    Texture2D.DestroyImmediate(texture);
+                    throw new IndexOutOfRangeException("Image sequence has non-uniform dimensions");
+                }
 
                 Color[] pixels = texture.GetPixels(); // Order priority: X -> Y -> Z
                 int[] imageData = DensityHelper.ConvertColorsToDensities(pixels);
