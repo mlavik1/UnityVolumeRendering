@@ -82,7 +82,7 @@ namespace UnityVolumeRendering
             int halfDimX = dimX / 2 + dimX % 2;
             int halfDimY = dimY / 2 + dimY % 2;
             int halfDimZ = dimZ / 2 + dimZ % 2;
-            int[] downScaledData = new int[halfDimX * halfDimY * halfDimZ];
+            float[] downScaledData = new float[halfDimX * halfDimY * halfDimZ];
 
             for (int x = 0; x < halfDimX; x++)
             {
@@ -90,7 +90,7 @@ namespace UnityVolumeRendering
                 {
                     for (int z = 0; z < halfDimZ; z++)
                     {
-                        downScaledData[x + y * halfDimX + z * (halfDimX * halfDimY)] = Mathf.RoundToInt(GetAvgerageVoxelValues(x * 2, y * 2, z * 2));
+                        downScaledData[x + y * halfDimX + z * (halfDimX * halfDimY)] = Mathf.Round(GetAvgerageVoxelValues(x * 2, y * 2, z * 2));
                     }
                 }
             }
@@ -127,6 +127,7 @@ namespace UnityVolumeRendering
 
             float minValue = GetMinDataValue();
             float maxValue = GetMaxDataValue();
+            float maxRange = maxValue - minValue;
 
             bool isHalfFloat = texformat == TextureFormat.RHalf;
             try
@@ -231,7 +232,7 @@ namespace UnityVolumeRendering
                     + GetData(x, y, z + 1) + GetData(x, y + 1, z + 1) + GetData(x + 1, y, z + 1) + GetData(x + 1, y + 1, z + 1)) / 8.0f;
         }
 
-        public int GetData(int x, int y, int z)
+        public float GetData(int x, int y, int z)
         {
             return data[x + y * dimX + z * (dimX * dimY)];
         }

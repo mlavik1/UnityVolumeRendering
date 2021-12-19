@@ -110,14 +110,14 @@ namespace UnityVolumeRendering
         /// <returns></returns>
         public static Texture2D Generate2DHistogramTexture(VolumeDataset dataset)
         {
-            int minValue = dataset.GetMinDataValue();
-            int maxValue = dataset.GetMaxDataValue();
+            float minValue = dataset.GetMinDataValue();
+            float maxValue = dataset.GetMaxDataValue();
 
             // Value range of the density values.
-            int densityValRange = maxValue - minValue + 1;
+            float densityValRange = maxValue - minValue + 1.0f;
             float densityRangeRecip = 1.0f / (maxValue - minValue); // reciprocal
             // Clamp density value samples.
-            int numDensitySamples = System.Math.Min(densityValRange, 512);
+            int numDensitySamples = System.Math.Min((int)densityValRange, 512);
             int numGradientSamples = 256;
           
             Color[] cols = new Color[numDensitySamples * numGradientSamples];
