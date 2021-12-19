@@ -107,16 +107,15 @@ namespace UnityVolumeRendering
             minDataValue = float.MaxValue;
             maxDataValue = float.MinValue;
 
-            for (int i = 0; i < dimX * dimY * dimZ; i++)
+            if (data != null)
             {
-                if (data != null)
+                for (int i = 0; i < dimX * dimY * dimZ; i++)
                 {
                     float val = data[i];
                     minDataValue = Mathf.Min(minDataValue, val);
                     maxDataValue = Mathf.Max(maxDataValue, val);
                 }
             }
-            
         }
 
         private Texture3D CreateTextureInternal()
