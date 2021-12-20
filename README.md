@@ -118,7 +118,7 @@ All this info can be added to a ".ini"-file, which the importer will use (if it 
 ![alt tag](Screenshots/4.png)
 ![alt tag](Screenshots/5.png)
 ![alt tag](Screenshots/6.png)
-![alt tag](Screenshots/upper.png)
+![alt tag](Screenshots/regions.png)
 
 # Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute.
