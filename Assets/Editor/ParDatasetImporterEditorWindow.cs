@@ -48,7 +48,8 @@ namespace UnityVolumeRendering
 
         private void OnGUI()
         {
-            ParDatasetImporter pd = new ParDatasetImporter(filePath, nx, ny, nz);            
+            ParDatasetImporter pd = new ParDatasetImporter(filePath, nx, ny, nz);
+            GUILayout.Label("To be implemented");
             nx = EditorGUILayout.IntField("nx dimension grid values", nx);
             ny = EditorGUILayout.IntField("ny dimension grid values", ny);
             nz = EditorGUILayout.IntField("nz dimension grid values", nz);
