@@ -11,7 +11,6 @@ namespace UnityVolumeRendering
     public class ParDatasetImporterEditorWindow : EditorWindow // : EditorWindow
     {
         private string fileToImport;
-        private string filePath;
         private string moleculeName;
         private int nx;
         private int ny;
@@ -48,11 +47,11 @@ namespace UnityVolumeRendering
 
         private void OnGUI()
         {
-            ParDatasetImporter pd = new ParDatasetImporter(filePath, nx, ny, nz);
-            GUILayout.Label("To be implemented");
+            EditorGUILayout.LabelField(fileToImport);
+            /*GUILayout.Label("To be implemented");
             nx = EditorGUILayout.IntField("nx dimension grid values", nx);
             ny = EditorGUILayout.IntField("ny dimension grid values", ny);
-            nz = EditorGUILayout.IntField("nz dimension grid values", nz);
+            nz = EditorGUILayout.IntField("nz dimension grid values", nz);*/
 
             if (GUILayout.Button("Import"))           
                ImportDataset();
