@@ -73,14 +73,15 @@ namespace openDicom.Encoding
                         }
                         catch (Exception e)
                         {
-                            throw new EncodingException(
-                                "Time format is invalid.",
-                                Tag, Name + "/item", item);
+                            UnityEngine.Debug.LogWarning($"Date time format is invalid. tag: {Tag}, name: {Name}, item: {item}");
+                            time[i] = TimeSpan.Zero;
                         }
                     }
                     else
-                        throw new EncodingException("Time format is invalid.",
-                            Tag, Name + "/item", item);
+                    {
+                        UnityEngine.Debug.LogWarning($"Time format is invalid. tag: {Tag}, name: {Name}, item: {item}");
+                        time[i] = TimeSpan.Zero;
+                    }
                 }
             }
             return time;
