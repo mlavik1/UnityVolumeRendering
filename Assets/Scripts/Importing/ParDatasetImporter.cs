@@ -27,12 +27,9 @@ namespace UnityVolumeRendering
         string fileName;
         float latticeConstant;
 
-        public double newLattice;
         string[] atomNames;
         int[] atomCount;
         int totalAtomCount;
-
-        public int size;
 
         float[][] basisCells;
         float[][] coordinatebasisCells;
