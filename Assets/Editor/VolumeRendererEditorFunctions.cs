@@ -1,4 +1,4 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEngine;
 using System.IO;
 using System.Collections.Generic;
@@ -11,6 +11,20 @@ namespace UnityVolumeRendering
     {
         [MenuItem("Volume Rendering/Load dataset/Load raw dataset")]
         static void ShowDatasetImporter()
+        {
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "DataFiles", "");
+            if (File.Exists(file))
+            {
+                EditorDatasetImporter.ImportDataset(file);
+            }
+            else
+            {
+                Debug.LogError("File doesn't exist: " + file);
+            }
+        }
+
+        [MenuItem("Volume Rendering/Load dataset/Load PARCHG dataset")]
+        static void ShowParDatasetImporter()
         {
             string file = EditorUtility.OpenFilePanel("Select a dataset to load", "DataFiles", "");
             if (File.Exists(file))

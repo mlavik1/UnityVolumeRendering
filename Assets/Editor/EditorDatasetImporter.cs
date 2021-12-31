@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEngine;
 
 namespace UnityVolumeRendering
 {
@@ -11,7 +12,6 @@ namespace UnityVolumeRendering
         public static void ImportDataset(string filePath)
         {
             DatasetType datasetType = DatasetImporterUtility.GetDatasetType(filePath);
-
             switch (datasetType)
             {
                 case DatasetType.Raw:
@@ -47,6 +47,21 @@ namespace UnityVolumeRendering
                                     VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
                                 }
                             }
+                        }
+                        break;
+                    }
+                case DatasetType.PARCHG:
+                    {
+                        ParDatasetImporter importer = new ParDatasetImporter(filePath);
+                        VolumeDataset dataset = importer.Import();
+
+                        if (dataset != null)
+                        {
+                            VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
+                        }
+                        else
+                        {
+                            Debug.LogError("Failed to import datset");
                         }
                         break;
                     }

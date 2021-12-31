@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,11 +17,18 @@ namespace UnityVolumeRendering
         {
             GUILayout.BeginVertical();
 
+            
             // Show dataset import buttons
             if(GUILayout.Button("Import RAW dataset"))
             {
                 RuntimeFileBrowser.ShowOpenFileDialog(OnOpenRAWDatasetResult, "DataFiles");
             }
+
+            if(GUILayout.Button("Import PARCHG dataset"))
+            {
+                RuntimeFileBrowser.ShowOpenFileDialog(OnOpenPARDatasetResult, "DataFiles");
+            }
+
             if (GUILayout.Button("Import DICOM dataset"))
             {
                 RuntimeFileBrowser.ShowOpenDirectoryDialog(OnOpenDICOMDatasetResult);
@@ -42,10 +49,26 @@ namespace UnityVolumeRendering
             GUILayout.EndVertical();
         }
 
+        private void OnOpenPARDatasetResult(RuntimeFileBrowser.DialogResult result)
+        {
+            if (!result.cancelled)
+            {
+                DespawnAllDatasets();
+                string filePath = result.path;
+                ParDatasetImporter parimporter = new ParDatasetImporter(filePath);
+                VolumeDataset dataset = parimporter.Import(); //overriden somewhere
+                if (dataset != null)
+                {
+                        VolumeObjectFactory.CreateObject(dataset);
+                }
+            }
+        }
+        
         private void OnOpenRAWDatasetResult(RuntimeFileBrowser.DialogResult result)
         {
             if(!result.cancelled)
             {
+
                 // We'll only allow one dataset at a time in the runtime GUI (for simplicity)
                 DespawnAllDatasets();
 

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using UnityEngine;
 
 namespace UnityVolumeRendering
@@ -9,52 +10,51 @@ namespace UnityVolumeRendering
     [Serializable]
     public class VolumeDataset : ScriptableObject
     {
+        public string filePath;
+        
         // Flattened 3D array of data sample values.
         [SerializeField]
-        public int[] data = null;
+        public float[] data;
 
         [SerializeField]
         public int dimX, dimY, dimZ;
 
         [SerializeField]
         public float scaleX = 0.0f, scaleY = 0.0f, scaleZ = 0.0f;
+        public float volumeScale;
 
         [SerializeField]
         public string datasetName;
 
-        private int minDataValue = int.MaxValue;
-        private int maxDataValue = int.MinValue;
+        private float minDataValue = float.MaxValue;
+        private float maxDataValue = float.MinValue;
+
         private Texture3D dataTexture = null;
         private Texture3D gradientTexture = null;
-
+        
+        
         public Texture3D GetDataTexture()
         {
-            if (dataTexture == null)
-            {
-                dataTexture = CreateTextureInternal();
-            }
+            dataTexture = CreateTextureInternal();
             return dataTexture;
         }
 
         public Texture3D GetGradientTexture()
         {
-            if (gradientTexture == null)
-            {
-                gradientTexture = CreateGradientTextureInternal();
-            }
+            gradientTexture = CreateGradientTextureInternal();
             return gradientTexture;
         }
 
-        public int GetMinDataValue()
+        public float GetMinDataValue()
         {
-            if (minDataValue == int.MaxValue)
+            if (minDataValue == float.MaxValue)
                 CalculateValueBounds();
             return minDataValue;
         }
 
-        public int GetMaxDataValue()
+        public float GetMaxDataValue()
         {
-            if (maxDataValue == int.MinValue)
+            if (maxDataValue == float.MinValue)
                 CalculateValueBounds();
             return maxDataValue;
         }
@@ -82,7 +82,7 @@ namespace UnityVolumeRendering
             int halfDimX = dimX / 2 + dimX % 2;
             int halfDimY = dimY / 2 + dimY % 2;
             int halfDimZ = dimZ / 2 + dimZ % 2;
-            int[] downScaledData = new int[halfDimX * halfDimY * halfDimZ];
+            float[] downScaledData = new float[halfDimX * halfDimY * halfDimZ];
 
             for (int x = 0; x < halfDimX; x++)
             {
@@ -90,7 +90,7 @@ namespace UnityVolumeRendering
                 {
                     for (int z = 0; z < halfDimZ; z++)
                     {
-                        downScaledData[x + y * halfDimX + z * (halfDimX * halfDimY)] = Mathf.RoundToInt(GetAvgerageVoxelValues(x * 2, y * 2, z * 2));
+                        downScaledData[x + y * halfDimX + z * (halfDimX * halfDimY)] = Mathf.Round(GetAvgerageVoxelValues(x * 2, y * 2, z * 2));
                     }
                 }
             }
@@ -104,14 +104,17 @@ namespace UnityVolumeRendering
 
         private void CalculateValueBounds()
         {
-            minDataValue = int.MaxValue;
-            maxDataValue = int.MinValue;
-            int dim = dimX * dimY * dimZ;
-            for (int i = 0; i < dim; i++)
+            minDataValue = float.MaxValue;
+            maxDataValue = float.MinValue;
+
+            if (data != null)
             {
-                int val = data[i];
-                minDataValue = Math.Min(minDataValue, val);
-                maxDataValue = Math.Max(maxDataValue, val);
+                for (int i = 0; i < dimX * dimY * dimZ; i++)
+                {
+                    float val = data[i];
+                    minDataValue = Mathf.Min(minDataValue, val);
+                    maxDataValue = Mathf.Max(maxDataValue, val);
+                }
             }
         }
 
@@ -121,9 +124,9 @@ namespace UnityVolumeRendering
             Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
             texture.wrapMode = TextureWrapMode.Clamp;
 
-            int minValue = GetMinDataValue();
-            int maxValue = GetMaxDataValue();
-            int maxRange = maxValue - minValue;
+            float minValue = GetMinDataValue();
+            float maxValue = GetMaxDataValue();
+            float maxRange = maxValue - minValue;
 
             bool isHalfFloat = texformat == TextureFormat.RHalf;
             try
@@ -141,6 +144,7 @@ namespace UnityVolumeRendering
 
                 texture.SetPixelData(bytes, 0);
             }
+            
             catch (OutOfMemoryException ex)
             {
                 Debug.LogWarning("Out of memory when creating texture. Using fallback method.");
@@ -149,20 +153,19 @@ namespace UnityVolumeRendering
                         for (int z = 0; z < dimZ; z++)
                             texture.SetPixel(x, y, z, new Color((float)(data[x + y * dimX + z * (dimX * dimY)] - minValue) / maxRange, 0.0f, 0.0f, 0.0f));
             }
-
             texture.Apply();
             return texture;
         }
 
-        private Texture3D CreateGradientTextureInternal()
+        private Texture3D CreateGradientTextureInternal() 
         {
             TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RGBAHalf) ? TextureFormat.RGBAHalf : TextureFormat.RGBAFloat;
             Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
             texture.wrapMode = TextureWrapMode.Clamp;
 
-            int minValue = GetMinDataValue();
-            int maxValue = GetMaxDataValue();
-            int maxRange = maxValue - minValue;
+            float minValue = GetMinDataValue();
+            float maxValue = GetMaxDataValue();
+            float maxRange = maxValue - minValue;
 
             Color[] cols;
             try
@@ -181,15 +184,15 @@ namespace UnityVolumeRendering
                     {
                         int iData = x + y * dimX + z * (dimX * dimY);
 
-                        int x1 = data[Math.Min(x + 1, dimX - 1) + y * dimX + z * (dimX * dimY)] - minValue;
-                        int x2 = data[Math.Max(x - 1, 0) + y * dimX + z * (dimX * dimY)] - minValue;
-                        int y1 = data[x + Math.Min(y + 1, dimY - 1) * dimX + z * (dimX * dimY)] - minValue;
-                        int y2 = data[x + Math.Max(y - 1, 0) * dimX + z * (dimX * dimY)] - minValue;
-                        int z1 = data[x + y * dimX + Math.Min(z + 1, dimZ - 1) * (dimX * dimY)] - minValue;
-                        int z2 = data[x + y * dimX + Math.Max(z - 1, 0) * (dimX * dimY)] - minValue;
+                        float x1 = data[Math.Min(x + 1, dimX - 1) + y * dimX + z * (dimX * dimY)] - minValue;
+                        float x2 = data[Math.Max(x - 1, 0) + y * dimX + z * (dimX * dimY)] - minValue;
+                        float y1 = data[x + Math.Min(y + 1, dimY - 1) * dimX + z * (dimX * dimY)] - minValue;
+                        float y2 = data[x + Math.Max(y - 1, 0) * dimX + z * (dimX * dimY)] - minValue;
+                        float z1 = data[x + y * dimX + Math.Min(z + 1, dimZ - 1) * (dimX * dimY)] - minValue;
+                        float z2 = data[x + y * dimX + Math.Max(z - 1, 0) * (dimX * dimY)] - minValue;
 
-                        Vector3 grad = new Vector3((x2 - x1) / (float)maxRange, (y2 - y1) / (float)maxRange, (z2 - z1) / (float)maxRange);
-
+                        Vector3 grad = new Vector3((x2 - x1) / maxRange, (y2 - y1) / maxRange, (z2 - z1) / maxRange);
+                        
                         if (cols == null)
                         {
                             texture.SetPixel(x, y, z, new Color(grad.x, grad.y, grad.z, (float)(data[iData] - minValue) / maxRange));
@@ -228,7 +231,7 @@ namespace UnityVolumeRendering
                     + GetData(x, y, z + 1) + GetData(x, y + 1, z + 1) + GetData(x + 1, y, z + 1) + GetData(x + 1, y + 1, z + 1)) / 8.0f;
         }
 
-        public int GetData(int x, int y, int z)
+        public float GetData(int x, int y, int z)
         {
             return data[x + y * dimX + z * (dimX * dimY)];
         }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using UnityEngine;
 
@@ -64,6 +64,7 @@ namespace UnityVolumeRendering
 
             VolumeDataset dataset = new VolumeDataset();
             dataset.datasetName = Path.GetFileName(filePath);
+            dataset.filePath = filePath;
             dataset.dimX = dimX;
             dataset.dimY = dimY;
             dataset.dimZ = dimZ;
@@ -73,12 +74,12 @@ namespace UnityVolumeRendering
                 reader.ReadBytes(skipBytes);
 
             int uDimension = dimX * dimY * dimZ;
-            dataset.data = new int[uDimension];
+            dataset.data = new float[uDimension];
 
             // Read the data/sample values
             for (int i = 0; i < uDimension; i++)
             {
-                dataset.data[i] = ReadDataValue(reader);
+                dataset.data[i] = (float)ReadDataValue(reader);
             }
             Debug.Log("Loaded dataset in range: " + dataset.GetMinDataValue() + "  -  " + dataset.GetMaxDataValue());
 

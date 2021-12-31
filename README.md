@@ -106,17 +106,23 @@ The importer takes the following parameters:
 - skipBytes: Number of bytes to skip (offset to where the data begins). This is usually the same as the header size, and will be 0 if there is no header.
 
 All this info can be added to a ".ini"-file, which the importer will use (if it finds any). See the sample files (in the  "DataFiles" folder for an example).
+
 # Todo:
 - Improve 2D Transfer Function editor: Better GUI, more shapes (triangles)
 - Optimise histogram generation
 - Support very large datasets (currently we naively try to create 3D textures with the same dimension as the data)
 
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/slices.gif)
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/1.png)
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/2.png)
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/3.png)
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/4.png)
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/5.png)
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/6.png)
+![alt tag](Screenshots/slices.gif)
+![alt tag](Screenshots/1.png)
+![alt tag](Screenshots/2.png)
+![alt tag](Screenshots/4.png)
+![alt tag](Screenshots/5.png)
+![alt tag](Screenshots/6.png)
+![alt tag](Screenshots/regions.png)
+
+# Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute.
+
+Thanks to [everyone who have contributed so far](CREDITS.md).
 
 See ACKNOWLEDGEMENTS.txt for libraries used by this project.
