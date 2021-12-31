@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEngine;
 
 namespace UnityVolumeRendering
 {
@@ -51,13 +52,17 @@ namespace UnityVolumeRendering
                     }
                 case DatasetType.PARCHG:
                     {
-                        ParDatasetImporterEditorWindow pnd = (ParDatasetImporterEditorWindow)EditorWindow.GetWindow(typeof(ParDatasetImporterEditorWindow));
-                        if (pnd != null)
-                            {
-                                pnd.Close();
-                            }
-                        pnd = new ParDatasetImporterEditorWindow(filePath);
-                        pnd.Show();
+                        ParDatasetImporter importer = new ParDatasetImporter(filePath);
+                        VolumeDataset dataset = importer.Import();
+
+                        if (dataset != null)
+                        {
+                            VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
+                        }
+                        else
+                        {
+                            Debug.LogError("Failed to import datset");
+                        }
                         break;
                     }
             }

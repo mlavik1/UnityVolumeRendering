@@ -54,12 +54,9 @@ namespace UnityVolumeRendering
         string[] fileContentLines;
         int fileContentIndex;
 
-        public ParDatasetImporter(string filePath, int nx, int ny, int nz)
+        public ParDatasetImporter(string filePath)
         {
             this.filePath = filePath;
-            this.nx = nx;
-            this.ny = ny;
-            this.nz = nz;
         }
 
         public VolumeDataset Import() //fills VolumeDataset object

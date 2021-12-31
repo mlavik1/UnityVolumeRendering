@@ -13,9 +13,6 @@ namespace UnityVolumeRendering
     /// </summary>
     public class RuntimeGUI : MonoBehaviour
     {
-        int nx;
-        int ny;
-        int nz;
         private void OnGUI()
         {
             GUILayout.BeginVertical();
@@ -58,7 +55,7 @@ namespace UnityVolumeRendering
             {
                 DespawnAllDatasets();
                 string filePath = result.path;
-                ParDatasetImporter parimporter = new ParDatasetImporter(filePath, nx, ny, nz);
+                ParDatasetImporter parimporter = new ParDatasetImporter(filePath);
                 VolumeDataset dataset = parimporter.Import(); //overriden somewhere
                 if (dataset != null)
                 {
