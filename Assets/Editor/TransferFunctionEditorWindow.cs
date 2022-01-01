@@ -15,6 +15,9 @@ namespace UnityVolumeRendering
         private VolumeRenderedObject volRendObject = null;
         private Texture2D histTex = null;
 
+        private Material tfGUIMat = null;
+        private Material tfPaletteGUIMat = null;
+
         public static void ShowWindow()
         {
             // Close all (if any) 2D TF editor windows
@@ -34,9 +37,6 @@ namespace UnityVolumeRendering
             rect.height = 500.0f;
             this.position = rect;
         }
-
-        private Material tfGUIMat = null;
-        private Material tfPaletteGUIMat = null;
 
         private void OnEnable()
         {
@@ -67,16 +67,18 @@ namespace UnityVolumeRendering
 
             Event currentEvent = new Event(Event.current);
 
-            Color oldColour = GUI.color;
+            Color oldColour = GUI.color; // Used for setting GUI.color when drawing UI elements
             
             float contentWidth = Mathf.Min(this.position.width - 20.0f, (this.position.height - 100.0f) * 2.0f);
             float contentHeight = contentWidth * 0.5f;
             
             Rect bgRect = new Rect(0.0f, 0.0f, contentWidth, contentHeight);
+            Rect paletteRect = new Rect(bgRect.x, bgRect.y + bgRect.height + 20, contentWidth, 20.0f);
 
-            // TODO:
+            // TODO: Don't do this every frame
             tf.GenerateTexture();
 
+            // Create histogram texture
             if(histTex == null)
             {
                 if(SystemInfo.supportsComputeShaders)
@@ -85,14 +87,15 @@ namespace UnityVolumeRendering
                     histTex = HistogramTextureGenerator.GenerateHistogramTexture(volRendObject.dataset);
             }
 
+            // Draw histogram
             tfGUIMat.SetTexture("_TFTex", tf.GetTexture());
             tfGUIMat.SetTexture("_HistTex", histTex);
             Graphics.DrawTexture(bgRect, tf.GetTexture(), tfGUIMat);
 
+            // Draw colour palette
             Texture2D tfTexture = tf.GetTexture();
-
             tfPaletteGUIMat.SetTexture("_TFTex", tf.GetTexture());
-            Graphics.DrawTexture(new Rect(bgRect.x, bgRect.y + bgRect.height + 20, bgRect.width, 20.0f), tfTexture, tfPaletteGUIMat);
+            Graphics.DrawTexture(new Rect(paletteRect.x, paletteRect.y, paletteRect.width, paletteRect.height), tfTexture, tfPaletteGUIMat);
             
             // Release selected colour/alpha points if mouse leaves window
             if (movingAlphaPointIndex != -1 && !bgRect.Contains(currentEvent.mousePosition))
@@ -101,16 +104,18 @@ namespace UnityVolumeRendering
                 movingColPointIndex = -1;
 
             // Mouse down => Move or remove selected colour control point
-            if (currentEvent.type == EventType.MouseDown)
+            if (currentEvent.type == EventType.MouseDown && paletteRect.Contains(currentEvent.mousePosition))
             {
                 float mousePos = (currentEvent.mousePosition.x - bgRect.x) / bgRect.width;
                 int pointIndex = PickColourControlPoint(mousePos);
                 if (pointIndex != -1)
                 {
-                    if(currentEvent.button == 0)
+                    // Add control point
+                    if(currentEvent.button == 0 && !currentEvent.control)
                     {
                         movingColPointIndex = selectedColPointIndex = pointIndex;
                     }
+                    // Remove control point
                     else if(currentEvent.button == 1 && currentEvent.control)
                     {
                         tf.colourControlPoints.RemoveAt(pointIndex);
@@ -129,10 +134,12 @@ namespace UnityVolumeRendering
                 int pointIndex = PickAlphaControlPoint(mousePos);
                 if (pointIndex != -1)
                 {
-                    if(currentEvent.button == 0)
+                    // Add control point
+                    if(currentEvent.button == 0 && !currentEvent.control)
                     {
                         movingAlphaPointIndex = pointIndex;
                     }
+                    // Remove control point
                     else if(currentEvent.button == 1 && currentEvent.control)
                     {
                         tf.alphaControlPoints.RemoveAt(pointIndex);
@@ -195,19 +202,15 @@ namespace UnityVolumeRendering
                 selectedColPointIndex = -1;
             }
 
-            if (selectedColPointIndex != -1)
-            {
-                TFColourControlPoint colPoint = tf.colourControlPoints[selectedColPointIndex];
-                colPoint.colourValue = EditorGUI.ColorField(new Rect(150, bgRect.y + bgRect.height + 50, 100.0f, 40.0f), colPoint.colourValue);
-                tf.colourControlPoints[selectedColPointIndex] = colPoint;
-            }
-
+            // Save TF
             if(GUI.Button(new Rect(0.0f, bgRect.y + bgRect.height + 50.0f, 70.0f, 30.0f), "Save"))
             {
                 string filepath = EditorUtility.SaveFilePanel("Save transfer function", "", "default.tf", "tf");
                 if(filepath != "")
                     TransferFunctionDatabase.SaveTransferFunction(tf, filepath);
             }
+
+            // Load TF
             if(GUI.Button(new Rect(75.0f, bgRect.y + bgRect.height + 50.0f, 70.0f, 30.0f), "Load"))
             {
                 string filepath = EditorUtility.OpenFilePanel("Save transfer function", "", "tf");
@@ -218,6 +221,23 @@ namespace UnityVolumeRendering
                         volRendObject.transferFunction = tf = newTF;
                 }
             }
+             // Clear TF
+            if(GUI.Button(new Rect(150.0f, bgRect.y + bgRect.height + 50.0f, 70.0f, 30.0f), "Clear"))
+            {
+                tf = volRendObject.transferFunction = new TransferFunction();
+                tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.1f, 0.0f));
+                tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.9f, 1.0f));
+                tf.colourControlPoints.Add(new TFColourControlPoint(0.5f, Color.red));
+                selectedColPointIndex = -1;
+            }
+
+            // Colour picker
+            if (selectedColPointIndex != -1)
+            {
+                TFColourControlPoint colPoint = tf.colourControlPoints[selectedColPointIndex];
+                colPoint.colourValue = EditorGUI.ColorField(new Rect(225, bgRect.y + bgRect.height + 50, 100.0f, 40.0f), colPoint.colourValue);
+                tf.colourControlPoints[selectedColPointIndex] = colPoint;
+            }
 
             GUI.skin.label.wordWrap = false;    
             GUI.Label(new Rect(0.0f, bgRect.y + bgRect.height + 85.0f, 700.0f, 30.0f), "Left click to select and move a control point. Right click to add a control point, and ctrl + right click to delete.");
@@ -225,16 +245,19 @@ namespace UnityVolumeRendering
             GUI.color = oldColour;
         }
 
-        private int PickColourControlPoint(float position)
+        /// <summary>
+        /// Pick the colour control point, nearest to the specified position.
+        /// </summary>
+        /// <param name="maxDistance">Threshold for maximum distance. Points further away than this won't get picked.</param>
+        private int PickColourControlPoint(float position, float maxDistance = 0.03f)
         {
-            const float MIN_DIST_THRESHOLD = 0.03f;
             int nearestPointIndex = -1;
             float nearestDist = 1000.0f;
             for (int i = 0; i < tf.colourControlPoints.Count; i++)
             {
                 TFColourControlPoint ctrlPoint = tf.colourControlPoints[i];
                 float dist = Mathf.Abs(ctrlPoint.dataValue - position);
-                if (dist < MIN_DIST_THRESHOLD && dist < nearestDist)
+                if (dist < maxDistance && dist < nearestDist)
                 {
                     nearestPointIndex = i;
                     nearestDist = dist;
@@ -243,9 +266,12 @@ namespace UnityVolumeRendering
             return nearestPointIndex;
         }
 
-        private int PickAlphaControlPoint(Vector2 position)
+        /// <summary>
+        /// Pick the alpha control point, nearest to the specified position.
+        /// </summary>
+        /// <param name="maxDistance">Threshold for maximum distance. Points further away than this won't get picked.</param>
+        private int PickAlphaControlPoint(Vector2 position, float maxDistance = 0.05f)
         {
-            const float MIN_DIST_THRESHOLD = 0.05f;
             int nearestPointIndex = -1;
             float nearestDist = 1000.0f;
             for (int i = 0; i < tf.alphaControlPoints.Count; i++)
@@ -253,7 +279,7 @@ namespace UnityVolumeRendering
                 TFAlphaControlPoint ctrlPoint = tf.alphaControlPoints[i];
                 Vector2 ctrlPos = new Vector2(ctrlPoint.dataValue, ctrlPoint.alphaValue);
                 float dist = (ctrlPos - position).magnitude;
-                if (dist < MIN_DIST_THRESHOLD && dist < nearestDist)
+                if (dist < maxDistance && dist < nearestDist)
                 {
                     nearestPointIndex = i;
                     nearestDist = dist;
