@@ -81,6 +81,9 @@ namespace UnityVolumeRendering
                 float tCol = (Mathf.Clamp(t, leftCol.dataValue, rightCol.dataValue) - leftCol.dataValue) / (rightCol.dataValue - leftCol.dataValue);
                 float tAlpha = (Mathf.Clamp(t, leftAlpha.dataValue, rightAlpha.dataValue) - leftAlpha.dataValue) / (rightAlpha.dataValue - leftAlpha.dataValue);
 
+                tCol = Mathf.SmoothStep(0.0f, 1.0f, tCol);
+                tAlpha = Mathf.SmoothStep(0.0f, 1.0f, tAlpha);
+
                 Color pixCol = rightCol.colourValue * tCol + leftCol.colourValue * (1.0f - tCol);
                 pixCol.a = rightAlpha.alphaValue * tAlpha + leftAlpha.alphaValue * (1.0f - tAlpha);
 
