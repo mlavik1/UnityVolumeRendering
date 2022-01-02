@@ -231,9 +231,9 @@ namespace UnityVolumeRendering
             if(GUI.Button(new Rect(histRect.x + 150.0f, histRect.y + histRect.height + 50.0f, 70.0f, 30.0f), "Clear"))
             {
                 tf = volRendObject.transferFunction = new TransferFunction();
-                tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.1f, 0.0f));
-                tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.9f, 1.0f));
-                tf.colourControlPoints.Add(new TFColourControlPoint(0.5f, Color.red));
+                tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.2f, 0.0f));
+                tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.8f, 1.0f));
+                tf.colourControlPoints.Add(new TFColourControlPoint(0.5f, new Color(0.469f, 0.354f, 0.223f, 1.0f)));
                 selectedColPointIndex = -1;
             }
 
