@@ -78,7 +78,11 @@ namespace UnityVolumeRendering
 
         public void SetLightingEnabled(bool enable)
         {
-            lightingEnabled = enable;
+            if (enable != lightingEnabled)
+            {
+                lightingEnabled = enable;
+                UpdateMaaterialProperties();
+            }
         }
 
         public void SetVisibilityWindow(float min, float max)
@@ -88,8 +92,11 @@ namespace UnityVolumeRendering
 
         public void SetVisibilityWindow(Vector2 window)
         {
-            visibilityWindow = window;
-            UpdateMaaterialProperties();
+            if (window != visibilityWindow)
+            {
+                visibilityWindow = window;
+                UpdateMaaterialProperties();
+            }
         }
 
         public Vector2 GetVisibilityWindow()
