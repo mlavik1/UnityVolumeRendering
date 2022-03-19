@@ -68,6 +68,22 @@
             float4x4 _CrossSectionMatrix;
 #endif
 
+            float3 getRayDir(frag_in fragIn)
+            {
+                if(unity_OrthoParams.w == 0)
+                {
+                    // Perspective
+                    return ObjSpaceViewDir(float4(fragIn.vertexLocal, 0.0f));
+                }
+                else
+                {
+                    // Orthographic
+                    float3 camfwd = mul((float3x3)unity_CameraToWorld, float3(0,0,-1));
+                    float4 camfwdobjspace = mul(unity_WorldToObject, camfwd);
+                    return normalize(camfwdobjspace);
+                }
+            }
+
             // Gets the colour from a 1D Transfer Function (x = density)
             float4 getTF1DColour(float density)
             {
@@ -156,7 +172,7 @@
 
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
                 float3 lightDir = normalize(ObjSpaceViewDir(float4(float3(0.0f, 0.0f, 0.0f), 0.0f)));
-                float3 rayDir = ObjSpaceViewDir(float4(i.vertexLocal, 0.0f));
+                float3 rayDir = getRayDir(i);
                 rayDir = normalize(rayDir);
 
                 // Create a small random offset in order to remove artifacts
@@ -230,7 +246,7 @@
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
-                float3 rayDir = ObjSpaceViewDir(float4(i.vertexLocal, 0.0f));
+                float3 rayDir = getRayDir(i);
                 rayDir = normalize(rayDir);
 
                 float maxDensity = 0.0f;
@@ -269,7 +285,7 @@
                 const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
-                float3 rayDir = normalize(ObjSpaceViewDir(float4(i.vertexLocal, 0.0f)));
+                float3 rayDir = getRayDir(i);
                 // Start from the end, tand trace towards the vertex
                 rayStartPos += rayDir * stepSize * NUM_STEPS;
                 rayDir = -rayDir;
