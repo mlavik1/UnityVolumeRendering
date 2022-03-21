@@ -35,13 +35,15 @@ namespace UnityVolumeRendering
         
         public Texture3D GetDataTexture()
         {
-            dataTexture = CreateTextureInternal();
+            if (dataTexture == null)
+                dataTexture = CreateTextureInternal();
             return dataTexture;
         }
 
         public Texture3D GetGradientTexture()
         {
-            gradientTexture = CreateGradientTextureInternal();
+            if (gradientTexture == null)
+                gradientTexture = CreateGradientTextureInternal();
             return gradientTexture;
         }
 
