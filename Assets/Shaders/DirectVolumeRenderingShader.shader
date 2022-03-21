@@ -73,7 +73,7 @@
                 if(unity_OrthoParams.w == 0)
                 {
                     // Perspective
-                    return ObjSpaceViewDir(float4(fragIn.vertexLocal, 0.0f));
+                    return normalize(ObjSpaceViewDir(float4(fragIn.vertexLocal, 0.0f)));
                 }
                 else
                 {
@@ -173,7 +173,6 @@
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
                 float3 lightDir = normalize(ObjSpaceViewDir(float4(float3(0.0f, 0.0f, 0.0f), 0.0f)));
                 float3 rayDir = getRayDir(i);
-                rayDir = normalize(rayDir);
 
                 // Create a small random offset in order to remove artifacts
                 rayStartPos = rayStartPos + (2.0f * rayDir / NUM_STEPS) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
@@ -247,7 +246,6 @@
 
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
                 float3 rayDir = getRayDir(i);
-                rayDir = normalize(rayDir);
 
                 float maxDensity = 0.0f;
                 for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
