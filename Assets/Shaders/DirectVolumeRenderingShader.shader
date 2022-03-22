@@ -68,7 +68,7 @@
             float4x4 _CrossSectionMatrix;
 #endif
 
-            float3 getRayDir(frag_in fragIn)
+            float3 getViewRayDir(frag_in fragIn)
             {
                 if(unity_OrthoParams.w == 0)
                 {
@@ -83,6 +83,17 @@
                     return normalize(camfwdobjspace);
                 }
             }
+
+            float2 intersectAABB(float3 rayOrigin, float3 rayDir, float3 boxMin, float3 boxMax)
+            {
+                float3 tMin = (boxMin - rayOrigin) / rayDir;
+                float3 tMax = (boxMax - rayOrigin) / rayDir;
+                float3 t1 = min(tMin, tMax);
+                float3 t2 = max(tMin, tMax);
+                float tNear = max(max(t1.x, t1.y), t1.z);
+                float tFar = min(min(t2.x, t2.y), t2.z);
+                return float2(tNear, tFar);
+            };
 
             // Gets the colour from a 1D Transfer Function (x = density)
             float4 getTF1DColour(float density)
@@ -168,23 +179,23 @@
             {
                 #define NUM_STEPS 512
 
-                const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
+                float3 lightDir = normalize(ObjSpaceViewDir(float4(float3(0.0f, 0.0f, 0.0f), 0.0f)));
+                float3 rayDir = getViewRayDir(i);
 
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
-                float3 lightDir = normalize(ObjSpaceViewDir(float4(float3(0.0f, 0.0f, 0.0f), 0.0f)));
-                float3 rayDir = getRayDir(i);
-
                 // Create a small random offset in order to remove artifacts
-                rayStartPos = rayStartPos + (2.0f * rayDir / NUM_STEPS) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
+                rayStartPos += (2.0f * rayDir / NUM_STEPS) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
+
+                float2 aabbInters = intersectAABB(rayStartPos, rayDir, float3(0.0, 0.0, 0.0), float3(1.0f, 1.0f, 1.0));
+                float3 rayEndPos = rayStartPos + rayDir * aabbInters.y;
+                float stepSize = 1.0 / NUM_STEPS;
 
                 float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
-                uint iDepth = 0;
+                float tDepth = 0.0;
                 for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
                 {
                     const float t = iStep * stepSize;
-                    const float3 currPos = rayStartPos + rayDir * t;
-                    if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
-                        break;
+                    const float3 currPos = lerp(rayStartPos, rayEndPos, t);
 
                     // Perform slice culling (cross section plane)
 #ifdef CUTOUT_ON
@@ -220,7 +231,7 @@
                     col.a = src.a + (1.0f - src.a)*col.a;
 
                     if (src.a > 0.15f)
-                        iDepth = iStep;
+                        tDepth = t;
 
                     if (col.a > 1.0f)
                         break;
@@ -230,8 +241,8 @@
                 frag_out output;
                 output.colour = col;
 #if DEPTHWRITE_ON
-                if (iDepth != 0)
-                    output.depth = localToDepth(rayStartPos + rayDir * (iDepth * stepSize) - float3(0.5f, 0.5f, 0.5f));
+                if (tDepth > 0)
+                    output.depth = localToDepth(lerp(rayStartPos, rayEndPos, tDepth) - float3(0.5f, 0.5f, 0.5f));
                 else
                     output.depth = 0;
 #endif
@@ -242,20 +253,19 @@
             frag_out frag_mip(frag_in i)
             {
                 #define NUM_STEPS 512
-                const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
 
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
-                float3 rayDir = getRayDir(i);
+                float3 rayDir = getViewRayDir(i);
+                float2 aabbInters = intersectAABB(rayStartPos, rayDir, float3(0.0, 0.0, 0.0), float3(1.0f, 1.0f, 1.0));
+                float3 rayEndPos = rayStartPos + rayDir * aabbInters.y;
+                float stepSize = 1.0 / NUM_STEPS;
 
                 float maxDensity = 0.0f;
                 for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
                 {
                     const float t = iStep * stepSize;
-                    const float3 currPos = rayStartPos + rayDir * t;
-                    // Stop when we are outside the box
-                    if (currPos.x < -0.0001f || currPos.x >= 1.0001f || currPos.y < -0.0001f || currPos.y > 1.0001f || currPos.z < -0.0001f || currPos.z > 1.0001f) // TODO: avoid branch?
-                        break;
-
+                    const float3 currPos = lerp(rayStartPos, rayEndPos, t);
+                    
 #ifdef CUTOUT_ON
                     if (IsCutout(currPos))
                         continue;
@@ -279,27 +289,26 @@
             // Draws the first point (closest to camera) with a density within the user-defined thresholds.
             frag_out frag_surf(frag_in i)
             {
-#define NUM_STEPS 1024
-                const float stepSize = 1.732f/*greatest distance in box*/ / NUM_STEPS;
+                #define NUM_STEPS 1024
+                float3 vertPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
+                float3 viewRayDir = getViewRayDir(i);
 
-                float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
-                float3 rayDir = getRayDir(i);
-                // Start from the end, tand trace towards the vertex
-                rayStartPos += rayDir * stepSize * NUM_STEPS;
-                rayDir = -rayDir;
-
+                // Find intersections with axis aligned boundinng box (the volume)
+                float2 aabbInters = intersectAABB(vertPos, viewRayDir, float3(0.0, 0.0, 0.0), float3(1.0f, 1.0f, 1.0));
+                // Front-to-back tracing
+                float3 rayDir = -viewRayDir;
+                float3 rayStartPos = vertPos + viewRayDir * aabbInters.y;
+                float3 rayEndPos = vertPos;
                 // Create a small random offset in order to remove artifacts
                 rayStartPos = rayStartPos + (2.0f * rayDir / NUM_STEPS) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
+                float stepSize = 1.0 / NUM_STEPS;
 
                 float4 col = float4(0,0,0,0);
                 for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
                 {
                     const float t = iStep * stepSize;
-                    const float3 currPos = rayStartPos + rayDir * t;
-                    // Make sure we are inside the box
-                    if (currPos.x < 0.0f || currPos.x >= 1.0f || currPos.y < 0.0f || currPos.y > 1.0f || currPos.z < 0.0f || currPos.z > 1.0f) // TODO: avoid branch?
-                        continue;
-
+                    const float3 currPos = lerp(rayStartPos, rayEndPos, t);
+                    
 #ifdef CUTOUT_ON
                     if (IsCutout(currPos))
                         continue;
@@ -320,7 +329,7 @@
                 frag_out output;
                 output.colour = col;
 #if DEPTHWRITE_ON
-                output.depth = localToDepth(rayStartPos + rayDir * (iStep * stepSize) - float3(0.5f, 0.5f, 0.5f));
+                output.depth = localToDepth(lerp(rayStartPos, rayEndPos, (iStep * stepSize)) - float3(0.5f, 0.5f, 0.5f));
 #endif
                 return output;
             }
