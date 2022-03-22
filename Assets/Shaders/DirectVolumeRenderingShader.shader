@@ -261,6 +261,7 @@
                 float stepSize = 1.0 / NUM_STEPS;
 
                 float maxDensity = 0.0f;
+                float3 maxDensityPos = rayStartPos;
                 for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
                 {
                     const float t = iStep * stepSize;
@@ -272,15 +273,18 @@
 #endif
 
                     const float density = getDensity(currPos);
-                    if (density > _MinVal && density < _MaxVal)
-                        maxDensity = max(density, maxDensity);
+                    if (density > maxDensity && density > _MinVal && density < _MaxVal)
+                    {
+                        maxDensity = density;
+                        maxDensityPos = currPos;
+                    }
                 }
 
                 // Write fragment output
                 frag_out output;
                 output.colour = float4(1.0f, 1.0f, 1.0f, maxDensity); // maximum intensity
 #if DEPTHWRITE_ON
-                output.depth = localToDepth(i.vertexLocal);
+                output.depth = localToDepth(maxDensityPos - float3(0.5f, 0.5f, 0.5f));
 #endif
                 return output;
             }
