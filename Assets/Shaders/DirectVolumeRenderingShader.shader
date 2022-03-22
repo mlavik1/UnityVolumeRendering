@@ -183,12 +183,12 @@
                 float3 rayDir = getViewRayDir(i);
 
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
-                // Create a small random offset in order to remove artifacts
-                rayStartPos += (2.0f * rayDir / NUM_STEPS) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
-
                 float2 aabbInters = intersectAABB(rayStartPos, rayDir, float3(0.0, 0.0, 0.0), float3(1.0f, 1.0f, 1.0));
                 float3 rayEndPos = rayStartPos + rayDir * aabbInters.y;
                 float stepSize = 1.0 / NUM_STEPS;
+
+                // Create a small random offset in order to remove artifacts
+                rayStartPos += (2.0f * rayDir / NUM_STEPS) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
 
                 float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
                 float tDepth = 0.0;
@@ -224,14 +224,14 @@
                     src.rgb = calculateLighting(src.rgb, normalize(gradient), lightDir, rayDir, 0.3f);
 #endif
 
-                    if (density < _MinVal || density > _MaxVal)
-                        src.a = 0.0f;
+                    // Optimisation: A branchless version of: if (density < _MinVal || density > _MaxVal) src.a = 0.0f;
+                    src.a *= step(_MinVal, density) * step(density, _MaxVal);
 
                     col.rgb = src.a * src.rgb + (1.0f - src.a)*col.rgb;
                     col.a = src.a + (1.0f - src.a)*col.a;
 
-                    if (src.a > 0.15f)
-                        tDepth = t;
+                    // Optimisation: A branchless version of: if (src.a > 0.15f) tDepth = t;
+                    tDepth = max(tDepth, t * step(0.15, src.a));
 
                     if (col.a > 1.0f)
                         break;
@@ -241,10 +241,8 @@
                 frag_out output;
                 output.colour = col;
 #if DEPTHWRITE_ON
-                if (tDepth > 0)
-                    output.depth = localToDepth(lerp(rayStartPos, rayEndPos, tDepth) - float3(0.5f, 0.5f, 0.5f));
-                else
-                    output.depth = 0;
+                const float3 depthPos = lerp(rayStartPos, rayEndPos, tDepth) - float3(0.5f, 0.5f, 0.5f);
+                output.depth = localToDepth(depthPos) * step(0.0, tDepth); // Write 0 if tDepth is zero
 #endif
                 return output;
             }
