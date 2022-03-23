@@ -188,6 +188,7 @@
                 float3 rayEndPos = rayStartPos + rayDir * aabbInters.y;
 
                 const uint numSteps = (uint)(abs(aabbInters.x - aabbInters.y) / stepSize);
+                const float numStepsRecip = 1.0 / numSteps;
 
                 // Create a small random offset in order to remove artifacts
                 rayStartPos += (2.0f * rayDir * stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
@@ -196,7 +197,7 @@
                 float tDepth = 0.0;
                 for (uint iStep = 0; iStep < numSteps; iStep++)
                 {
-                    const float t = iStep * stepSize;
+                    const float t = iStep * numStepsRecip;
                     const float3 currPos = lerp(rayStartPos, rayEndPos, t);
 
                     // Perform slice culling (cross section plane)
@@ -260,12 +261,13 @@
                 float2 aabbInters = intersectAABB(rayStartPos, rayDir, float3(0.0, 0.0, 0.0), float3(1.0f, 1.0f, 1.0));
                 float3 rayEndPos = rayStartPos + rayDir * aabbInters.y;
                 const uint numSteps = (uint)(abs(aabbInters.x - aabbInters.y) / stepSize);
+                const float numStepsRecip = 1.0 / numSteps;
 
                 float maxDensity = 0.0f;
                 float3 maxDensityPos = rayStartPos;
                 for (uint iStep = 0; iStep < numSteps; iStep++)
                 {
-                    const float t = iStep * stepSize;
+                    const float t = iStep * numStepsRecip;
                     const float3 currPos = lerp(rayStartPos, rayEndPos, t);
                     
 #ifdef CUTOUT_ON
@@ -309,11 +311,12 @@
                 // Create a small random offset in order to remove artifacts
                 rayStartPos = rayStartPos + (2.0f * rayDir * stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
                 const uint numSteps = (uint)(abs(aabbInters.x - aabbInters.y) / stepSize);
+                const float numStepsRecip = 1.0 / numSteps;
 
                 float4 col = float4(0,0,0,0);
                 for (uint iStep = 0; iStep < numSteps; iStep++)
                 {
-                    const float t = iStep * stepSize;
+                    const float t = iStep * numStepsRecip;
                     const float3 currPos = lerp(rayStartPos, rayEndPos, t);
                     
 #ifdef CUTOUT_ON
