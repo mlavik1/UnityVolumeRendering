@@ -68,12 +68,27 @@
             float4x4 _CrossSectionMatrix;
 #endif
 
-            float3 getViewRayDir(frag_in fragIn)
+            struct RayInfo
+            {
+                float3 startPos;
+                float3 endPos;
+                float3 direction;
+                float2 aabbInters;
+            };
+
+            struct RaymarchInfo
+            {
+                RayInfo ray;
+                uint numSteps;
+                float numStepsRecip;
+            };
+
+            float3 getViewRayDir(float3 vertexLocal)
             {
                 if(unity_OrthoParams.w == 0)
                 {
                     // Perspective
-                    return normalize(ObjSpaceViewDir(float4(fragIn.vertexLocal, 0.0f)));
+                    return normalize(ObjSpaceViewDir(float4(vertexLocal, 0.0f)));
                 }
                 else
                 {
@@ -94,6 +109,40 @@
                 float tFar = min(min(t2.x, t2.y), t2.z);
                 return float2(tNear, tFar);
             };
+
+            // Get a ray for the specified fragment (back-to-front)
+            RayInfo getRayBack2Front(float3 vertexLocal)
+            {
+                RayInfo ray;
+                ray.direction = getViewRayDir(vertexLocal);
+                ray.startPos = vertexLocal + float3(0.5f, 0.5f, 0.5f);
+                // Find intersections with axis aligned boundinng box (the volume)
+                ray.aabbInters = intersectAABB(ray.startPos, ray.direction, float3(0.0, 0.0, 0.0), float3(1.0f, 1.0f, 1.0));
+                ray.endPos = ray.startPos + ray.direction * ray.aabbInters.y;
+                return ray;
+            }
+
+            // Get a ray for the specified fragment (front-to-back)
+            RayInfo getRayFront2Back(float3 vertexLocal)
+            {
+                RayInfo ray;
+                float3 vertPos = vertexLocal + float3(0.5f, 0.5f, 0.5f);
+                float3 viewRayDir = getViewRayDir(vertexLocal);
+                // Find intersections with axis aligned boundinng box (the volume)
+                ray.aabbInters = intersectAABB(vertPos, viewRayDir, float3(0.0, 0.0, 0.0), float3(1.0f, 1.0f, 1.0));
+                ray.direction = -viewRayDir;
+                ray.startPos = vertPos + viewRayDir * ray.aabbInters.y;
+                ray.endPos = vertPos;
+                return ray;
+            }
+
+            RaymarchInfo initRaymarch(RayInfo ray, float stepSize)
+            {
+                RaymarchInfo raymarchInfo;
+                raymarchInfo.numSteps = (uint)(abs(ray.aabbInters.x - ray.aabbInters.y) / stepSize);
+                raymarchInfo.numStepsRecip = 1.0 / raymarchInfo.numSteps;
+                return raymarchInfo;
+            }
 
             // Gets the colour from a 1D Transfer Function (x = density)
             float4 getTF1DColour(float density)
@@ -180,25 +229,20 @@
                 #define MAX_NUM_STEPS 512
                 const float stepSize = 1.732f/*greatest distance in box*/ / MAX_NUM_STEPS;
 
+                RayInfo ray = getRayBack2Front(i.vertexLocal);
+                RaymarchInfo raymarchInfo = initRaymarch(ray, stepSize);
+
                 float3 lightDir = normalize(ObjSpaceViewDir(float4(float3(0.0f, 0.0f, 0.0f), 0.0f)));
-                float3 rayDir = getViewRayDir(i);
-
-                float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
-                float2 aabbInters = intersectAABB(rayStartPos, rayDir, float3(0.0, 0.0, 0.0), float3(1.0f, 1.0f, 1.0));
-                float3 rayEndPos = rayStartPos + rayDir * aabbInters.y;
-
-                const uint numSteps = (uint)(abs(aabbInters.x - aabbInters.y) / stepSize);
-                const float numStepsRecip = 1.0 / numSteps;
 
                 // Create a small random offset in order to remove artifacts
-                rayStartPos += (2.0f * rayDir * stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
+                ray.startPos += (2.0f * ray.direction * stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
 
                 float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
                 float tDepth = 0.0;
-                for (uint iStep = 0; iStep < numSteps; iStep++)
+                for (uint iStep = 0; iStep < raymarchInfo.numSteps; iStep++)
                 {
-                    const float t = iStep * numStepsRecip;
-                    const float3 currPos = lerp(rayStartPos, rayEndPos, t);
+                    const float t = iStep * raymarchInfo.numStepsRecip;
+                    const float3 currPos = lerp(ray.startPos, ray.endPos, t);
 
                     // Perform slice culling (cross section plane)
 #ifdef CUTOUT_ON
@@ -224,7 +268,7 @@
 
                     // Apply lighting
 #ifdef LIGHTING_ON
-                    src.rgb = calculateLighting(src.rgb, normalize(gradient), lightDir, rayDir, 0.3f);
+                    src.rgb = calculateLighting(src.rgb, normalize(gradient), lightDir, ray.direction, 0.3f);
 #endif
 
                     // Optimisation: A branchless version of: if (density < _MinVal || density > _MaxVal) src.a = 0.0f;
@@ -244,7 +288,7 @@
                 frag_out output;
                 output.colour = col;
 #if DEPTHWRITE_ON
-                const float3 depthPos = lerp(rayStartPos, rayEndPos, tDepth) - float3(0.5f, 0.5f, 0.5f);
+                const float3 depthPos = lerp(ray.startPos, ray.endPos, tDepth) - float3(0.5f, 0.5f, 0.5f);
                 output.depth = localToDepth(depthPos) * step(0.0, tDepth); // Write 0 if tDepth is zero
 #endif
                 return output;
@@ -256,19 +300,15 @@
                 #define MAX_NUM_STEPS 512
                 const float stepSize = 1.732f/*greatest distance in box*/ / MAX_NUM_STEPS;
 
-                float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
-                float3 rayDir = getViewRayDir(i);
-                float2 aabbInters = intersectAABB(rayStartPos, rayDir, float3(0.0, 0.0, 0.0), float3(1.0f, 1.0f, 1.0));
-                float3 rayEndPos = rayStartPos + rayDir * aabbInters.y;
-                const uint numSteps = (uint)(abs(aabbInters.x - aabbInters.y) / stepSize);
-                const float numStepsRecip = 1.0 / numSteps;
+                RayInfo ray = getRayBack2Front(i.vertexLocal);
+                RaymarchInfo raymarchInfo = initRaymarch(ray, stepSize);
 
                 float maxDensity = 0.0f;
-                float3 maxDensityPos = rayStartPos;
-                for (uint iStep = 0; iStep < numSteps; iStep++)
+                float3 maxDensityPos = ray.startPos;
+                for (uint iStep = 0; iStep < raymarchInfo.numSteps; iStep++)
                 {
-                    const float t = iStep * numStepsRecip;
-                    const float3 currPos = lerp(rayStartPos, rayEndPos, t);
+                    const float t = iStep * raymarchInfo.numStepsRecip;
+                    const float3 currPos = lerp(ray.startPos, ray.endPos, t);
                     
 #ifdef CUTOUT_ON
                     if (IsCutout(currPos))
@@ -298,26 +338,18 @@
             {
                 #define MAX_NUM_STEPS 1024
                 const float stepSize = 1.732f/*greatest distance in box*/ / MAX_NUM_STEPS;
-                
-                float3 vertPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
-                float3 viewRayDir = getViewRayDir(i);
 
-                // Find intersections with axis aligned boundinng box (the volume)
-                float2 aabbInters = intersectAABB(vertPos, viewRayDir, float3(0.0, 0.0, 0.0), float3(1.0f, 1.0f, 1.0));
-                // Front-to-back tracing
-                float3 rayDir = -viewRayDir;
-                float3 rayStartPos = vertPos + viewRayDir * aabbInters.y;
-                float3 rayEndPos = vertPos;
+                RayInfo ray = getRayFront2Back(i.vertexLocal);
+                RaymarchInfo raymarchInfo = initRaymarch(ray, stepSize);
+
                 // Create a small random offset in order to remove artifacts
-                rayStartPos = rayStartPos + (2.0f * rayDir * stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
-                const uint numSteps = (uint)(abs(aabbInters.x - aabbInters.y) / stepSize);
-                const float numStepsRecip = 1.0 / numSteps;
+                ray.startPos = ray.startPos + (2.0f * ray.direction * stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
 
                 float4 col = float4(0,0,0,0);
-                for (uint iStep = 0; iStep < numSteps; iStep++)
+                for (uint iStep = 0; iStep < raymarchInfo.numSteps; iStep++)
                 {
-                    const float t = iStep * numStepsRecip;
-                    const float3 currPos = lerp(rayStartPos, rayEndPos, t);
+                    const float t = iStep * raymarchInfo.numStepsRecip;
+                    const float3 currPos = lerp(ray.startPos, ray.endPos, t);
                     
 #ifdef CUTOUT_ON
                     if (IsCutout(currPos))
@@ -329,7 +361,7 @@
                     {
                         float3 normal = normalize(getGradient(currPos));
                         col = getTF1DColour(density);
-                        col.rgb = calculateLighting(col.rgb, normal, -rayDir, -rayDir, 0.15);
+                        col.rgb = calculateLighting(col.rgb, normal, -ray.direction, -ray.direction, 0.15);
                         col.a = 1.0f;
                         break;
                     }
@@ -339,7 +371,7 @@
                 frag_out output;
                 output.colour = col;
 #if DEPTHWRITE_ON
-                output.depth = localToDepth(lerp(rayStartPos, rayEndPos, (iStep * stepSize)) - float3(0.5f, 0.5f, 0.5f));
+                output.depth = localToDepth(lerp(ray.startPos, ray.endPos, (iStep * stepSize)) - float3(0.5f, 0.5f, 0.5f));
 #endif
                 return output;
             }
