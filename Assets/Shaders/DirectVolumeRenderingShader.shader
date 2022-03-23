@@ -175,9 +175,10 @@
             }
 
             // Direct Volume Rendering
-            frag_out frag_dvr (frag_in i)
+            frag_out frag_dvr(frag_in i)
             {
-                #define NUM_STEPS 512
+                #define MAX_NUM_STEPS 512
+                const float stepSize = 1.732f/*greatest distance in box*/ / MAX_NUM_STEPS;
 
                 float3 lightDir = normalize(ObjSpaceViewDir(float4(float3(0.0f, 0.0f, 0.0f), 0.0f)));
                 float3 rayDir = getViewRayDir(i);
@@ -185,14 +186,15 @@
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
                 float2 aabbInters = intersectAABB(rayStartPos, rayDir, float3(0.0, 0.0, 0.0), float3(1.0f, 1.0f, 1.0));
                 float3 rayEndPos = rayStartPos + rayDir * aabbInters.y;
-                float stepSize = 1.0 / NUM_STEPS;
+
+                const uint numSteps = (uint)(abs(aabbInters.x - aabbInters.y) / stepSize);
 
                 // Create a small random offset in order to remove artifacts
-                rayStartPos += (2.0f * rayDir / NUM_STEPS) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
+                rayStartPos += (2.0f * rayDir * stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
 
                 float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
                 float tDepth = 0.0;
-                for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
+                for (uint iStep = 0; iStep < numSteps; iStep++)
                 {
                     const float t = iStep * stepSize;
                     const float3 currPos = lerp(rayStartPos, rayEndPos, t);
@@ -250,17 +252,18 @@
             // Maximum Intensity Projection mode
             frag_out frag_mip(frag_in i)
             {
-                #define NUM_STEPS 512
+                #define MAX_NUM_STEPS 512
+                const float stepSize = 1.732f/*greatest distance in box*/ / MAX_NUM_STEPS;
 
                 float3 rayStartPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
                 float3 rayDir = getViewRayDir(i);
                 float2 aabbInters = intersectAABB(rayStartPos, rayDir, float3(0.0, 0.0, 0.0), float3(1.0f, 1.0f, 1.0));
                 float3 rayEndPos = rayStartPos + rayDir * aabbInters.y;
-                float stepSize = 1.0 / NUM_STEPS;
+                const uint numSteps = (uint)(abs(aabbInters.x - aabbInters.y) / stepSize);
 
                 float maxDensity = 0.0f;
                 float3 maxDensityPos = rayStartPos;
-                for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
+                for (uint iStep = 0; iStep < numSteps; iStep++)
                 {
                     const float t = iStep * stepSize;
                     const float3 currPos = lerp(rayStartPos, rayEndPos, t);
@@ -291,7 +294,9 @@
             // Draws the first point (closest to camera) with a density within the user-defined thresholds.
             frag_out frag_surf(frag_in i)
             {
-                #define NUM_STEPS 1024
+                #define MAX_NUM_STEPS 1024
+                const float stepSize = 1.732f/*greatest distance in box*/ / MAX_NUM_STEPS;
+                
                 float3 vertPos = i.vertexLocal + float3(0.5f, 0.5f, 0.5f);
                 float3 viewRayDir = getViewRayDir(i);
 
@@ -302,11 +307,11 @@
                 float3 rayStartPos = vertPos + viewRayDir * aabbInters.y;
                 float3 rayEndPos = vertPos;
                 // Create a small random offset in order to remove artifacts
-                rayStartPos = rayStartPos + (2.0f * rayDir / NUM_STEPS) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
-                float stepSize = 1.0 / NUM_STEPS;
+                rayStartPos = rayStartPos + (2.0f * rayDir * stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
+                const uint numSteps = (uint)(abs(aabbInters.x - aabbInters.y) / stepSize);
 
                 float4 col = float4(0,0,0,0);
-                for (uint iStep = 0; iStep < NUM_STEPS; iStep++)
+                for (uint iStep = 0; iStep < numSteps; iStep++)
                 {
                     const float t = iStep * stepSize;
                     const float3 currPos = lerp(rayStartPos, rayEndPos, t);
