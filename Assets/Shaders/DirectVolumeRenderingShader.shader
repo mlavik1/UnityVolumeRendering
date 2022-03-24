@@ -293,8 +293,9 @@
                 frag_out output;
                 output.colour = col;
 #if DEPTHWRITE_ON
+                tDepth += (step(col.a, 0.0) * 1000.0); // Write large depth if no hit
                 const float3 depthPos = lerp(ray.startPos, ray.endPos, tDepth) - float3(0.5f, 0.5f, 0.5f);
-                output.depth = localToDepth(depthPos) * step(0.0, tDepth); // Write 0 if tDepth is zero
+                output.depth = localToDepth(depthPos);
 #endif
                 return output;
             }
@@ -374,7 +375,9 @@
                 frag_out output;
                 output.colour = col;
 #if DEPTHWRITE_ON
-                output.depth = localToDepth(lerp(ray.startPos, ray.endPos, (iStep * raymarchInfo.stepSize)) - float3(0.5f, 0.5f, 0.5f));
+                
+                const float tDepth = iStep * raymarchInfo.numStepsRecip + (step(col.a, 0.0) * 1000.0); // Write large depth if no hit
+                output.depth = localToDepth(lerp(ray.startPos, ray.endPos, tDepth) - float3(0.5f, 0.5f, 0.5f));
 #endif
                 return output;
             }
