@@ -79,8 +79,9 @@
             struct RaymarchInfo
             {
                 RayInfo ray;
-                uint numSteps;
+                int numSteps;
                 float numStepsRecip;
+                float stepSize;
             };
 
             float3 getViewRayDir(float3 vertexLocal)
@@ -137,21 +138,14 @@
                 float3 tmp = ray.startPos;
                 ray.startPos = ray.endPos;
                 ray.endPos = tmp;
-
-                //float3 vertPos = vertexLocal + float3(0.5f, 0.5f, 0.5f);
-                //float3 viewRayDir = getViewRayDir(vertexLocal);
-                // Find intersections with axis aligned boundinng box (the volume)
-                //ray.aabbInters = intersectAABB(vertPos, viewRayDir, float3(0.0, 0.0, 0.0), float3(1.0f, 1.0f, 1.0));
-                //ray.direction = -viewRayDir;
-                //ray.startPos = vertPos + viewRayDir * ray.aabbInters.y;
-                //ray.endPos = vertPos;
                 return ray;
             }
 
-            RaymarchInfo initRaymarch(RayInfo ray, float stepSize)
+            RaymarchInfo initRaymarch(RayInfo ray, int maxNumSteps)
             {
                 RaymarchInfo raymarchInfo;
-                raymarchInfo.numSteps = (uint)(abs(ray.aabbInters.x - ray.aabbInters.y) / stepSize);
+                raymarchInfo.stepSize = 1.732f/*greatest distance in box*/ / maxNumSteps;
+                raymarchInfo.numSteps = (int)clamp(abs(ray.aabbInters.x - ray.aabbInters.y) / raymarchInfo.stepSize, 1, maxNumSteps);
                 raymarchInfo.numStepsRecip = 1.0 / raymarchInfo.numSteps;
                 return raymarchInfo;
             }
@@ -239,19 +233,18 @@
             frag_out frag_dvr(frag_in i)
             {
                 #define MAX_NUM_STEPS 512
-                const float stepSize = 1.732f/*greatest distance in box*/ / MAX_NUM_STEPS;
 
                 RayInfo ray = getRayBack2Front(i.vertexLocal);
-                RaymarchInfo raymarchInfo = initRaymarch(ray, stepSize);
+                RaymarchInfo raymarchInfo = initRaymarch(ray, MAX_NUM_STEPS);
 
                 float3 lightDir = normalize(ObjSpaceViewDir(float4(float3(0.0f, 0.0f, 0.0f), 0.0f)));
 
                 // Create a small random offset in order to remove artifacts
-                ray.startPos += (2.0f * ray.direction * stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
+                ray.startPos += (2.0f * ray.direction * raymarchInfo.stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
 
                 float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
                 float tDepth = 0.0;
-                for (uint iStep = 0; iStep < raymarchInfo.numSteps; iStep++)
+                for (int iStep = 0; iStep < raymarchInfo.numSteps; iStep++)
                 {
                     const float t = iStep * raymarchInfo.numStepsRecip;
                     const float3 currPos = lerp(ray.startPos, ray.endPos, t);
@@ -310,14 +303,13 @@
             frag_out frag_mip(frag_in i)
             {
                 #define MAX_NUM_STEPS 512
-                const float stepSize = 1.732f/*greatest distance in box*/ / MAX_NUM_STEPS;
 
                 RayInfo ray = getRayBack2Front(i.vertexLocal);
-                RaymarchInfo raymarchInfo = initRaymarch(ray, stepSize);
+                RaymarchInfo raymarchInfo = initRaymarch(ray, MAX_NUM_STEPS);
 
                 float maxDensity = 0.0f;
                 float3 maxDensityPos = ray.startPos;
-                for (uint iStep = 0; iStep < raymarchInfo.numSteps; iStep++)
+                for (int iStep = 0; iStep < raymarchInfo.numSteps; iStep++)
                 {
                     const float t = iStep * raymarchInfo.numStepsRecip;
                     const float3 currPos = lerp(ray.startPos, ray.endPos, t);
@@ -349,16 +341,15 @@
             frag_out frag_surf(frag_in i)
             {
                 #define MAX_NUM_STEPS 1024
-                const float stepSize = 1.732f/*greatest distance in box*/ / MAX_NUM_STEPS;
 
                 RayInfo ray = getRayFront2Back(i.vertexLocal);
-                RaymarchInfo raymarchInfo = initRaymarch(ray, stepSize);
+                RaymarchInfo raymarchInfo = initRaymarch(ray, MAX_NUM_STEPS);
 
                 // Create a small random offset in order to remove artifacts
-                ray.startPos = ray.startPos + (2.0f * ray.direction * stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
+                ray.startPos = ray.startPos + (2.0f * ray.direction * raymarchInfo.stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
 
                 float4 col = float4(0,0,0,0);
-                for (uint iStep = 0; iStep < raymarchInfo.numSteps; iStep++)
+                for (int iStep = 0; iStep < raymarchInfo.numSteps; iStep++)
                 {
                     const float t = iStep * raymarchInfo.numStepsRecip;
                     const float3 currPos = lerp(ray.startPos, ray.endPos, t);
@@ -383,7 +374,7 @@
                 frag_out output;
                 output.colour = col;
 #if DEPTHWRITE_ON
-                output.depth = localToDepth(lerp(ray.startPos, ray.endPos, (iStep * stepSize)) - float3(0.5f, 0.5f, 0.5f));
+                output.depth = localToDepth(lerp(ray.startPos, ray.endPos, (iStep * raymarchInfo.stepSize)) - float3(0.5f, 0.5f, 0.5f));
 #endif
                 return output;
             }
