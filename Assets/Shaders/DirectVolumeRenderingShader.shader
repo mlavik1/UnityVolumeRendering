@@ -284,9 +284,6 @@
 
                     // Optimisation: A branchless version of: if (src.a > 0.15f) tDepth = t;
                     tDepth = max(tDepth, t * step(0.15, src.a));
-
-                    if (col.a > 1.0f)
-                        break;
                 }
 
                 // Write fragment output
