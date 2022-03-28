@@ -2,6 +2,8 @@
 using System;
 using itk.simple;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.IO;
 
 namespace UnityVolumeRendering
 {
@@ -12,12 +14,68 @@ namespace UnityVolumeRendering
     /// </summary>
     public class SimpleITKDICOMImporter
     {
-        public VolumeDataset ImportDICOMSeries(string directory)
+        private IEnumerable<string> fileCandidates;
+        private HashSet<string> directories;
+        private string datasetName;
+
+        public SimpleITKDICOMImporter(IEnumerable<string> files, string name = "DICOM_Dataset")
         {
+            this.fileCandidates = files;
+            datasetName = name;
+            directories = new HashSet<string>();
+
+            foreach (string file in files)
+            {
+                string dir = Path.GetDirectoryName(file);
+                if(!directories.Contains(dir))
+                directories.Add(dir);
+            }
+        }
+
+        public List<DICOMImporter.DICOMSeries> LoadDICOMSeries()
+        {
+            List<DICOMImporter.DICOMSeries> seriesList = new List<DICOMImporter.DICOMSeries>();
+            Dictionary<string, VectorString> directorySeries = new Dictionary<string, VectorString>();
+            foreach (string directory in directories)
+            {
+                VectorString seriesIDs = ImageSeriesReader.GetGDCMSeriesIDs(directory);
+                directorySeries.Add(directory, seriesIDs);
+
+            }
+
+            foreach(var dirSeries in directorySeries)
+            {
+                foreach(string seriesID in dirSeries.Value)
+                {
+                    VectorString dicom_names = ImageSeriesReader.GetGDCMSeriesFileNames(dirSeries.Key, seriesID);
+                    DICOMImporter.DICOMSeries series = new DICOMImporter.DICOMSeries();
+                    foreach(string file in dicom_names)
+                    {
+                        DICOMImporter.DICOMSliceFile sliceFile = new DICOMImporter.DICOMSliceFile();
+                        sliceFile.filePath = file;
+                        series.dicomFiles.Add(sliceFile);
+                    }
+                    seriesList.Add(series);
+                }
+            }
+
+            return seriesList;
+        }
+
+        public VolumeDataset ImportDICOMSeries(DICOMImporter.DICOMSeries series)
+        {
+            if (series.dicomFiles.Count == 0)
+            {
+                Debug.LogError("Empty series. No files to load.");
+                return null;
+            }
+
             ImageSeriesReader reader = new ImageSeriesReader();
 
-            VectorString dicom_names = ImageSeriesReader.GetGDCMSeriesFileNames(directory);
-            reader.SetFileNames(dicom_names);
+            VectorString dicomNames = new VectorString();
+            foreach (var dicomFile in series.dicomFiles)
+                dicomNames.Add(dicomFile.filePath);
+            reader.SetFileNames(dicomNames);
 
             Image image = reader.Execute();
 
@@ -43,7 +101,7 @@ namespace UnityVolumeRendering
             volumeDataset.dimY = (int)size[1];
             volumeDataset.dimZ = (int)size[2];
             volumeDataset.datasetName = "test";
-            volumeDataset.filePath = directory;
+            volumeDataset.filePath = dicomNames[0];
 
             return volumeDataset;
         }
