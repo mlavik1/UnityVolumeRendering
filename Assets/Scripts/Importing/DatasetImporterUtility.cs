@@ -10,7 +10,10 @@ namespace UnityVolumeRendering
         Unknown,
         Raw,
         DICOM,
-        PARCHG
+        PARCHG,
+        NRRD,
+        NIFTI,
+        ImageSequence
     }
 
     public class DatasetImporterUtility
@@ -40,7 +43,18 @@ namespace UnityVolumeRendering
             {
                 datasetType = DatasetType.DICOM;
             }
-
+            else if(extension == ".nrrd")
+            {
+                datasetType = DatasetType.NRRD;
+            }
+            else if(extension == ".nii")
+            {
+                datasetType = DatasetType.NIFTI;
+            }
+            else if(extension == ".jpg" || extension == ".jpeg" || extension == ".png")
+            {
+                datasetType = DatasetType.ImageSequence;
+            }
             else 
             {
                 datasetType = DatasetType.Unknown;

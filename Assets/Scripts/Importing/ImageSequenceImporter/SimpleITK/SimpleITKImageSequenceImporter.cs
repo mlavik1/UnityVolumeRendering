@@ -8,9 +8,8 @@ using System.IO;
 namespace UnityVolumeRendering
 {
     /// <summary>
-    /// DICOM importer.
-    /// Reads a 3D DICOM dataset from a folder.
-    /// The folder needs to contain several .dcm/.dicom files, where each file is a slice of the same dataset.
+    /// SimpleITK-based DICOM importer.
+    /// Has support for JPEG2000 and more.
     /// </summary>
     public class SimpleITKImageSequenceImporter : IImageSequenceImporter
     {

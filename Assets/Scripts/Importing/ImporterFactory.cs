@@ -58,6 +58,14 @@ namespace UnityVolumeRendering
                     {
                         return typeof(ParDatasetImporter);
                     }
+                case ImageFileFormat.NRRD:
+                    {
+                        return typeof(SimpleITKImageFileImporter);
+                    }
+                case ImageFileFormat.NIFTI:
+                    {
+                        return typeof(SimpleITKImageFileImporter);
+                    }
                 default:
                     return null;
             }
