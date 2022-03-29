@@ -55,8 +55,8 @@ namespace UnityVolumeRendering
             {
                 DespawnAllDatasets();
                 string filePath = result.path;
-                ParDatasetImporter parimporter = new ParDatasetImporter(filePath);
-                VolumeDataset dataset = parimporter.Import(); //overriden somewhere
+                IImageFileImporter parimporter = ImporterFactory.CreateImageFileImporter(ImageFileFormat.VASP);
+                VolumeDataset dataset = parimporter.Import(filePath);
                 if (dataset != null)
                 {
                         VolumeObjectFactory.CreateObject(dataset);
@@ -107,12 +107,12 @@ namespace UnityVolumeRendering
                     .Where(p => p.EndsWith(".dcm", StringComparison.InvariantCultureIgnoreCase) || p.EndsWith(".dicom", StringComparison.InvariantCultureIgnoreCase) || p.EndsWith(".dicm", StringComparison.InvariantCultureIgnoreCase));
 
                 // Import the dataset
-                DICOMImporter importer = new DICOMImporter(fileCandidates, Path.GetFileName(result.path));
-                List<DICOMImporter.DICOMSeries> seriesList = importer.LoadDICOMSeries();
+                IImageSequenceImporter importer = ImporterFactory.CreateImageSequenceImporter(ImageSequenceFormat.DICOM);
+                IEnumerable<IImageSequenceSeries> seriesList = importer.LoadSeries(fileCandidates);
                 float numVolumesCreated = 0;
-                foreach (DICOMImporter.DICOMSeries series in seriesList)
+                foreach (IImageSequenceSeries series in seriesList)
                 {
-                    VolumeDataset dataset = importer.ImportDICOMSeries(series);
+                    VolumeDataset dataset = importer.ImportSeries(series);
                     // Spawn the object
                     if (dataset != null)
                     {

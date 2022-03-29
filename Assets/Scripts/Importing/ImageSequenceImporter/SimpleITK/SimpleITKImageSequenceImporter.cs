@@ -12,29 +12,40 @@ namespace UnityVolumeRendering
     /// Reads a 3D DICOM dataset from a folder.
     /// The folder needs to contain several .dcm/.dicom files, where each file is a slice of the same dataset.
     /// </summary>
-    public class SimpleITKDICOMImporter
+    public class SimpleITKImageSequenceImporter : IImageSequenceImporter
     {
-        private IEnumerable<string> fileCandidates;
-        private HashSet<string> directories;
-        private string datasetName;
-
-        public SimpleITKDICOMImporter(IEnumerable<string> files, string name = "DICOM_Dataset")
+        public class ImageSequenceSlice : IImageSequenceFile
         {
-            this.fileCandidates = files;
-            datasetName = name;
-            directories = new HashSet<string>();
+            public string filePath;
+
+            public string GetFilePath()
+            {
+                return filePath;
+            }
+        }
+
+        public class ImageSequenceSeries : IImageSequenceSeries
+        {
+            public List<ImageSequenceSlice> files = new List<ImageSequenceSlice>();
+
+            public IEnumerable<IImageSequenceFile> GetFiles()
+            {
+                return files;
+            }
+        }
+
+        public IEnumerable<IImageSequenceSeries> LoadSeries(IEnumerable<string> files)
+        {
+            HashSet<string>  directories = new HashSet<string>();
 
             foreach (string file in files)
             {
                 string dir = Path.GetDirectoryName(file);
-                if(!directories.Contains(dir))
-                directories.Add(dir);
+                if (!directories.Contains(dir))
+                    directories.Add(dir);
             }
-        }
 
-        public List<DICOMImporter.DICOMSeries> LoadDICOMSeries()
-        {
-            List<DICOMImporter.DICOMSeries> seriesList = new List<DICOMImporter.DICOMSeries>();
+            List<ImageSequenceSeries> seriesList = new List<ImageSequenceSeries>();
             Dictionary<string, VectorString> directorySeries = new Dictionary<string, VectorString>();
             foreach (string directory in directories)
             {
@@ -48,12 +59,12 @@ namespace UnityVolumeRendering
                 foreach(string seriesID in dirSeries.Value)
                 {
                     VectorString dicom_names = ImageSeriesReader.GetGDCMSeriesFileNames(dirSeries.Key, seriesID);
-                    DICOMImporter.DICOMSeries series = new DICOMImporter.DICOMSeries();
+                    ImageSequenceSeries series = new ImageSequenceSeries();
                     foreach(string file in dicom_names)
                     {
-                        DICOMImporter.DICOMSliceFile sliceFile = new DICOMImporter.DICOMSliceFile();
+                        ImageSequenceSlice sliceFile = new ImageSequenceSlice();
                         sliceFile.filePath = file;
-                        series.dicomFiles.Add(sliceFile);
+                        series.files.Add(sliceFile);
                     }
                     seriesList.Add(series);
                 }
@@ -62,9 +73,10 @@ namespace UnityVolumeRendering
             return seriesList;
         }
 
-        public VolumeDataset ImportDICOMSeries(DICOMImporter.DICOMSeries series)
+        public VolumeDataset ImportSeries(IImageSequenceSeries series)
         {
-            if (series.dicomFiles.Count == 0)
+            ImageSequenceSeries sequenceSeries = (ImageSequenceSeries)series;
+            if (sequenceSeries.files.Count == 0)
             {
                 Debug.LogError("Empty series. No files to load.");
                 return null;
@@ -73,7 +85,7 @@ namespace UnityVolumeRendering
             ImageSeriesReader reader = new ImageSeriesReader();
 
             VectorString dicomNames = new VectorString();
-            foreach (var dicomFile in series.dicomFiles)
+            foreach (var dicomFile in sequenceSeries.files)
                 dicomNames.Add(dicomFile.filePath);
             reader.SetFileNames(dicomNames);
 

@@ -32,15 +32,15 @@ namespace UnityVolumeRendering
                         IEnumerable<string> fileCandidates = Directory.EnumerateFiles(directoryPath, "*.*", SearchOption.TopDirectoryOnly)
                             .Where(p => p.EndsWith(".dcm", StringComparison.InvariantCultureIgnoreCase) || p.EndsWith(".dicom", StringComparison.InvariantCultureIgnoreCase) || p.EndsWith(".dicm", StringComparison.InvariantCultureIgnoreCase));
 
-                        DICOMImporter importer = new DICOMImporter(fileCandidates, Path.GetFileName(directoryPath));
+                        IImageSequenceImporter importer = ImporterFactory.CreateImageSequenceImporter(ImageSequenceFormat.DICOM);
 
-                        List<DICOMImporter.DICOMSeries> seriesList = importer.LoadDICOMSeries();
-                        foreach (DICOMImporter.DICOMSeries series in seriesList)
+                        IEnumerable<IImageSequenceSeries> seriesList = importer.LoadSeries(fileCandidates);
+                        foreach (IImageSequenceSeries series in seriesList)
                         {
                             // Only import the series that contains the selected file
-                            if(series.dicomFiles.Any(f => Path.GetFileName(f.filePath) == Path.GetFileName(filePath)))
+                            if(series.GetFiles().Any(f => Path.GetFileName(f.GetFilePath()) == Path.GetFileName(filePath)))
                             {
-                                VolumeDataset dataset = importer.ImportDICOMSeries(series);
+                                VolumeDataset dataset = importer.ImportSeries(series);
 
                                 if (dataset != null)
                                 {
@@ -52,8 +52,8 @@ namespace UnityVolumeRendering
                     }
                 case DatasetType.PARCHG:
                     {
-                        ParDatasetImporter importer = new ParDatasetImporter(filePath);
-                        VolumeDataset dataset = importer.Import();
+                        IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.VASP);
+                        VolumeDataset dataset = importer.Import(filePath);
 
                         if (dataset != null)
                         {

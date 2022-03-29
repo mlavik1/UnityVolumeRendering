@@ -2,33 +2,69 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using System.Linq;
 
 namespace UnityVolumeRendering
 {
     /// <summary>
     /// Converts a directory of image slices into a VolumeDataset for volumetric rendering.
     /// </summary>
-    public class ImageSequenceImporter
+    public class ImageSequenceImporter : IImageSequenceImporter
     {
-        private string directoryPath;
-        private string[] supportedImageTypes = new string[] 
+        public class ImageSequenceFile : IImageSequenceFile
         {
-            "*.png",
-            "*.jpg",
-            "*.jpeg"
-        };
+            public string filePath;
 
-        public ImageSequenceImporter(string directoryPath)
-        {
-            this.directoryPath = directoryPath;
+            public string GetFilePath()
+            {
+                return filePath;
+            }
         }
 
-        public VolumeDataset Import()
+        public class ImageSequenceSeries : IImageSequenceSeries
         {
-            if (!Directory.Exists(directoryPath))
-                throw new NullReferenceException("No directory found: " + directoryPath);
+            public List<ImageSequenceFile> files = new List<ImageSequenceFile>();
 
-            List<string> imagePaths = GetSortedImagePaths();
+            public IEnumerable<IImageSequenceFile> GetFiles()
+            {
+                return files;
+            }
+        }
+
+        private string directoryPath;
+        private HashSet<string> supportedImageTypes = new HashSet<string>
+        {
+            ".png",
+            ".jpg",
+            ".jpeg"
+        };
+
+        public IEnumerable<IImageSequenceSeries> LoadSeries(IEnumerable<string> files)
+        {
+            Dictionary<string, ImageSequenceSeries> sequenceByFiletype = new Dictionary<string, ImageSequenceSeries>();
+            foreach(string filePath in files)
+            {
+                string fileExt = Path.GetExtension(filePath).ToLower();
+                if (supportedImageTypes.Contains(fileExt))
+                {
+                    if (!sequenceByFiletype.ContainsKey(fileExt))
+                        sequenceByFiletype[fileExt] = new ImageSequenceSeries();
+
+                    ImageSequenceFile imgSeqFile = new ImageSequenceFile();
+                    imgSeqFile.filePath = filePath;
+                    sequenceByFiletype[fileExt].files.Add(imgSeqFile);
+                }
+            }
+
+            if (sequenceByFiletype.Count == 0)
+                Debug.LogError("Found no image files of supported formats. Currently supported formats are: " + supportedImageTypes.ToString());
+
+            return sequenceByFiletype.Select(f => f.Value).ToList();
+        }
+
+        public VolumeDataset ImportSeries(IImageSequenceSeries series)
+        {
+            List<string> imagePaths = series.GetFiles().Select(f => f.GetFilePath()).ToList();
 
             Vector3Int dimensions = GetVolumeDimensions(imagePaths);
             int[] data = FillSequentialData(dimensions, imagePaths);
@@ -37,24 +73,6 @@ namespace UnityVolumeRendering
             dataset.FixDimensions();
 
             return dataset;
-        }
-
-        /// <summary>
-        /// Gets every file path in the directory with a supported suffix.
-        /// </summary>
-        /// /// <returns>A sorted list of image file paths.</returns>
-        private List<string> GetSortedImagePaths()
-        {
-            var imagePaths = new List<string>();
-
-            foreach (var type in supportedImageTypes)
-            {
-                imagePaths.AddRange(Directory.GetFiles(directoryPath, type));
-            }
-
-            imagePaths.Sort();
-
-            return imagePaths;
         }
 
         /// <summary>

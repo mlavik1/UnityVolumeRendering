@@ -62,13 +62,13 @@ namespace UnityVolumeRendering
 
                 if (fileCandidates.Any())
                 {
-                    DICOMImporter importer = new DICOMImporter(fileCandidates, Path.GetFileName(dir));
-                    List<DICOMImporter.DICOMSeries> seriesList = importer.LoadDICOMSeries();
+                    IImageSequenceImporter importer = ImporterFactory.CreateImageSequenceImporter(ImageSequenceFormat.DICOM);
+                    IEnumerable<IImageSequenceSeries> seriesList = importer.LoadSeries(fileCandidates);
                     float numVolumesCreated = 0;
 
-                    foreach (DICOMImporter.DICOMSeries series in seriesList)
+                    foreach (IImageSequenceSeries series in seriesList)
                     {
-                        VolumeDataset dataset = importer.ImportDICOMSeries(series);
+                        VolumeDataset dataset = importer.ImportSeries(series);
                         if (dataset != null)
                         {
                             if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
@@ -104,20 +104,26 @@ namespace UnityVolumeRendering
             
             if (Directory.Exists(dir))
             {
-                ImageSequenceImporter importer = new ImageSequenceImporter(dir);
+                List<string> filePaths = Directory.GetFiles(dir).ToList();
+                IImageSequenceImporter importer = ImporterFactory.CreateImageSequenceImporter(ImageSequenceFormat.ImageSequence);
 
-                VolumeDataset dataset = importer.Import();
-                if (dataset != null)
+                IEnumerable<IImageSequenceSeries> seriesList = importer.LoadSeries(filePaths);
+
+                foreach(IImageSequenceSeries series in seriesList)
                 {
-                    if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
+                    VolumeDataset dataset = importer.ImportSeries(series);
+                    if (dataset != null)
                     {
-                        if (EditorUtility.DisplayDialog("Optional DownScaling",
-                            $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
+                        if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
                         {
-                            dataset.DownScaleData();
+                            if (EditorUtility.DisplayDialog("Optional DownScaling",
+                                $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
+                            {
+                                dataset.DownScaleData();
+                            }
                         }
+                        VolumeObjectFactory.CreateObject(dataset);
                     }
-                    VolumeObjectFactory.CreateObject(dataset);
                 }
             }
             else

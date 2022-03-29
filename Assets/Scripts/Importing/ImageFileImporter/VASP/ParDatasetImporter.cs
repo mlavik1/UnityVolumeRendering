@@ -21,7 +21,7 @@ using UnityEngine;
 
 namespace UnityVolumeRendering
 {
-    public class ParDatasetImporter
+    public class ParDatasetImporter : IImageFileImporter
     {
         string filePath;
         string fileName;
@@ -54,13 +54,10 @@ namespace UnityVolumeRendering
         string[] fileContentLines;
         int fileContentIndex;
 
-        public ParDatasetImporter(string filePath)
+        public VolumeDataset Import(string filePath)
         {
             this.filePath = filePath;
-        }
-
-        public VolumeDataset Import() //fills VolumeDataset object
-        {
+            
             var extension = Path.GetExtension(filePath);
             if (!File.Exists(filePath))
             {
