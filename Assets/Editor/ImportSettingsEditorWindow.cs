@@ -16,6 +16,12 @@ namespace UnityVolumeRendering
             EditorGUILayout.LabelField("Show promt asking if you want to downscale the dataset on import?");
             bool showDownscalePrompt = EditorGUILayout.Toggle("Show downscale prompt", EditorPrefs.GetBool("DownscaleDatasetPrompt"));
             EditorPrefs.SetBool("DownscaleDatasetPrompt", showDownscalePrompt);
+
+            if (GUILayout.Button("Enable SimpleITK"))
+            {
+                SimpleITKManager.DownloadBinaries();
+                SimpleITKManager.EnableSITK(true);
+            }
         }
     }
 }
