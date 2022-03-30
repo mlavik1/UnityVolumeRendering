@@ -43,7 +43,11 @@ namespace UnityVolumeRendering
                     }
                 case ImageSequenceFormat.DICOM:
                     {
+                        #if UVR_USE_SIMPLEITK
                         return typeof(SimpleITKImageSequenceImporter);
+                        #else
+                        return typeof(DICOMImporter);
+                        #endif
                     }
                 default:
                     return null;
@@ -60,11 +64,19 @@ namespace UnityVolumeRendering
                     }
                 case ImageFileFormat.NRRD:
                     {
+                        #if UVR_USE_SIMPLEITK
                         return typeof(SimpleITKImageFileImporter);
+                        #else
+                        return null;
+                        #endif
                     }
                 case ImageFileFormat.NIFTI:
                     {
+                        #if UVR_USE_SIMPLEITK
                         return typeof(SimpleITKImageFileImporter);
+                        #else
+                        return null;
+                        #endif
                     }
                 default:
                     return null;

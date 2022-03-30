@@ -36,13 +36,17 @@ namespace UnityVolumeRendering
             }
         }
 
+        public static bool HasDownloadedBinaries()
+        {
+            string binDir = GetBinaryDirectoryPath();
+            return Directory.Exists(binDir) && Directory.GetFiles(binDir).Length > 0; // TODO: Check actual files?
+        }
+
         public static void DownloadBinaries()
         {
-            string downloadURL = "https://sourceforge.net/projects/simpleitk/files/SimpleITK/1.2.4/CSharp/SimpleITK-1.2.4-CSharp-win64-x64.zip/download";
-            string zipPath = Path.Combine(Application.dataPath, "3rdparty", "SimpleITK.zip");
-            string extractDirRelPath = Path.Combine("Assets", "3rdparty", "SimpleITK");
-            string extractDirPath = Path.Combine(Application.dataPath, "3rdparty", "SimpleITK");
-            if (Directory.Exists(extractDirPath))
+            string extractDirPath = GetBinaryDirectoryPath();
+            string zipPath = Path.Combine(Directory.GetParent(extractDirPath).FullName, "SimpleITK.zip");
+            if (HasDownloadedBinaries())
             {
                 if (!EditorUtility.DisplayDialog("Download SimpleITK binaries", "SimpleITK has already been downloaded. Do you want to delete it and download again?", "Yes", "No"))
                 {
@@ -50,34 +54,79 @@ namespace UnityVolumeRendering
                 }
             }
 
+            // Downlaod binaries zip
             using (var client = new WebClient())
             {
+                string downloadURL = "https://sourceforge.net/projects/simpleitk/files/SimpleITK/1.2.4/CSharp/SimpleITK-1.2.4-CSharp-win64-x64.zip/download";
                 client.DownloadFile(downloadURL, zipPath);
-                using (FileStream zipStream = new FileStream(zipPath, FileMode.Open))
+
+                if (!File.Exists(zipPath))
                 {
-                    using (ZipArchive archive = new ZipArchive(zipStream, ZipArchiveMode.Update))
+                    Debug.Log(zipPath);
+                    EditorUtility.DisplayDialog("Error downloadig SimpleITK binaries.", "Failed to download SimpleITK binaries. Please check your internet connection.", "Close");
+                    return;
+                }
+
+                try
+                {
+                    ExtractZip(zipPath, extractDirPath);
+                }
+                catch (Exception ex)
+                {
+                    string errorString = $"Extracting binaries failed with error: {ex.Message}\n"
+                    + $"Please try downloading the zip from: {downloadURL}\nAnd extract it somewhere in the Assets folder.\n\n"
+                    + "The download URL can be copied from the error log (console).";
+                    Debug.LogError(ex.ToString());
+                    Debug.LogError(errorString);
+                    EditorUtility.DisplayDialog("Failed to extract binaries.", errorString, "Close");
+                }
+            }
+
+            File.Delete(zipPath);
+        }
+
+        private static void ExtractZip(string zipPath, string extractDirPath)
+        {
+            // Extract zip
+            using (FileStream zipStream = new FileStream(zipPath, FileMode.Open))
+            {
+                using (ZipArchive archive = new ZipArchive(zipStream, ZipArchiveMode.Update))
+                {
+                    if (!Directory.Exists(extractDirPath))
+                        Directory.CreateDirectory(extractDirPath);
+
+                    foreach (ZipArchiveEntry entry in archive.Entries)
                     {
-                        if (!Directory.Exists(extractDirPath))
-                            Directory.CreateDirectory(extractDirPath);
-
-                        foreach (ZipArchiveEntry entry in archive.Entries)
+                        if (entry.Name != "" && !entry.Name.EndsWith("/"))
                         {
-                            if (entry.Name != "" && !entry.Name.EndsWith("/"))
-                            {
-                                string destFilePath = Path.Combine(extractDirPath, entry.Name);
-                                TextAsset destAsset = new TextAsset("abc");
-                                AssetDatabase.CreateAsset(destAsset, extractDirRelPath + "/" + entry.Name);
-                                Stream inStream = entry.Open();
+                            string destFilePath = Path.Combine(extractDirPath, entry.Name);
+                            //TextAsset destAsset = new TextAsset("abc");
+                            //AssetDatabase.CreateAsset(destAsset, extractDirRelPath + "/" + entry.Name);
+                            Stream inStream = entry.Open();
 
-                                using (Stream outStream = File.OpenWrite(destFilePath))
-                                {
-                                    inStream.CopyTo(outStream);
-                                }
+                            using (Stream outStream = File.OpenWrite(destFilePath))
+                            {
+                                inStream.CopyTo(outStream);
                             }
                         }
                     }
                 }
             }
+        }
+
+        private static string GetBinaryDirectoryPath()
+        {
+            string dataPath = Application.dataPath;
+            foreach (string file in Directory.EnumerateFiles(Application.dataPath, "*.*", SearchOption.AllDirectories))
+            {
+                // Search for magic file stored in Assets directory.
+                // This is necessary for cases where the UVR plugin is stored in a subfolder (thatæs the case for the asset store version)
+                if (Path.GetFileName(file) == "DONOTREMOVE-PathSearchFile.txt")
+                {
+                    dataPath = Path.GetDirectoryName(file);
+                }
+            }
+            return Path.Combine(dataPath, "3rdparty", "SimpleITK"); // TODO: What is UVR is in a subfolder?
         }
     }
 }
