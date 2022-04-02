@@ -106,6 +106,9 @@ namespace UnityVolumeRendering
             IntPtr imgBuffer = image.GetBufferAsFloat();
             Marshal.Copy(imgBuffer, pixelData, 0, numPixels);
 
+            for (int i = 0; i < pixelData.Length; i++)
+                pixelData[i] = Mathf.Clamp(pixelData[i], -1024, 3071);
+
             // Create dataset
             VolumeDataset volumeDataset = new VolumeDataset();
             volumeDataset.data = pixelData;
