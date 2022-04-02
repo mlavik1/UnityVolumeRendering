@@ -80,7 +80,10 @@ namespace UnityVolumeRendering
                 DICOMSliceFile sliceFile = ReadDICOMFile(filePath);
                 if(sliceFile != null)
                 {
-                    files.Add(sliceFile);
+                    if (sliceFile.file.PixelData.IsJpeg)
+                        Debug.LogError("DICOM with JPEG not supported by importer. Please enable SimpleITK from volume rendering import settings.");
+                    else
+                        files.Add(sliceFile);
                 }
             }
 

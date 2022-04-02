@@ -35,8 +35,12 @@ namespace UnityVolumeRendering
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(group, String.Join(";", defines));
             }
 
-            // Save project
+            // Save project and recompile scripts
             AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+#if UNITY_2019_3_OR_NEWER
+            UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
+#endif
         }
 
         public static bool HasDownloadedBinaries()
