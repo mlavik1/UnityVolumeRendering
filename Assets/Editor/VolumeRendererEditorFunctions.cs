@@ -23,20 +23,6 @@ namespace UnityVolumeRendering
             }
         }
 
-        [MenuItem("Volume Rendering/Load dataset/Load PARCHG dataset")]
-        static void ShowParDatasetImporter()
-        {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "DataFiles", "");
-            if (File.Exists(file))
-            {
-                EditorDatasetImporter.ImportDataset(file);
-            }
-            else
-            {
-                Debug.LogError("File doesn't exist: " + file);
-            }
-        }
-
         [MenuItem("Volume Rendering/Load dataset/Load DICOM")]
         static void ShowDICOMImporter()
         {
@@ -94,6 +80,102 @@ namespace UnityVolumeRendering
             else
             {
                 Debug.LogError("Directory doesn't exist: " + dir);
+            }
+        }
+
+#if UNITY_EDITOR_WIN
+        [MenuItem("Volume Rendering/Load dataset/Load NRRD dataset")]
+        static void ShowNRRDDatasetImporter()
+        {
+            if (!SimpleITKManager.IsSITKEnabled())
+            {
+                if (EditorUtility.DisplayDialog("Missing SimpleITK", "You need to download SimpleITK to load NRRD datasets from the import settings menu.\n" +
+                    "Do you want to open the import settings menu?", "Yes", "No"))
+                {
+                    ImportSettingsEditorWindow.ShowWindow();
+                }
+                return;
+            }
+
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nrrd)", "DataFiles", "");
+            if (File.Exists(file))
+            {
+                IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.NRRD);
+                VolumeDataset dataset = importer.Import(file);
+
+                if (dataset != null)
+                {
+                    VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
+                }
+                else
+                {
+                    Debug.LogError("Failed to import datset");
+                }
+            }
+            else
+            {
+                Debug.LogError("File doesn't exist: " + file);
+            }
+        }
+#endif
+
+#if UNITY_EDITOR_WIN
+        [MenuItem("Volume Rendering/Load dataset/Load NIFTI dataset")]
+        static void ShowNIFTIDatasetImporter()
+        {
+            if (!SimpleITKManager.IsSITKEnabled())
+            {
+                if (EditorUtility.DisplayDialog("Missing SimpleITK", "You need to download SimpleITK to load NRRD datasets from the import settings menu.\n" +
+                    "Do you want to open the import settings menu?", "Yes", "No"))
+                {
+                    ImportSettingsEditorWindow.ShowWindow();
+                }
+                return;
+            }
+
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nii)", "DataFiles", "");
+            if (File.Exists(file))
+            {
+                IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.NIFTI);
+                VolumeDataset dataset = importer.Import(file);
+
+                if (dataset != null)
+                {
+                    VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
+                }
+                else
+                {
+                    Debug.LogError("Failed to import datset");
+                }
+            }
+            else
+            {
+                Debug.LogError("File doesn't exist: " + file);
+            }
+        }
+#endif
+
+        [MenuItem("Volume Rendering/Load dataset/Load PARCHG dataset")]
+        static void ShowParDatasetImporter()
+        {
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "DataFiles", "");
+            if (File.Exists(file))
+            {
+                IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.VASP);
+                VolumeDataset dataset = importer.Import(file);
+
+                if (dataset != null)
+                {
+                    VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
+                }
+                else
+                {
+                    Debug.LogError("Failed to import datset");
+                }
+            }
+            else
+            {
+                Debug.LogError("File doesn't exist: " + file);
             }
         }
 

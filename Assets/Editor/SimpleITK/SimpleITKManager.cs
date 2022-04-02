@@ -34,6 +34,9 @@ namespace UnityVolumeRendering
                     defines.Add(SimpleITKDefinition);
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(group, String.Join(";", defines));
             }
+
+            // Save project
+            AssetDatabase.SaveAssets();
         }
 
         public static bool HasDownloadedBinaries()
@@ -54,16 +57,21 @@ namespace UnityVolumeRendering
                 }
             }
 
+            EditorUtility.DisplayProgressBar("Downloading SimpleITK", "Downloading SimpleITK binaries.", 0);
+
             // Downlaod binaries zip
             using (var client = new WebClient())
             {
                 string downloadURL = "https://sourceforge.net/projects/simpleitk/files/SimpleITK/1.2.4/CSharp/SimpleITK-1.2.4-CSharp-win64-x64.zip/download";
                 client.DownloadFile(downloadURL, zipPath);
 
+                EditorUtility.DisplayProgressBar("Downloading SimpleITK", "Downloading SimpleITK binaries.", 70);
+
                 if (!File.Exists(zipPath))
                 {
                     Debug.Log(zipPath);
                     EditorUtility.DisplayDialog("Error downloadig SimpleITK binaries.", "Failed to download SimpleITK binaries. Please check your internet connection.", "Close");
+                    Debug.Log($"Failed to download SimpleITK binaries. You can also try to manually download from {downloadURL} and extract it to some folder inside the Assets folder.");
                     return;
                 }
 
@@ -83,6 +91,8 @@ namespace UnityVolumeRendering
             }
 
             File.Delete(zipPath);
+
+            EditorUtility.ClearProgressBar();
         }
 
         private static void ExtractZip(string zipPath, string extractDirPath)
