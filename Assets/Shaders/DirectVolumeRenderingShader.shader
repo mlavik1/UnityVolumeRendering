@@ -258,6 +258,9 @@
                     // Get the dansity/sample value of the current position
                     const float density = getDensity(currPos);
 
+                    // Apply visibility window
+                    if (density < _MinVal || density > _MaxVal) continue;
+
                     // Calculate gradient (needed for lighting and 2D transfer functions)
 #if defined(TF2D_ON) || defined(LIGHTING_ON)
                     float3 gradient = getGradient(currPos);
@@ -276,8 +279,6 @@
                     src.rgb = calculateLighting(src.rgb, normalize(gradient), lightDir, ray.direction, 0.3f);
 #endif
 
-                    // Optimisation: A branchless version of: if (density < _MinVal || density > _MaxVal) src.a = 0.0f;
-                    src.a *= step(_MinVal, density) * step(density, _MaxVal);
 
                     col.rgb = src.a * src.rgb + (1.0f - src.a)*col.rgb;
                     col.a = src.a + (1.0f - src.a)*col.a;
