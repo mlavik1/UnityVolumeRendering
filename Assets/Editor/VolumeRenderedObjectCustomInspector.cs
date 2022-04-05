@@ -6,6 +6,7 @@ namespace UnityVolumeRendering
     [CustomEditor(typeof(VolumeRenderedObject))]
     public class VolumeRenderedObjectCustomInspector : Editor
     {
+        bool otherSettings = false;
         public override void OnInspectorGUI()
         {
             VolumeRenderedObject volrendObj = (VolumeRenderedObject)target;
@@ -36,10 +37,28 @@ namespace UnityVolumeRendering
             // Show TF button
             if (GUILayout.Button("Edit transfer function"))
             {
-                if(tfMode == TFRenderMode.TF1D)
+                if (tfMode == TFRenderMode.TF1D)
                     TransferFunctionEditorWindow.ShowWindow();
                 else
                     TransferFunction2DEditorWindow.ShowWindow();
+            }
+
+            // Other settings for direct volume rendering
+            if (volrendObj.GetRenderMode() == RenderMode.DirectVolumeRendering)
+            {
+                GUILayout.Space(10);
+                otherSettings = EditorGUILayout.Foldout(otherSettings, "Other Settings");
+                if (otherSettings)
+                {
+                    // Temporary back-to-front rendering option
+                    volrendObj.SetDVRBackwardEnabled(GUILayout.Toggle(volrendObj.GetDVRBackwardEnabled(), "Enable Back-to-Front Direct Volume Rendering"));
+
+                    // Early ray termination for Front-to-back DVR
+                    if (!volrendObj.GetDVRBackwardEnabled())
+                    {
+                        volrendObj.SetRayTerminationEnabled(GUILayout.Toggle(volrendObj.GetRayTerminationEnabled(), "Enable early ray termination"));
+                    }
+                }
             }
         }
     }
