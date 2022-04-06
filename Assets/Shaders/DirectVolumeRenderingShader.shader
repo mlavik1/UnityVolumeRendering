@@ -26,6 +26,8 @@
             #pragma multi_compile __ CUTOUT_PLANE CUTOUT_BOX_INCL CUTOUT_BOX_EXCL
             #pragma multi_compile __ LIGHTING_ON
             #pragma multi_compile DEPTHWRITE_ON DEPTHWRITE_OFF
+            #pragma multi_compile __ DVR_BACKWARD_ON
+            #pragma multi_compile __ RAY_TERMINATE_ON
             #pragma vertex vert
             #pragma fragment frag
 
@@ -233,8 +235,13 @@
             frag_out frag_dvr(frag_in i)
             {
                 #define MAX_NUM_STEPS 512
+                #define OPACITY_THRESHOLD (1.0 - 1.0 / 255.0)
 
+#ifdef DVR_BACKWARD_ON
                 RayInfo ray = getRayBack2Front(i.vertexLocal);
+#else
+                RayInfo ray = getRayFront2Back(i.vertexLocal);
+#endif
                 RaymarchInfo raymarchInfo = initRaymarch(ray, MAX_NUM_STEPS);
 
                 float3 lightDir = normalize(ObjSpaceViewDir(float4(float3(0.0f, 0.0f, 0.0f), 0.0f)));
@@ -243,7 +250,11 @@
                 ray.startPos += (2.0f * ray.direction * raymarchInfo.stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
 
                 float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
-                float tDepth = 0.0;
+#ifdef DVR_BACKWARD_ON
+                float tDepth = 0.0f;
+#else
+                float tDepth = raymarchInfo.numStepsRecip * (raymarchInfo.numSteps - 1);
+#endif
                 for (int iStep = 0; iStep < raymarchInfo.numSteps; iStep++)
                 {
                     const float t = iStep * raymarchInfo.numStepsRecip;
@@ -257,6 +268,9 @@
 
                     // Get the dansity/sample value of the current position
                     const float density = getDensity(currPos);
+
+                    // Apply visibility window
+                    if (density < _MinVal || density > _MaxVal) continue;
 
                     // Calculate gradient (needed for lighting and 2D transfer functions)
 #if defined(TF2D_ON) || defined(LIGHTING_ON)
@@ -272,18 +286,33 @@
 #endif
 
                     // Apply lighting
-#ifdef LIGHTING_ON
+#if defined(LIGHTING_ON) && defined(DVR_BACKWARD_ON)
                     src.rgb = calculateLighting(src.rgb, normalize(gradient), lightDir, ray.direction, 0.3f);
+#elif defined(LIGHTING_ON)
+                    src.rgb = calculateLighting(src.rgb, normalize(gradient), lightDir, -ray.direction, 0.3f);
 #endif
 
-                    // Optimisation: A branchless version of: if (density < _MinVal || density > _MaxVal) src.a = 0.0f;
-                    src.a *= step(_MinVal, density) * step(density, _MaxVal);
-
-                    col.rgb = src.a * src.rgb + (1.0f - src.a)*col.rgb;
-                    col.a = src.a + (1.0f - src.a)*col.a;
+#ifdef DVR_BACKWARD_ON
+                    col.rgb = src.a * src.rgb + (1.0f - src.a) * col.rgb;
+                    col.a = src.a + (1.0f - src.a) * col.a;
 
                     // Optimisation: A branchless version of: if (src.a > 0.15f) tDepth = t;
                     tDepth = max(tDepth, t * step(0.15, src.a));
+#else
+                    src.rgb *= src.a;
+                    col = (1.0f - col.a) * src + col;
+
+                    if (src.a > 0.15 && t < tDepth) {
+                        tDepth = t;
+                    }
+#endif
+
+                    // Early ray termination
+#if !defined(DVR_BACKWARD_ON) && defined(RAY_TERMINATE_ON)
+                    if (col.a > OPACITY_THRESHOLD) {
+                        break;
+                    }
+#endif
                 }
 
                 // Write fragment output

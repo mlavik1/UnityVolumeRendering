@@ -23,6 +23,9 @@ namespace UnityVolumeRendering
 
         private Vector2 visibilityWindow = new Vector2(0.0f, 1.0f);
 
+        private bool rayTerminationEnabled = true;
+        private bool dvrBackward = true;
+
         public SlicingPlane CreateSlicingPlane()
         {
             GameObject sliceRenderingPlane = GameObject.Instantiate(Resources.Load<GameObject>("SlicingPlane"));
@@ -43,12 +46,12 @@ namespace UnityVolumeRendering
 
         public void SetRenderMode(RenderMode mode)
         {
-            if(renderMode != mode)
+            if (renderMode != mode)
             {
                 renderMode = mode;
                 SetVisibilityWindow(0.0f, 1.0f); // reset visibility window
             }
-            UpdateMaaterialProperties();
+            UpdateMaterialProperties();
         }
 
         public void SetTransferFunctionMode(TFRenderMode mode)
@@ -56,9 +59,9 @@ namespace UnityVolumeRendering
             tfRenderMode = mode;
             if (tfRenderMode == TFRenderMode.TF1D && transferFunction != null)
                 transferFunction.GenerateTexture();
-            else if(transferFunction2D != null)
+            else if (transferFunction2D != null)
                 transferFunction2D.GenerateTexture();
-            UpdateMaaterialProperties();
+            UpdateMaterialProperties();
         }
 
         public TFRenderMode GetTransferFunctionMode()
@@ -81,7 +84,7 @@ namespace UnityVolumeRendering
             if (enable != lightingEnabled)
             {
                 lightingEnabled = enable;
-                UpdateMaaterialProperties();
+                UpdateMaterialProperties();
             }
         }
 
@@ -95,7 +98,7 @@ namespace UnityVolumeRendering
             if (window != visibilityWindow)
             {
                 visibilityWindow = window;
-                UpdateMaaterialProperties();
+                UpdateMaterialProperties();
             }
         }
 
@@ -104,12 +107,40 @@ namespace UnityVolumeRendering
             return visibilityWindow;
         }
 
-        private void UpdateMaaterialProperties()
+        public bool GetRayTerminationEnabled()
+        {
+            return rayTerminationEnabled;
+        }
+
+        public void SetRayTerminationEnabled(bool enable)
+        {
+            if (enable != rayTerminationEnabled)
+            {
+                rayTerminationEnabled = enable;
+                UpdateMaterialProperties();
+            }
+        }
+
+        public bool GetDVRBackwardEnabled()
+        {
+            return dvrBackward;
+        }
+
+        public void SetDVRBackwardEnabled(bool enable)
+        {
+            if (enable != dvrBackward)
+            {
+                dvrBackward = enable;
+                UpdateMaterialProperties();
+            }
+        }
+
+        private void UpdateMaterialProperties()
         {
             bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
             meshRenderer.sharedMaterial.SetTexture("_GradientTex", useGradientTexture ? dataset.GetGradientTexture() : null);
 
-            if(tfRenderMode == TFRenderMode.TF2D)
+            if (tfRenderMode == TFRenderMode.TF2D)
             {
                 meshRenderer.sharedMaterial.SetTexture("_TFTex", transferFunction2D.GetTexture());
                 meshRenderer.sharedMaterial.EnableKeyword("TF2D_ON");
@@ -120,7 +151,7 @@ namespace UnityVolumeRendering
                 meshRenderer.sharedMaterial.DisableKeyword("TF2D_ON");
             }
 
-            if(lightingEnabled)
+            if (lightingEnabled)
                 meshRenderer.sharedMaterial.EnableKeyword("LIGHTING_ON");
             else
                 meshRenderer.sharedMaterial.DisableKeyword("LIGHTING_ON");
@@ -152,11 +183,29 @@ namespace UnityVolumeRendering
 
             meshRenderer.sharedMaterial.SetFloat("_MinVal", visibilityWindow.x);
             meshRenderer.sharedMaterial.SetFloat("_MaxVal", visibilityWindow.y);
+
+            if (rayTerminationEnabled)
+            {
+                meshRenderer.sharedMaterial.EnableKeyword("RAY_TERMINATE_ON");
+            }
+            else
+            {
+                meshRenderer.sharedMaterial.DisableKeyword("RAY_TERMINATE_ON");
+            }
+
+            if (dvrBackward)
+            {
+                meshRenderer.sharedMaterial.EnableKeyword("DVR_BACKWARD_ON");
+            }
+            else
+            {
+                meshRenderer.sharedMaterial.DisableKeyword("DVR_BACKWARD_ON");
+            }
         }
 
         private void Start()
         {
-            UpdateMaaterialProperties();
+            UpdateMaterialProperties();
         }
     }
 }

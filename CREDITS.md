@@ -12,5 +12,7 @@ Image sequence import. Other contributions.
 GUI for modifying slicing plane positiomn/orientation.
 - [btsai-dev](https://github.com/btsai-dev)
 Memory leak fix
+- [Vahid](https://github.com/vahpy)
+Texture downscaling, optimisation.
 
 Feel free to add yourself to this list when contributing to this project.
