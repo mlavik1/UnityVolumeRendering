@@ -85,32 +85,15 @@ Since VR requires two cameras to render each frame, you can expect worse perform
 - Disable the DEPTHWRITE_ON shader variant. You can do this from code, or just remove the line "#pragma multi_compile DEPTHWRITE_ON DEPTHWRITE_OFF" in _DirectVolumeRenderingShader.shader_. Note: this will remove depth writing, so you won't be able to intersect multiple datasets.
 
 # How to use in your own project
-- Create an instance of an importer (for example _RawDatasetImporter_):<br>
-`DatasetImporterBase importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, DataContentFormat.Int16, 6);`
+- Create an instance of an importer (Directly, or indirectly using the `ImporterFactory`):<br>
+`IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.NRRD);`
 (alternatively, use the _DICOMImporter_)
 - Call the Import()-function, which returns a Dataset:<br>
-`VolumeDataset dataset = importer.Import();`
+`VolumeDataset dataset = importer.Import(file);`
 - Use _VolumeObjectFactory_ to create an object from the dataset:<br> 
 `VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);`
 
-See "DatasetImporterEditorWindow.cs" for an example.
-
-# Explanation of the raw dataset importer:
-The _RawDatasetImporter_ imports raw datasets, where the data is stored sequentially. Some raw datasets contain a header where you can read information about how the data is stored (content format, dimension, etc.), while some datasets expect you to know the layout and format.
-The importer takes the following parameters:
-- filePath: Filepath of the dataset
-- dimX: X-dimension (number of samples in the X-axis)
-- dimY: Y-dimension
-- dimZ: Z-dimension
-- contentFormat: Value type of the data (Int8, Uint8, Int16, Uint16, etc..)
-- skipBytes: Number of bytes to skip (offset to where the data begins). This is usually the same as the header size, and will be 0 if there is no header.
-
-All this info can be added to a ".ini"-file, which the importer will use (if it finds any). See the sample files (in the  "DataFiles" folder for an example).
-
-# Todo:
-- Improve 2D Transfer Function editor: Better GUI, more shapes (triangles)
-- Optimise histogram generation
-- Support very large datasets (currently we naively try to create 3D textures with the same dimension as the data)
+See the [importer documentation](Documentation/Importing.md) for more detailed information.
 
 ![alt tag](Screenshots/slices.gif)
 ![alt tag](Screenshots/1.png)
