@@ -130,9 +130,6 @@ namespace UnityVolumeRendering
             float maxValue = GetMaxDataValue();
             float maxRange = maxValue - minValue;
 
-            Debug.Log("Min: " + minValue);
-            Debug.Log("Max: " + maxValue);
-
             bool isHalfFloat = texformat == TextureFormat.RHalf;
             try
             {
