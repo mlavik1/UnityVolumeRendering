@@ -302,7 +302,7 @@
                     src.rgb *= src.a;
                     col = (1.0f - col.a) * src + col;
 
-                    if (src.a > 0.15 && t < tDepth) {
+                    if (col.a > 0.15 && t < tDepth) {
                         tDepth = t;
                     }
 #endif
