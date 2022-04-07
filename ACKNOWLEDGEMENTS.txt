@@ -6,3 +6,13 @@ http://opendicom.sourceforge.net/index.html
 
 Copyright (C) 2006-2007  Albert Gnandt
 
+
+SimpleITK
+released under Apache License 2.0
+https://github.com/SimpleITK/SimpleITK/blob/master/LICENSE
+
+Copyright 2010-2019 Insight Software Consortium
+Copyright 2020 NumFOCUS
+
+SimpleITK is not included in this repository, but will optionally be downloaded if the user chooser enable it.
+The license file will be stored together with the library in the Assets/3rdparty/SimpleITK directory.

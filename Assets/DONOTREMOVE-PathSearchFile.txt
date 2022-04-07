@@ -1,0 +1,2 @@
+DO NOT REMOVE. This file simply exists so we can get the path of the UnityVolumeRendering project folder (maybe be added as a subfolder to another project).
+ 

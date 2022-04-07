@@ -14,12 +14,11 @@ namespace UnityVolumeRendering
 {
     /// <summary>
     /// DICOM importer.
-    /// Reads a 3D DICOM dataset from a folder.
-    /// The folder needs to contain several .dcm/.dicom files, where each file is a slice of the same dataset.
+    /// Reads a 3D DICOM dataset from a list of DICOM files.
     /// </summary>
-    public class DICOMImporter
+    public class DICOMImporter : IImageSequenceImporter
     {
-        public class DICOMSliceFile
+        public class DICOMSliceFile : IImageSequenceFile
         {
             public AcrNemaFile file;
             public string filePath;
@@ -30,25 +29,26 @@ namespace UnityVolumeRendering
             public float pixelSpacing = 0.0f;
             public string seriesUID = "";
             public bool missingLocation = false;
+
+            public string GetFilePath()
+            {
+                return filePath;
+            }
         }
 
-        public class DICOMSeries
+        public class DICOMSeries : IImageSequenceSeries
         {
             public List<DICOMSliceFile> dicomFiles = new List<DICOMSliceFile>();
-        }
 
-        private IEnumerable<string> fileCandidates;
-        private string datasetName;
+            public IEnumerable<IImageSequenceFile> GetFiles()
+            {
+                return dicomFiles;
+            }
+        }
 
         private int iFallbackLoc = 0;
 
-        public DICOMImporter(IEnumerable<string> files, string name = "DICOM_Dataset")
-        {
-            this.fileCandidates = files;
-            datasetName = name;
-        }
-
-        public List<DICOMSeries> LoadDICOMSeries()
+        public IEnumerable<IImageSequenceSeries> LoadSeries(IEnumerable<string> fileCandidates)
         {
             DataElementDictionary dataElementDictionary = new DataElementDictionary();
             UidDictionary uidDictionary = new UidDictionary();
@@ -79,7 +79,10 @@ namespace UnityVolumeRendering
                 DICOMSliceFile sliceFile = ReadDICOMFile(filePath);
                 if(sliceFile != null)
                 {
-                    files.Add(sliceFile);
+                    if (sliceFile.file.PixelData.IsJpeg)
+                        Debug.LogError("DICOM with JPEG not supported by importer. Please enable SimpleITK from volume rendering import settings.");
+                    else
+                        files.Add(sliceFile);
                 }
             }
 
@@ -99,9 +102,10 @@ namespace UnityVolumeRendering
             return new List<DICOMSeries>(seriesByUID.Values);
         }
 
-        public VolumeDataset ImportDICOMSeries(DICOMSeries series)
+        public VolumeDataset ImportSeries(IImageSequenceSeries series)
         {
-            List<DICOMSliceFile> files = series.dicomFiles;
+            DICOMSeries dicomSeries = (DICOMSeries)series;
+            List<DICOMSliceFile> files = dicomSeries.dicomFiles;
 
             // Check if the series is missing the slice location tag
             bool needsCalcLoc = false;
@@ -127,7 +131,7 @@ namespace UnityVolumeRendering
 
             // Create dataset
             VolumeDataset dataset = new VolumeDataset();
-            dataset.datasetName = Path.GetFileName(datasetName);
+            dataset.datasetName = Path.GetFileName(files[0].filePath);
             dataset.dimX = files[0].file.PixelData.Columns;
             dataset.dimY = files[0].file.PixelData.Rows;
             dataset.dimZ = files.Count;

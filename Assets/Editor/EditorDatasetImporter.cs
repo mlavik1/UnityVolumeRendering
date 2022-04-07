@@ -25,22 +25,31 @@ namespace UnityVolumeRendering
                         break;
                     }
                 case DatasetType.DICOM:
+                case DatasetType.ImageSequence:
                     {
+                        ImageSequenceFormat imgSeqFormat;
+                        if (datasetType == DatasetType.DICOM)
+                            imgSeqFormat = ImageSequenceFormat.DICOM;
+                        else if (datasetType == DatasetType.ImageSequence)
+                            imgSeqFormat = ImageSequenceFormat.ImageSequence;
+                        else
+                            throw new NotImplementedException();
+
                         string directoryPath = new FileInfo(filePath).Directory.FullName;
 
                         // Find all DICOM files in directory
                         IEnumerable<string> fileCandidates = Directory.EnumerateFiles(directoryPath, "*.*", SearchOption.TopDirectoryOnly)
                             .Where(p => p.EndsWith(".dcm", StringComparison.InvariantCultureIgnoreCase) || p.EndsWith(".dicom", StringComparison.InvariantCultureIgnoreCase) || p.EndsWith(".dicm", StringComparison.InvariantCultureIgnoreCase));
 
-                        DICOMImporter importer = new DICOMImporter(fileCandidates, Path.GetFileName(directoryPath));
+                        IImageSequenceImporter importer = ImporterFactory.CreateImageSequenceImporter(imgSeqFormat);
 
-                        List<DICOMImporter.DICOMSeries> seriesList = importer.LoadDICOMSeries();
-                        foreach (DICOMImporter.DICOMSeries series in seriesList)
+                        IEnumerable<IImageSequenceSeries> seriesList = importer.LoadSeries(fileCandidates);
+                        foreach (IImageSequenceSeries series in seriesList)
                         {
                             // Only import the series that contains the selected file
-                            if(series.dicomFiles.Any(f => Path.GetFileName(f.filePath) == Path.GetFileName(filePath)))
+                            if(series.GetFiles().Any(f => Path.GetFileName(f.GetFilePath()) == Path.GetFileName(filePath)))
                             {
-                                VolumeDataset dataset = importer.ImportDICOMSeries(series);
+                                VolumeDataset dataset = importer.ImportSeries(series);
 
                                 if (dataset != null)
                                 {
@@ -51,9 +60,21 @@ namespace UnityVolumeRendering
                         break;
                     }
                 case DatasetType.PARCHG:
+                case DatasetType.NRRD:
+                case DatasetType.NIFTI:
                     {
-                        ParDatasetImporter importer = new ParDatasetImporter(filePath);
-                        VolumeDataset dataset = importer.Import();
+                        ImageFileFormat imgFileFormat;
+                        if (datasetType == DatasetType.PARCHG)
+                            imgFileFormat = ImageFileFormat.VASP;
+                        else if (datasetType == DatasetType.NRRD)
+                            imgFileFormat = ImageFileFormat.NRRD;
+                        else if (datasetType == DatasetType.NIFTI)
+                            imgFileFormat = ImageFileFormat.NIFTI;
+                        else
+                            throw new NotImplementedException();
+
+                        IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(imgFileFormat);
+                        VolumeDataset dataset = importer.Import(filePath);
 
                         if (dataset != null)
                         {
