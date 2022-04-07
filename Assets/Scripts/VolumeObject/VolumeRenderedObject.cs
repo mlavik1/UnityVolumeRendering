@@ -5,26 +5,31 @@ namespace UnityVolumeRendering
     [ExecuteInEditMode]
     public class VolumeRenderedObject : MonoBehaviour
     {
-        [HideInInspector]
+        [SerializeField, HideInInspector]
         public TransferFunction transferFunction;
 
-        [HideInInspector]
+        [SerializeField, HideInInspector]
         public TransferFunction2D transferFunction2D;
 
-        [HideInInspector]
+        [SerializeField, HideInInspector]
         public VolumeDataset dataset;
 
-        [HideInInspector]
+        [SerializeField, HideInInspector]
         public MeshRenderer meshRenderer;
 
+        [SerializeField, HideInInspector]
         private RenderMode renderMode;
+        [SerializeField, HideInInspector]
         private TFRenderMode tfRenderMode;
+        [SerializeField, HideInInspector]
         private bool lightingEnabled;
 
+        [SerializeField, HideInInspector]
         private Vector2 visibilityWindow = new Vector2(0.0f, 1.0f);
-
+        [SerializeField, HideInInspector]
         private bool rayTerminationEnabled = true;
-        private bool dvrBackward = true;
+        [SerializeField, HideInInspector]
+        private bool dvrBackward = false;
 
         public SlicingPlane CreateSlicingPlane()
         {
