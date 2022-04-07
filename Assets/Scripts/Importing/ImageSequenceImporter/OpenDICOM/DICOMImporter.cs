@@ -14,8 +14,7 @@ namespace UnityVolumeRendering
 {
     /// <summary>
     /// DICOM importer.
-    /// Reads a 3D DICOM dataset from a folder.
-    /// The folder needs to contain several .dcm/.dicom files, where each file is a slice of the same dataset.
+    /// Reads a 3D DICOM dataset from a list of DICOM files.
     /// </summary>
     public class DICOMImporter : IImageSequenceImporter
     {

@@ -95,7 +95,6 @@ namespace UnityVolumeRendering
             image = SimpleITK.Cast(image, PixelIDValueEnum.sitkFloat32);
 
             VectorUInt32 size = image.GetSize();
-            Debug.Log("Image size: " + size[0] + " " + size[1] + " " + size[2]);
 
             int numPixels = 1;
             for (int dim = 0; dim < image.GetDimension(); dim++)
@@ -109,6 +108,8 @@ namespace UnityVolumeRendering
             for (int i = 0; i < pixelData.Length; i++)
                 pixelData[i] = Mathf.Clamp(pixelData[i], -1024, 3071);
 
+            VectorDouble spacing = image.GetSpacing();
+
             // Create dataset
             VolumeDataset volumeDataset = new VolumeDataset();
             volumeDataset.data = pixelData;
@@ -117,6 +118,11 @@ namespace UnityVolumeRendering
             volumeDataset.dimZ = (int)size[2];
             volumeDataset.datasetName = "test";
             volumeDataset.filePath = dicomNames[0];
+            volumeDataset.scaleX = (float)(spacing[0] * size[0]);
+            volumeDataset.scaleY = (float)(spacing[1] * size[1]);
+            volumeDataset.scaleZ = (float)(spacing[2] * size[2]);
+
+            volumeDataset.FixDimensions();
 
             return volumeDataset;
         }

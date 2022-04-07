@@ -9,6 +9,12 @@ using System.IO.Compression;
 
 namespace UnityVolumeRendering
 {
+    /// <summary>
+    /// Manager for the SimpleITK integration.
+    /// Since SimpleITK is a native library that requires binaries to be built for your target platform,
+    ///  SimpleITK will be disabled by default and can be enabled through this class.
+    /// The binaries will be downloaded automatically.
+    /// </summary>
     public class SimpleITKManager
     {
         private static string SimpleITKDefinition = "UVR_USE_SIMPLEITK";
@@ -24,8 +30,14 @@ namespace UnityVolumeRendering
 
         public static void EnableSITK(bool enable)
         {
-            List<BuildTargetGroup> buildTargetGroups = new List<BuildTargetGroup> (){ BuildTargetGroup.Standalone };
+            if (!HasDownloadedBinaries())
+            {
+                EditorUtility.DisplayDialog("Missing SimpleITK binaries", "You need to download the SimpleITK binaries before you can enable SimpleITK.", "Ok");
+                return;
+            }
 
+            // Enable the UVR_USE_SIMPLEITK preprocessor definition for standalone target
+            List<BuildTargetGroup> buildTargetGroups = new List<BuildTargetGroup> (){ BuildTargetGroup.Standalone };
             foreach (BuildTargetGroup group in buildTargetGroups)
             {
                 List<string> defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(group).Split(';').ToList();

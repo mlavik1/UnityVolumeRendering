@@ -8,9 +8,11 @@ using System.IO;
 
 namespace UnityVolumeRendering
 {
+    /// <summary>
+    /// SimpleITK-based DICOM importer.
+    /// </summary>
     public class SimpleITKImageFileImporter : IImageFileImporter
     {
-
         public VolumeDataset Import(string filePath)
         {
             ImageFileReader reader = new ImageFileReader();
@@ -23,7 +25,6 @@ namespace UnityVolumeRendering
             image = SimpleITK.Cast(image, PixelIDValueEnum.sitkFloat32);
 
             VectorUInt32 size = image.GetSize();
-            Debug.Log("Image size: " + size[0] + " " + size[1] + " " + size[2]);
 
             int numPixels = 1;
             for (int dim = 0; dim < image.GetDimension(); dim++)
@@ -34,6 +35,8 @@ namespace UnityVolumeRendering
             IntPtr imgBuffer = image.GetBufferAsFloat();
             Marshal.Copy(imgBuffer, pixelData, 0, numPixels);
 
+            VectorDouble spacing = image.GetSpacing();
+
             // Create dataset
             VolumeDataset volumeDataset = new VolumeDataset();
             volumeDataset.data = pixelData;
@@ -42,6 +45,11 @@ namespace UnityVolumeRendering
             volumeDataset.dimZ = (int)size[2];
             volumeDataset.datasetName = "test";
             volumeDataset.filePath = filePath;
+            volumeDataset.scaleX = (float)(spacing[0] * size[0]);
+            volumeDataset.scaleY = (float)(spacing[1] * size[1]);
+            volumeDataset.scaleZ = (float)(spacing[2] * size[2]);
+
+            volumeDataset.FixDimensions();
 
             return volumeDataset;
         }
