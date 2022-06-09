@@ -25,6 +25,7 @@ Shader "VolumeRendering/SliceRenderingShader"
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct v2f
@@ -32,6 +33,8 @@ Shader "VolumeRendering/SliceRenderingShader"
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
                 float4 relVert : TEXCOORD1;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+                UNITY_VERTEX_OUTPUT_STEREO
             };
 
             sampler3D _DataTex;
@@ -44,6 +47,11 @@ Shader "VolumeRendering/SliceRenderingShader"
             v2f vert (appdata v)
             {
                 v2f o;
+
+                UNITY_SETUP_INSTANCE_ID(v);
+                UNITY_TRANSFER_INSTANCE_ID(v, o);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 // Calculate plane vertex world position.
                 float3 vert = mul(_planeMat, float4(0.5f -v.uv.x, 0.0f, 0.5f -v.uv.y, 1.0f));
