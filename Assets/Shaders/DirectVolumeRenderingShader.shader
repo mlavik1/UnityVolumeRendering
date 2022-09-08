@@ -28,12 +28,15 @@
             #pragma multi_compile DEPTHWRITE_ON DEPTHWRITE_OFF
             #pragma multi_compile __ DVR_BACKWARD_ON
             #pragma multi_compile __ RAY_TERMINATE_ON
+            #pragma multi_compile __ USE_MAIN_LIGHT
             #pragma vertex vert
             #pragma fragment frag
 
             #include "UnityCG.cginc"
 
             #define CUTOUT_ON CUTOUT_PLANE || CUTOUT_BOX_INCL || CUTOUT_BOX_EXCL
+
+            #define AMBIENT_LIGHTING_FACTOR 0.5
 
             struct vert_in
             {
@@ -176,10 +179,24 @@
                 return tex3Dlod(_GradientTex, float4(pos.x, pos.y, pos.z, 0.0f)).rgb;
             }
 
+            // Get the light direction (using main light or view direction, based on setting)
+            float3 getLightDirection(float3 viewDir)
+            {
+#if !defined(USE_MAIN_LIGHT)
+                return normalize(mul(unity_WorldToObject, _WorldSpaceLightPos0.xyz));
+#else
+                return viewDir;
+#endif
+            }
+
             // Performs lighting calculations, and returns a modified colour.
             float3 calculateLighting(float3 col, float3 normal, float3 lightDir, float3 eyeDir, float specularIntensity)
             {
-                float ndotl = max(lerp(0.0f, 1.5f, dot(normal, lightDir)), 0.5f); // modified, to avoid volume becoming too dark
+                // Invert normal if facing opposite direction of view direction.
+                // Optimised version of: if(dot(normal, eyeDir) < 0.0) normal *= -1.0
+                normal *= (step(0.0, dot(normal, eyeDir)) * 2.0 - 1.0);
+
+                float ndotl = max(lerp(0.0f, 1.5f, dot(normal, lightDir)), AMBIENT_LIGHTING_FACTOR);
                 float3 diffuse = ndotl * col;
                 float3 v = eyeDir;
                 float3 r = normalize(reflect(-lightDir, normal));
@@ -287,9 +304,9 @@
 
                     // Apply lighting
 #if defined(LIGHTING_ON) && defined(DVR_BACKWARD_ON)
-                    src.rgb = calculateLighting(src.rgb, normalize(gradient), lightDir, ray.direction, 0.3f);
+                    src.rgb = calculateLighting(src.rgb, normalize(gradient), getLightDirection(ray.direction), ray.direction, 0.3f);
 #elif defined(LIGHTING_ON)
-                    src.rgb = calculateLighting(src.rgb, normalize(gradient), lightDir, -ray.direction, 0.3f);
+                    src.rgb = calculateLighting(src.rgb, normalize(gradient), getLightDirection(-ray.direction), -ray.direction, 0.3f);
 #endif
 
 #ifdef DVR_BACKWARD_ON
@@ -391,7 +408,7 @@
                     {
                         float3 normal = normalize(getGradient(currPos));
                         col = getTF1DColour(density);
-                        col.rgb = calculateLighting(col.rgb, normal, -ray.direction, -ray.direction, 0.15);
+                        col.rgb = calculateLighting(col.rgb, normal, getLightDirection(-ray.direction), -ray.direction, 0.15);
                         col.a = 1.0f;
                         break;
                     }
