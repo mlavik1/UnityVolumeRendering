@@ -6,7 +6,10 @@ namespace UnityVolumeRendering
     [CustomEditor(typeof(VolumeRenderedObject))]
     public class VolumeRenderedObjectCustomInspector : Editor
     {
-        bool otherSettings = false;
+        private bool tfSettings = true;
+        private bool lightSettings = true;
+        private bool otherSettings = false;
+
         public override void OnInspectorGUI()
         {
             VolumeRenderedObject volrendObj = (VolumeRenderedObject)target;
@@ -17,30 +20,48 @@ namespace UnityVolumeRendering
             if (newRenderMode != oldRenderMode)
                 volrendObj.SetRenderMode(newRenderMode);
 
-            // Lighting settings
-            if (volrendObj.GetRenderMode() == RenderMode.DirectVolumeRendering)
-                volrendObj.SetLightingEnabled(GUILayout.Toggle(volrendObj.GetLightingEnabled(), "Enable lighting"));
-            else
-                volrendObj.SetLightingEnabled(false);
-
             // Visibility window
             Vector2 visibilityWindow = volrendObj.GetVisibilityWindow();
             EditorGUILayout.MinMaxSlider("Visible value range", ref visibilityWindow.x, ref visibilityWindow.y, 0.0f, 1.0f);
-            EditorGUILayout.Space();
             volrendObj.SetVisibilityWindow(visibilityWindow);
 
-            // Transfer function type
-            TFRenderMode tfMode = (TFRenderMode)EditorGUILayout.EnumPopup("Transfer function type", volrendObj.GetTransferFunctionMode());
-            if (tfMode != volrendObj.GetTransferFunctionMode())
-                volrendObj.SetTransferFunctionMode(tfMode);
-
-            // Show TF button
-            if (GUILayout.Button("Edit transfer function"))
+            // Transfer function settings
+            EditorGUILayout.Space();
+            tfSettings = EditorGUILayout.Foldout(tfSettings, "Transfer function");
+            if (tfSettings)
             {
-                if (tfMode == TFRenderMode.TF1D)
-                    TransferFunctionEditorWindow.ShowWindow();
+                // Transfer function type
+                TFRenderMode tfMode = (TFRenderMode)EditorGUILayout.EnumPopup("Transfer function type", volrendObj.GetTransferFunctionMode());
+                if (tfMode != volrendObj.GetTransferFunctionMode())
+                    volrendObj.SetTransferFunctionMode(tfMode);
+
+                // Show TF button
+                if (GUILayout.Button("Edit transfer function"))
+                {
+                    if (tfMode == TFRenderMode.TF1D)
+                        TransferFunctionEditorWindow.ShowWindow();
+                    else
+                        TransferFunction2DEditorWindow.ShowWindow();
+                }
+            }
+
+            // Lighting settings
+            GUILayout.Space(10);
+            lightSettings = EditorGUILayout.Foldout(lightSettings, "Lighting");
+            if (lightSettings)
+            {
+                if (volrendObj.GetRenderMode() == RenderMode.DirectVolumeRendering)
+                    volrendObj.SetLightingEnabled(GUILayout.Toggle(volrendObj.GetLightingEnabled(), "Enable lighting"));
                 else
-                    TransferFunction2DEditorWindow.ShowWindow();
+                    volrendObj.SetLightingEnabled(false);
+
+                if (volrendObj.GetLightingEnabled() || volrendObj.GetRenderMode() == RenderMode.IsosurfaceRendering)
+                {
+                    LightSource oldLightSource = volrendObj.GetLightSource();
+                    LightSource newLightSource = (LightSource)EditorGUILayout.EnumPopup("Light source", oldLightSource);
+                    if (newLightSource != oldLightSource)
+                        volrendObj.SetLightSource(newLightSource);
+                }
             }
 
             // Other settings for direct volume rendering
