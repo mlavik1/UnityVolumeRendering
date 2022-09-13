@@ -23,6 +23,8 @@ namespace UnityVolumeRendering
         private TFRenderMode tfRenderMode;
         [SerializeField, HideInInspector]
         private bool lightingEnabled;
+        [SerializeField, HideInInspector]
+        private LightSource lightSource;
 
         [SerializeField, HideInInspector]
         private Vector2 visibilityWindow = new Vector2(0.0f, 1.0f);
@@ -84,6 +86,11 @@ namespace UnityVolumeRendering
             return lightingEnabled;
         }
 
+        public LightSource GetLightSource()
+        {
+            return lightSource;
+        }
+
         public void SetLightingEnabled(bool enable)
         {
             if (enable != lightingEnabled)
@@ -91,6 +98,12 @@ namespace UnityVolumeRendering
                 lightingEnabled = enable;
                 UpdateMaterialProperties();
             }
+        }
+
+        public void SetLightSource(LightSource source)
+        {
+            lightSource = source;
+            UpdateMaterialProperties();
         }
 
         public void SetVisibilityWindow(float min, float max)
@@ -160,6 +173,11 @@ namespace UnityVolumeRendering
                 meshRenderer.sharedMaterial.EnableKeyword("LIGHTING_ON");
             else
                 meshRenderer.sharedMaterial.DisableKeyword("LIGHTING_ON");
+
+            if (lightSource == LightSource.SceneMainLight)
+                meshRenderer.sharedMaterial.EnableKeyword("USE_MAIN_LIGHT");
+            else
+                meshRenderer.sharedMaterial.DisableKeyword("USE_MAIN_LIGHT");
 
             switch (renderMode)
             {
