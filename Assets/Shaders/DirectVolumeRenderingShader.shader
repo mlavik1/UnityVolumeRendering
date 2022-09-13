@@ -182,7 +182,7 @@
             // Get the light direction (using main light or view direction, based on setting)
             float3 getLightDirection(float3 viewDir)
             {
-#if !defined(USE_MAIN_LIGHT)
+#if defined(USE_MAIN_LIGHT)
                 return normalize(mul(unity_WorldToObject, _WorldSpaceLightPos0.xyz));
 #else
                 return viewDir;
