@@ -1,4 +1,6 @@
-﻿namespace UnityVolumeRendering
+﻿using UnityEngine;
+
+namespace UnityVolumeRendering
 {
     public enum RenderMode
     {
@@ -9,7 +11,9 @@
 
     public enum TFRenderMode
     {
+        [InspectorName("1D Transfer Function")]
         TF1D,
+        [InspectorName("2D Transfer Function")]
         TF2D
     }
 }
