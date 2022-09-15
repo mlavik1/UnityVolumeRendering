@@ -50,9 +50,17 @@ class ResizableArea
         EditorGUIUtility.AddCursorRect(bottomBorderRect, MouseCursor.ResizeVertical);
     }
 
-    public bool Contains(Vector2 mousePos)
+    public bool Intersects(Vector2 mousePos)
     {
         return rect.Contains(mousePos);
+    }
+
+    public bool IntersectsBorder(Vector2 mousePos)
+    {
+        return leftBorderRect.Contains(mousePos)
+        || rightBorderRect.Contains(mousePos)
+        || topBorderRect.Contains(mousePos)
+        || bottomBorderRect.Contains(mousePos);
     }
 
     public void StartMoving(Vector2 mousePos)

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace UnityVolumeRendering
 {
@@ -89,7 +90,7 @@ namespace UnityVolumeRendering
             tfGUIMat.SetTexture("_TFTex", tf2d.GetTexture());
             Graphics.DrawTexture(histRect, tf2d.GetTexture(), tfGUIMat);
 
-            // Handle mouse click in box
+            // Handle mouse drag
             for (int i = 0; i < tf2d.boxes.Count; i++)
             {
                 int iBox = (i + selectedBoxIndex + 1) % tf2d.boxes.Count;
@@ -128,17 +129,16 @@ namespace UnityVolumeRendering
 
             if (Event.current.type == EventType.MouseDown)
             {
-                for (int i = 0; i < tf2d.boxes.Count; i++)
+                // First priority: Pick area where mouse intersects the border.
+                int candidate = GetIntersectingAreas(selectedBoxIndex + 1, (ResizableArea area) => { return area.IntersectsBorder(mousePos); });
+                // Second priority: Pick area where mouse intersects the rect.
+                if (candidate == -1)
+                    candidate = GetIntersectingAreas(selectedBoxIndex, (ResizableArea area) => { return area.Intersects(mousePos); });
+                if (candidate != -1)
                 {
-                    int iBox = (i + selectedBoxIndex) % tf2d.boxes.Count;
-                    ResizableArea tfArea = tfAreas[iBox];
-                    if (tfArea.Contains(mousePos))
-                    {
-                        tfArea.StartMoving(mousePos);
-                        selectedBoxIndex = iBox;
-                        isMovingBox = true;
-                        break;
-                    }
+                    selectedBoxIndex = candidate;
+                    isMovingBox = true;
+                    tfAreas[candidate].StartMoving(mousePos);
                 }
             }
 
@@ -217,6 +217,17 @@ namespace UnityVolumeRendering
         public void OnInspectorUpdate()
         {
             Repaint();
+        }
+
+        private int GetIntersectingAreas(int startIndex, System.Func<ResizableArea, bool> comparator)
+        {
+            for (int i = 0; i < tfAreas.Count; i++)
+            {
+                int iBox = (i + selectedBoxIndex) % tfAreas.Count;
+                if(comparator(tfAreas[iBox]))
+                    return iBox;
+            }
+            return -1;
         }
     }
 }
