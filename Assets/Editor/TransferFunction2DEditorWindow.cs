@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
 
 namespace UnityVolumeRendering
 {
@@ -11,8 +12,11 @@ namespace UnityVolumeRendering
 
         private Material tfGUIMat = null;
         private int selectedBoxIndex = -1;
+        private bool isMovingBox = false;
 
         private VolumeRenderedObject volRendObject = null;
+
+        private List<ResizableArea> tfAreas = new List<ResizableArea>();
 
         public static void ShowWindow()
         {
@@ -52,6 +56,8 @@ namespace UnityVolumeRendering
 
         private void OnGUI()
         {
+            Vector2 mousePos = new Vector2(Event.current.mousePosition.x, Event.current.mousePosition.y);
+
             // Update selected object
             if (volRendObject == null)
                 volRendObject = SelectionHelper.GetSelectedVolumeObject();
@@ -64,6 +70,16 @@ namespace UnityVolumeRendering
 
             TransferFunction2D tf2d = volRendObject.transferFunction2D;
 
+            if (tf2d.boxes.Count != tfAreas.Count)
+            {
+                tfAreas.Clear();
+                foreach (TransferFunction2D.TF2DBox tfBox in tf2d.boxes)
+                {
+                    ResizableArea area = new ResizableArea();
+                    tfAreas.Add(area);
+                }
+            }
+
             // Calculate GUI width (minimum of window width and window height * 2)
             float bgWidth = Mathf.Min(this.position.width - 20.0f, (this.position.height - 250.0f) * 2.0f);
             // Draw the histogram
@@ -74,13 +90,55 @@ namespace UnityVolumeRendering
             Graphics.DrawTexture(histRect, tf2d.GetTexture(), tfGUIMat);
 
             // Handle mouse click in box
-            for (int iBox = 0; iBox < tf2d.boxes.Count; iBox++)
+            for (int i = 0; i < tf2d.boxes.Count; i++)
             {
+                int iBox = (i + selectedBoxIndex + 1) % tf2d.boxes.Count;
                 TransferFunction2D.TF2DBox box = tf2d.boxes[iBox];
-                Rect boxRect = new Rect(histRect.x + box.rect.x * histRect.width, histRect.y + (1.0f - box.rect.height - box.rect.y) * histRect.height, box.rect.width * histRect.width, box.rect.height * histRect.height);
-                if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && boxRect.Contains(new Vector2(Event.current.mousePosition.x, Event.current.mousePosition.y)))
+                ResizableArea tfArea = tfAreas[iBox];
+
+                if (isMovingBox && selectedBoxIndex == iBox)
                 {
-                    selectedBoxIndex = iBox;
+                    if (Event.current.type == EventType.MouseUp)
+                    {
+                        tfArea.StopMoving();
+                        isMovingBox = false;
+                    }
+                    else
+                        tfArea.UpdateMoving(mousePos);
+
+                    if (tfArea.rectChanged)
+                    {
+                        Rect rect = tfArea.GetRect();
+                        box.rect.x = rect.x / histRect.width - histRect.x;
+                        box.rect.y = 1.0f - (rect.y + rect.height) / histRect.height;
+                        box.rect.width = rect.width / histRect.width;
+                        box.rect.height = rect.height / histRect.height;
+                        tf2d.boxes[iBox] = box;
+                        needsRegenTexture = true;
+                    }
+                }
+                else
+                {
+                    Rect boxRect = new Rect(histRect.x + box.rect.x * histRect.width, histRect.y + (1.0f - box.rect.height - box.rect.y) * histRect.height, box.rect.width * histRect.width, box.rect.height * histRect.height);
+                    tfArea.SetRect(boxRect);
+                }
+
+                tfArea.Draw();
+            }
+
+            if (Event.current.type == EventType.MouseDown)
+            {
+                for (int i = 0; i < tf2d.boxes.Count; i++)
+                {
+                    int iBox = (i + selectedBoxIndex) % tf2d.boxes.Count;
+                    ResizableArea tfArea = tfAreas[iBox];
+                    if (tfArea.Contains(mousePos))
+                    {
+                        tfArea.StartMoving(mousePos);
+                        selectedBoxIndex = iBox;
+                        isMovingBox = true;
+                        break;
+                    }
                 }
             }
 
@@ -91,15 +149,9 @@ namespace UnityVolumeRendering
             {
                 EditorGUI.BeginChangeCheck();
                 TransferFunction2D.TF2DBox box = tf2d.boxes[selectedBoxIndex];
-                float oldX = box.rect.x;
-                float oldY = box.rect.y;
-                box.rect.x = EditorGUI.Slider(new Rect(startX, startY, 200.0f, 20.0f), "min x", box.rect.x, 0.0f, 0.99f);
-                box.rect.width = EditorGUI.Slider(new Rect(startX + 220.0f, startY, 200.0f, 20.0f), "max x", oldX + box.rect.width, box.rect.x + 0.01f, 1.0f) - box.rect.x;
-                box.rect.y = EditorGUI.Slider(new Rect(startX, startY + 50, 200.0f, 20.0f), "min y", box.rect.y, 0.0f, 1.0f);
-                box.rect.height = EditorGUI.Slider(new Rect(startX + 220.0f, startY + 50, 200.0f, 20.0f), "max y", oldY + box.rect.height, box.rect.y + 0.01f, 1.0f) - box.rect.y;
-                box.colour = EditorGUI.ColorField(new Rect(startX + 450.0f, startY + 10, 100.0f, 20.0f), box.colour);
-                box.minAlpha = EditorGUI.Slider(new Rect(startX + 450.0f, startY + 30, 200.0f, 20.0f), "min alpha", box.minAlpha, 0.0f, 1.0f);
-                box.alpha = EditorGUI.Slider(new Rect(startX + 450.0f, startY + 60, 200.0f, 20.0f), "max alpha", box.alpha, 0.0f, 1.0f);
+                box.colour = EditorGUI.ColorField(new Rect(startX + 250.0f, startY + 10, 100.0f, 20.0f), box.colour);
+                box.minAlpha = EditorGUI.Slider(new Rect(startX + 250.0f, startY + 30, 200.0f, 20.0f), "min alpha", box.minAlpha, 0.0f, 1.0f);
+                box.alpha = EditorGUI.Slider(new Rect(startX + 250.0f, startY + 60, 200.0f, 20.0f), "max alpha", box.alpha, 0.0f, 1.0f);
 
                 tf2d.boxes[selectedBoxIndex] = box;
                 needsRegenTexture |= EditorGUI.EndChangeCheck();
@@ -110,7 +162,7 @@ namespace UnityVolumeRendering
             }
 
             // Add new rectangle
-            if (GUI.Button(new Rect(startX, startY + 100, 150.0f, 30.0f), "Add rectangle"))
+            if (GUI.Button(new Rect(startX, startY + 10, 150.0f, 30.0f), "Add rectangle"))
             {
                 tf2d.AddBox(0.1f, 0.1f, 0.8f, 0.8f, Color.white, 0.5f);
                 needsRegenTexture = true;
@@ -118,7 +170,7 @@ namespace UnityVolumeRendering
             // Remove selected shape
             if (selectedBoxIndex != -1)
             {
-                if (GUI.Button(new Rect(startX, startY + 140, 150.0f, 30.0f), "Remove selected shape"))
+                if (GUI.Button(new Rect(startX, startY + 50, 150.0f, 30.0f), "Remove selected shape"))
                 {
                     tf2d.boxes.RemoveAt(selectedBoxIndex);
                     selectedBoxIndex = -1;
@@ -126,13 +178,13 @@ namespace UnityVolumeRendering
                 }
             }
 
-            if(GUI.Button(new Rect(startX, startY + 180, 150.0f, 30.0f), "Save"))
+            if(GUI.Button(new Rect(startX, startY + 90, 150.0f, 30.0f), "Save"))
             {
                 string filepath = EditorUtility.SaveFilePanel("Save transfer function", "", "default.tf2d", "tf2d");
                 if(filepath != "")
                     TransferFunctionDatabase.SaveTransferFunction2D(tf2d, filepath);
             }
-            if(GUI.Button(new Rect(startX, startY + 220, 150.0f, 30.0f), "Load"))
+            if(GUI.Button(new Rect(startX, startY + 130, 150.0f, 30.0f), "Load"))
             {
                 string filepath = EditorUtility.OpenFilePanel("Save transfer function", "", "tf2d");
                 if(filepath != "")
