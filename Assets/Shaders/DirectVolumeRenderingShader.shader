@@ -37,6 +37,7 @@
             #define CUTOUT_ON CUTOUT_PLANE || CUTOUT_BOX_INCL || CUTOUT_BOX_EXCL
 
             #define AMBIENT_LIGHTING_FACTOR 0.5
+            #define JITTER_FACTOR 5.0
 
             struct vert_in
             {
@@ -264,7 +265,7 @@
                 float3 lightDir = normalize(ObjSpaceViewDir(float4(float3(0.0f, 0.0f, 0.0f), 0.0f)));
 
                 // Create a small random offset in order to remove artifacts
-                ray.startPos += (2.0f * ray.direction * raymarchInfo.stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
+                ray.startPos += (JITTER_FACTOR * ray.direction * raymarchInfo.stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
 
                 float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
 #ifdef DVR_BACKWARD_ON
@@ -390,7 +391,7 @@
                 RaymarchInfo raymarchInfo = initRaymarch(ray, MAX_NUM_STEPS);
 
                 // Create a small random offset in order to remove artifacts
-                ray.startPos = ray.startPos + (2.0f * ray.direction * raymarchInfo.stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
+                ray.startPos = ray.startPos + (JITTER_FACTOR * ray.direction * raymarchInfo.stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
 
                 float4 col = float4(0,0,0,0);
                 for (int iStep = 0; iStep < raymarchInfo.numSteps; iStep++)
