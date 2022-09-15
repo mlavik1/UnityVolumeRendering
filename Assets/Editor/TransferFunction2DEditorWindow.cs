@@ -197,13 +197,6 @@ namespace UnityVolumeRendering
                     }
                 }
             }
-
-            // TODO: regenerate on add/remove/modify (and do it async)
-            if (needsRegenTexture)
-            {
-                tf2d.GenerateTexture();
-                needsRegenTexture = false;
-            }
         }
 
         private void OnSelectionChange()
@@ -217,6 +210,14 @@ namespace UnityVolumeRendering
         public void OnInspectorUpdate()
         {
             Repaint();
+
+            // TODO: regenerate on add/remove/modify (and do it async)
+            if (needsRegenTexture)
+            {
+                TransferFunction2D tf2d = volRendObject.transferFunction2D;
+                tf2d.GenerateTexture();
+                needsRegenTexture = false;
+            }
         }
 
         private int GetIntersectingAreas(int startIndex, System.Func<ResizableArea, bool> comparator)
