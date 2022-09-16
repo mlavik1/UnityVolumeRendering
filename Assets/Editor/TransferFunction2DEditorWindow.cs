@@ -158,11 +158,11 @@ namespace UnityVolumeRendering
             }
             else
             {
-                EditorGUI.LabelField(new Rect(startX, startY, this.position.width - startX, 50.0f), "Select a rectangle in the above view, or add a new one.");
+                EditorGUI.LabelField(new Rect(startX, startY, this.position.width - startX, 40.0f), "Select a rectangle in the above view, or add a new one.");
             }
 
             // Add new rectangle
-            if (GUI.Button(new Rect(startX, startY + 10, 150.0f, 30.0f), "Add rectangle"))
+            if (GUI.Button(new Rect(startX, startY + 40, 150.0f, 30.0f), "Add rectangle"))
             {
                 tf2d.AddBox(0.1f, 0.1f, 0.8f, 0.8f, Color.white, 0.5f);
                 needsRegenTexture = true;
@@ -170,7 +170,7 @@ namespace UnityVolumeRendering
             // Remove selected shape
             if (selectedBoxIndex != -1)
             {
-                if (GUI.Button(new Rect(startX, startY + 50, 150.0f, 30.0f), "Remove selected shape"))
+                if (GUI.Button(new Rect(startX, startY + 80, 150.0f, 30.0f), "Remove selected shape"))
                 {
                     tf2d.boxes.RemoveAt(selectedBoxIndex);
                     selectedBoxIndex = -1;
@@ -178,13 +178,13 @@ namespace UnityVolumeRendering
                 }
             }
 
-            if(GUI.Button(new Rect(startX, startY + 90, 150.0f, 30.0f), "Save"))
+            if(GUI.Button(new Rect(startX, startY + 120, 150.0f, 30.0f), "Save"))
             {
                 string filepath = EditorUtility.SaveFilePanel("Save transfer function", "", "default.tf2d", "tf2d");
                 if(filepath != "")
                     TransferFunctionDatabase.SaveTransferFunction2D(tf2d, filepath);
             }
-            if(GUI.Button(new Rect(startX, startY + 130, 150.0f, 30.0f), "Load"))
+            if(GUI.Button(new Rect(startX, startY + 160, 150.0f, 30.0f), "Load"))
             {
                 string filepath = EditorUtility.OpenFilePanel("Save transfer function", "", "tf2d");
                 if(filepath != "")
