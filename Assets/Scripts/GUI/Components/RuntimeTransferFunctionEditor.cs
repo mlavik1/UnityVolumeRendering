@@ -187,27 +187,27 @@ namespace UnityVolumeRendering
             // Save TF
             if(GUI.Button(new Rect(histRect.x, histRect.y + histRect.height + 50.0f, 70.0f, 30.0f), "Save"))
             {
-                // TODO: Implement for runtime
-                /*
-                string filepath = EditorUtility.SaveFilePanel("Save transfer function", "", "default.tf", "tf");
-                if(filepath != "")
-                    TransferFunctionDatabase.SaveTransferFunction(tf, filepath);
-                */
+                RuntimeFileBrowser.ShowSaveFileDialog((RuntimeFileBrowser.DialogResult result) => 
+                {
+                    if(!result.cancelled)
+                    {
+                        TransferFunctionDatabase.SaveTransferFunction(tf, result.path);
+                    }
+                });
             }
 
             // Load TF
             if(GUI.Button(new Rect(histRect.x + 75.0f, histRect.y + histRect.height + 50.0f, 70.0f, 30.0f), "Load"))
             {
-                // TODO: Implement for runtime
-                /*
-                string filepath = EditorUtility.OpenFilePanel("Save transfer function", "", "tf");
-                if(filepath != "")
+                RuntimeFileBrowser.ShowOpenFileDialog((RuntimeFileBrowser.DialogResult result) => 
                 {
-                    TransferFunction newTF = TransferFunctionDatabase.LoadTransferFunction(filepath);
-                    if(newTF != null)
-                        volRendObject.transferFunction = tf = newTF;
-                }
-                */
+                    if(!result.cancelled)
+                    {
+                        TransferFunction newTF = TransferFunctionDatabase.LoadTransferFunction(result.path);
+                        if(newTF != null)
+                            volRendObject.transferFunction = tf = newTF;
+                    }
+                });
             }
              // Clear TF
             if(GUI.Button(new Rect(histRect.x + 150.0f, histRect.y + histRect.height + 50.0f, 70.0f, 30.0f), "Clear"))
@@ -222,13 +222,6 @@ namespace UnityVolumeRendering
             // Colour picker
             if (selectedColPointIndex != -1)
             {
-                // TODO: Implement for runtime
-                /*
-                TFColourControlPoint colPoint = tf.colourControlPoints[selectedColPointIndex];
-                colPoint.colourValue = EditorGUI.ColorField(new Rect(histRect.x + 225, histRect.y + histRect.height + 50, 100.0f, 40.0f), colPoint.colourValue);
-                tf.colourControlPoints[selectedColPointIndex] = colPoint;
-                */
-
                 TFColourControlPoint colPoint = tf.colourControlPoints[selectedColPointIndex];
                 colPoint.colourValue = GUIUtils.ColourField(new Rect(histRect.x + 250, histRect.y + histRect.height + 50, 80.0f, 30.0f), colPoint.colourValue);
                 tf.colourControlPoints[selectedColPointIndex] = colPoint;

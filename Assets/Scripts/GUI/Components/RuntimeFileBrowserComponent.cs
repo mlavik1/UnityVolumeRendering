@@ -173,7 +173,7 @@ namespace UnityVolumeRendering
                         GUILayout.FlexibleSpace();
                         // Show button
                         string buttonText = dialogMode == DialogMode.OpenFile ? "Open" : "Save";
-                        if (File.Exists(selectedFile) && GUILayout.Button(buttonText))
+                        if ((File.Exists(selectedFile) || dialogMode == DialogMode.SaveFile) && GUILayout.Button(buttonText))
                         {
                             CloseBrowser(false, selectedFile);
                         }
