@@ -17,6 +17,18 @@ namespace UnityVolumeRendering
         private Material tfGUIMat = null;
         private Material tfPaletteGUIMat = null;
 
+        private int windowID;
+        private Rect windowRect = new Rect(150, 15, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+        private const int WINDOW_WIDTH = 800;
+        private const int WINDOW_HEIGHT = 400;
+
+        private void Awake()
+        {
+            // Fetch a unique ID for our window (see GUI.Window)
+            windowID = WindowGUID.GetUniqueWindowID();
+        }
+
         private void OnEnable()
         {
             tfGUIMat = Resources.Load<Material>("TransferFunctionGUIMat");
@@ -30,8 +42,14 @@ namespace UnityVolumeRendering
 
         private void OnGUI()
         {
-            const int WINDOW_WIDTH = 800;
-            const int WINDOW_HEIGHT = 400;
+            windowRect = GUI.Window(windowID, windowRect, UpdateWindow, "Transfer function");
+        }
+
+        private void UpdateWindow(int windowID)
+        {
+            GUI.DragWindow(new Rect(0, 0, 10000, 20));
+
+            GUI.skin.button.alignment = TextAnchor.MiddleCenter;
 
             // Update selected object
             if (volRendObject == null)
@@ -231,6 +249,11 @@ namespace UnityVolumeRendering
             GUI.Label(new Rect(histRect.x, histRect.y + histRect.height + 85.0f, 720.0f, 30.0f), "Left click to select and move a control point. Right click to add a control point, and ctrl + right click to delete.");
 
             GUI.color = oldColour;
+
+            if (GUI.Button(new Rect(WINDOW_WIDTH - 100, WINDOW_HEIGHT - 40, 90, 30), "Close"))
+            {
+                CloseWindow();
+            }
         }
 
         /// <summary>
@@ -279,6 +302,11 @@ namespace UnityVolumeRendering
         private VolumeRenderedObject GetVolumeObject()
         {
             return GameObject.FindObjectOfType<VolumeRenderedObject>();
+        }
+
+        private void CloseWindow()
+        {
+            GameObject.Destroy(this.gameObject);
         }
     }
 }

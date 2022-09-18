@@ -15,7 +15,7 @@ namespace UnityVolumeRendering
         private Texture2D texture;
         private Color[] gradientColours = { Color.red, Color.green, Color.blue, Color.red };
 
-        private const int WINDOW_WIDTH = 500;
+        private const int WINDOW_WIDTH = 400;
         private const int WINDOW_HEIGHT = 400;
         private const int TEXTURE_WIDTH = 128;
         private const int TEXTURE_HEIGHT = 128;
@@ -54,7 +54,7 @@ namespace UnityVolumeRendering
             GUI.skin.box.fontSize = 6;
             GUI.Box(ctrlBox, "*");
 
-            if (GUI.Button(new Rect(400, 350, 90, 30), "Done"))
+            if (GUI.Button(new Rect(WINDOW_WIDTH - 100, WINDOW_HEIGHT - 40, 90, 30), "Done"))
             {
                 CloseBrowser();
             }
@@ -75,18 +75,12 @@ namespace UnityVolumeRendering
                 if (unitPos.magnitude <= 1.0f)
                 {
                     selectedPosition = mousePos;
-                    selectedHSV = GetHSVAtPoint(unitPos);
+                    selectedHSV = GetHSVAtPoint(unitPos, selectedHSV.z);
                 }
             }
         }
 
-        private Color GetRGBAtPoint(Vector2 point)
-        {
-            Vector3 hsv = GetHSVAtPoint(point);
-            return Color.HSVToRGB(hsv.x, hsv.y, hsv.z);
-        }
-
-        private Vector3 GetHSVAtPoint(Vector2 point)
+        private Vector3 GetHSVAtPoint(Vector2 point, float value)
         {
             Vector2 a = new Vector2(0.0f, 1.0f);
             Vector2 b = point;
@@ -94,7 +88,6 @@ namespace UnityVolumeRendering
             float angle = (signedAngle < 0.0f ? signedAngle + 360.0f : signedAngle);
             float hue = angle / 360.0f;
             float saturation = point.magnitude;
-            float value = selectedHSV.z;
             return new Vector3(hue, saturation, value);
         }
 
@@ -113,9 +106,14 @@ namespace UnityVolumeRendering
                         unitPos = (unitPos - new Vector2(0.5f, 0.5f)) * 2.0f;
                         Color colour;
                         if (unitPos.magnitude <= 1.0f)
-                            colour = GetRGBAtPoint(unitPos);
+                        {
+                            Vector3 hsv = GetHSVAtPoint(unitPos, 1.0f);
+                            colour = Color.HSVToRGB(hsv.x, hsv.y, hsv.z);
+                        }
                         else
+                        {
                             colour = Color.clear;
+                        }
                         colours[ix + iy * TEXTURE_WIDTH] = colour;
                     }
                 }
