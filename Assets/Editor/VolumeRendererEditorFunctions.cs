@@ -243,7 +243,16 @@ namespace UnityVolumeRendering
         [MenuItem("Volume Rendering/1D Transfer Function")]
         public static void Show1DTFWindow()
         {
-            TransferFunctionEditorWindow.ShowWindow();
+            VolumeRenderedObject volRendObj = SelectionHelper.GetSelectedVolumeObject();
+            if (volRendObj != null)
+            {
+                volRendObj.SetTransferFunctionMode(TFRenderMode.TF1D);
+                TransferFunctionEditorWindow.ShowWindow(volRendObj);
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("No imported dataset", "You need to import a dataset first", "Ok");
+            }
         }
 
         [MenuItem("Volume Rendering/2D Transfer Function")]

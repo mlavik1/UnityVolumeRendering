@@ -82,7 +82,7 @@ namespace UnityVolumeRendering
                 // Edit transfer function
                 if(GUILayout.Button("Edit transfer function", GUILayout.Width(150.0f)))
                 {
-                    RuntimeTransferFunctionEditor.ShowWindow();
+                    RuntimeTransferFunctionEditor.ShowWindow(targetObject);
                 }
 
                 // Load transfer function

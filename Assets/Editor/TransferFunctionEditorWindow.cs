@@ -11,7 +11,7 @@ namespace UnityVolumeRendering
 
         private TransferFunctionEditor tfEditor = new TransferFunctionEditor();
 
-        public static void ShowWindow()
+        public static void ShowWindow(VolumeRenderedObject volRendObj)
         {
             // Close all (if any) 2D TF editor windows
             TransferFunction2DEditorWindow[] tf2dWnds = Resources.FindObjectsOfTypeAll<TransferFunction2DEditorWindow>();
@@ -19,6 +19,8 @@ namespace UnityVolumeRendering
                 tf2dWnd.Close();
 
             TransferFunctionEditorWindow wnd = (TransferFunctionEditorWindow)EditorWindow.GetWindow(typeof(TransferFunctionEditorWindow));
+            if (volRendObj)
+                wnd.volRendObject = volRendObj;
             wnd.Show();
             wnd.SetInitialPosition();
         }
@@ -33,17 +35,6 @@ namespace UnityVolumeRendering
 
         private void OnEnable()
         {
-            volRendObject = SelectionHelper.GetSelectedVolumeObject();
-            if (volRendObject == null)
-            {
-                volRendObject = GameObject.FindObjectOfType<VolumeRenderedObject>();
-                if (volRendObject != null)
-                    Selection.objects = new Object[] { volRendObject.gameObject };
-            }
-
-            if(volRendObject != null)
-                volRendObject.SetTransferFunctionMode(TFRenderMode.TF1D);
-
             tfEditor.Initialise();
         }
 
@@ -55,6 +46,7 @@ namespace UnityVolumeRendering
 
             if (volRendObject == null)
                 return;
+                
             tf = volRendObject.transferFunction;
 
             Event currentEvent = new Event(Event.current);
@@ -96,10 +88,11 @@ namespace UnityVolumeRendering
              // Clear TF
             if(GUI.Button(new Rect(tfEditorRect.x + 150.0f, tfEditorRect.y + tfEditorRect.height + 50.0f, 70.0f, 30.0f), "Clear"))
             {
-                tf = volRendObject.transferFunction = new TransferFunction();
+                tf = new TransferFunction();
                 tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.2f, 0.0f));
                 tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.8f, 1.0f));
                 tf.colourControlPoints.Add(new TFColourControlPoint(0.5f, new Color(0.469f, 0.354f, 0.223f, 1.0f)));
+                volRendObject.SetTransferFunction(tf);
                 tfEditor.ClearSelection();
             }
 

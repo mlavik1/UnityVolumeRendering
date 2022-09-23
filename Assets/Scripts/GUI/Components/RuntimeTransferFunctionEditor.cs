@@ -16,13 +16,14 @@ namespace UnityVolumeRendering
         private const int WINDOW_WIDTH = 600;
         private const int WINDOW_HEIGHT = 400;
 
-        public static void ShowWindow()
+        public static void ShowWindow(VolumeRenderedObject volRendObj)
         {
             if(instance != null)
                 GameObject.Destroy(instance);
 
             GameObject obj = new GameObject("RuntimeTransferFunctionEditor");
             instance = obj.AddComponent<RuntimeTransferFunctionEditor>();
+            instance.volRendObject = volRendObj;
         }
 
         private void Awake()
@@ -33,12 +34,14 @@ namespace UnityVolumeRendering
 
         private void OnEnable()
         {
-            volRendObject = GetVolumeObject();
-
-            if(volRendObject != null)
-                volRendObject.SetTransferFunctionMode(TFRenderMode.TF1D);
-
             tfEditor.Initialise();
+        }
+
+        private void Update()
+        {
+            // Close window if object has been destroyed
+            if (!volRendObject)
+                CloseWindow();
         }
 
         private void OnGUI()
@@ -53,10 +56,6 @@ namespace UnityVolumeRendering
             GUI.skin.button.alignment = TextAnchor.MiddleCenter;
 
             Color oldColour = GUI.color; // Used for setting GUI.color when drawing UI elements
-            
-            // Update selected object
-            if (volRendObject == null)
-                volRendObject = GetVolumeObject();
 
             if (volRendObject == null)
                 return;
@@ -103,10 +102,11 @@ namespace UnityVolumeRendering
              // Clear TF
             if(GUI.Button(new Rect(tfEditorRect.x + 150.0f, tfEditorRect.y + tfEditorRect.height + 50.0f, 70.0f, 30.0f), "Clear"))
             {
-                tf = volRendObject.transferFunction = new TransferFunction();
+                tf = new TransferFunction();
                 tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.2f, 0.0f));
                 tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.8f, 1.0f));
                 tf.colourControlPoints.Add(new TFColourControlPoint(0.5f, new Color(0.469f, 0.354f, 0.223f, 1.0f)));
+                volRendObject.SetTransferFunction(tf);
                 tfEditor.ClearSelection();
             }
 
@@ -170,11 +170,6 @@ namespace UnityVolumeRendering
                 }
             }
             return nearestPointIndex;
-        }
-
-        private VolumeRenderedObject GetVolumeObject()
-        {
-            return GameObject.FindObjectOfType<VolumeRenderedObject>();
         }
 
         private void CloseWindow()
