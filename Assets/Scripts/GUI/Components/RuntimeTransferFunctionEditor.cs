@@ -4,6 +4,7 @@ namespace UnityVolumeRendering
 {
     public class RuntimeTransferFunctionEditor : MonoBehaviour
     {
+        private static RuntimeTransferFunctionEditor instance = null;
         private TransferFunction tf = null;
         private VolumeRenderedObject volRendObject = null;
 
@@ -14,6 +15,15 @@ namespace UnityVolumeRendering
 
         private const int WINDOW_WIDTH = 600;
         private const int WINDOW_HEIGHT = 400;
+
+        public static void ShowWindow()
+        {
+            if(instance != null)
+                GameObject.Destroy(instance);
+
+            GameObject obj = new GameObject("RuntimeTransferFunctionEditor");
+            instance = obj.AddComponent<RuntimeTransferFunctionEditor>();
+        }
 
         private void Awake()
         {

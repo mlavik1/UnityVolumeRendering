@@ -79,6 +79,12 @@ namespace UnityVolumeRendering
                 rotation.z = GUILayout.HorizontalSlider(rotation.z, 0.0f, 360.0f);
                 targetObject.transform.rotation = Quaternion.Euler(rotation);
 
+                // Edit transfer function
+                if(GUILayout.Button("Edit transfer function", GUILayout.Width(150.0f)))
+                {
+                    RuntimeTransferFunctionEditor.ShowWindow();
+                }
+
                 // Load transfer function
                 if(GUILayout.Button("Load transfer function", GUILayout.Width(150.0f)))
                 {
