@@ -64,7 +64,7 @@ namespace UnityVolumeRendering
             tfEditor.DrawOnGUI(tfEditorRect);
 
             // Save TF
-            if(GUI.Button(new Rect(tfEditorRect.x, tfEditorRect.y + tfEditorRect.height + 50.0f, 70.0f, 30.0f), "Save"))
+            if(GUI.Button(new Rect(tfEditorRect.x, tfEditorRect.y + tfEditorRect.height + 20.0f, 70.0f, 30.0f), "Save"))
             {
                 string filepath = EditorUtility.SaveFilePanel("Save transfer function", "", "default.tf", "tf");
                 if(filepath != "")
@@ -72,7 +72,7 @@ namespace UnityVolumeRendering
             }
 
             // Load TF
-            if(GUI.Button(new Rect(tfEditorRect.x + 75.0f, tfEditorRect.y + tfEditorRect.height + 50.0f, 70.0f, 30.0f), "Load"))
+            if(GUI.Button(new Rect(tfEditorRect.x + 75.0f, tfEditorRect.y + tfEditorRect.height + 20.0f, 70.0f, 30.0f), "Load"))
             {
                 string filepath = EditorUtility.OpenFilePanel("Save transfer function", "", "tf");
                 if(filepath != "")
@@ -87,7 +87,7 @@ namespace UnityVolumeRendering
                 }
             }
              // Clear TF
-            if(GUI.Button(new Rect(tfEditorRect.x + 150.0f, tfEditorRect.y + tfEditorRect.height + 50.0f, 70.0f, 30.0f), "Clear"))
+            if(GUI.Button(new Rect(tfEditorRect.x + 150.0f, tfEditorRect.y + tfEditorRect.height + 20.0f, 70.0f, 30.0f), "Clear"))
             {
                 tf = new TransferFunction();
                 tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.2f, 0.0f));
@@ -101,12 +101,12 @@ namespace UnityVolumeRendering
             Color? selectedColour = tfEditor.GetSelectedColour();
             if (selectedColour != null)
             {
-                Color newColour = EditorGUI.ColorField(new Rect(tfEditorRect.x + 225, tfEditorRect.y + tfEditorRect.height + 50, 100.0f, 40.0f), selectedColour.Value);
+                Color newColour = EditorGUI.ColorField(new Rect(tfEditorRect.x + 225, tfEditorRect.y + tfEditorRect.height + 30, 100.0f, 40.0f), selectedColour.Value);
                 tfEditor.SetSelectedColour(newColour);
             }
 
             GUI.skin.label.wordWrap = false;    
-            GUI.Label(new Rect(tfEditorRect.x, tfEditorRect.y + tfEditorRect.height + 85.0f, 720.0f, 50.0f), "Left click to select and move a control point.\nRight click to add a control point, and ctrl + right click to delete.");
+            GUI.Label(new Rect(tfEditorRect.x, tfEditorRect.y + tfEditorRect.height + 55.0f, 720.0f, 50.0f), "Left click to select and move a control point.\nRight click to add a control point, and ctrl + right click to delete.");
 
             GUI.color = oldColour;
         }

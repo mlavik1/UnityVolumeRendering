@@ -42,9 +42,11 @@ namespace UnityVolumeRendering
             
             float contentWidth = rect.width;
             float contentHeight = rect.height;
-            
+
             // Histogram rect (histogram view and alpha control points)
-            Rect histRect = rect;
+            Rect histRect = new Rect(rect.x, rect.y, rect.width, rect.height - 40);
+            // Mouse interaction area
+            Rect histMouseRect = new Rect(histRect.x - 20.0f, histRect.y - 20.0f, histRect.width + 40.0f, histRect.height + 40.0f);
             // Colour palette rect (colour control points)
             Rect paletteRect = new Rect(histRect.x, histRect.y + histRect.height + 20, histRect.width, 20.0f);
 
@@ -71,7 +73,7 @@ namespace UnityVolumeRendering
             Graphics.DrawTexture(new Rect(paletteRect.x, paletteRect.y, paletteRect.width, paletteRect.height), tfTexture, tfPaletteGUIMat);
 
             // Release selected colour/alpha points if mouse leaves window
-            if (movingAlphaPointIndex != -1 && !rect.Contains(currentEvent.mousePosition))
+            if (movingAlphaPointIndex != -1 && !histMouseRect.Contains(currentEvent.mousePosition))
                 movingAlphaPointIndex = -1;
             if (movingColPointIndex != -1 && !(currentEvent.mousePosition.x >= paletteRect.x && currentEvent.mousePosition.x <= paletteRect.x + paletteRect.width))
                 movingColPointIndex = -1;
