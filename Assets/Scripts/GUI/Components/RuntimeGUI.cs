@@ -75,7 +75,7 @@ namespace UnityVolumeRendering
                 // Did the user try to import an .ini-file? Open the corresponding .raw file instead
                 string filePath = result.path;
                 if (System.IO.Path.GetExtension(filePath) == ".ini")
-                    filePath = filePath.Replace(".ini", ".raw");
+                    filePath = filePath.Substring(0, filePath.Length - 4);
 
                 // Parse .ini file
                 DatasetIniData initData = DatasetIniReader.ParseIniFile(filePath + ".ini");
