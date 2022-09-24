@@ -80,7 +80,8 @@ namespace UnityVolumeRendering
                     TransferFunction newTF = TransferFunctionDatabase.LoadTransferFunction(filepath);
                     if(newTF != null)
                     {
-                        volRendObject.transferFunction = tf = newTF;
+                        tf = newTF;
+                        volRendObject.SetTransferFunction(tf);
                         tfEditor.ClearSelection();
                     }
                 }

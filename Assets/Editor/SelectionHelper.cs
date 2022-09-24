@@ -16,7 +16,10 @@ namespace UnityVolumeRendering
 
             VolumeRenderedObject volRendObject = GameObject.FindObjectOfType<VolumeRenderedObject>();
             if (volRendObject != null)
+            {
                 Selection.objects = new Object[] { volRendObject.gameObject };
+                return volRendObject;
+            }
 
             return null;
         }

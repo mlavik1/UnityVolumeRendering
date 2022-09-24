@@ -21,16 +21,17 @@ namespace UnityVolumeRendering
             public DialogMode dialogMode = DialogMode.OpenFile;
             public DialogCallback callback = null;
 
-            public string currentDirectory;
-            private string selectedFile;
+            public string currentDirectory = "";
+            private string selectedFile = "";
+            private string fileName = "";
             private Vector2 scrollPos = Vector2.zero;
             private Vector2 dirScrollPos = Vector2.zero;
 
             private Rect windowRect = new Rect(100, 50, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-            private const int LEFT_PANEL_WIDTH = 100;
-            private const int RIGHT_PANEL_WIDTH = 370;
-            private const int WINDOW_WIDTH = 500;
+            private const int LEFT_PANEL_WIDTH = 150;
+            private const int RIGHT_PANEL_WIDTH = 450;
+            private const int WINDOW_WIDTH = 600;
             private const int WINDOW_HEIGHT = 300;
 
             private int windowID;
@@ -99,14 +100,6 @@ namespace UnityVolumeRendering
                 GUILayout.BeginVertical(GUILayout.Width(LEFT_PANEL_WIDTH));
 
                 dirScrollPos = GUILayout.BeginScrollView(dirScrollPos);
-                foreach (DriveInfo driveInfo in DriveInfo.GetDrives())
-                {
-                    if (GUILayout.Button(driveInfo.Name))
-                    {
-                        currentDirectory = driveInfo.Name;
-                        scrollPos = Vector2.zero;
-                    }
-                }
 
                 if (GUILayout.Button("Documents"))
                 {
@@ -118,6 +111,16 @@ namespace UnityVolumeRendering
                     currentDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                     scrollPos = Vector2.zero;
                 }
+
+                foreach (DriveInfo driveInfo in DriveInfo.GetDrives())
+                {
+                    if (GUILayout.Button(driveInfo.Name))
+                    {
+                        currentDirectory = driveInfo.Name;
+                        scrollPos = Vector2.zero;
+                    }
+                }
+
                 GUILayout.EndScrollView();
 
                 GUILayout.EndVertical();
@@ -149,6 +152,7 @@ namespace UnityVolumeRendering
                             if (GUILayout.Button(fileInfo.Name))
                             {
                                 selectedFile = fileInfo.FullName;
+                                fileName = Path.GetFileName(selectedFile);
                             }
                         }
                     }
@@ -163,17 +167,16 @@ namespace UnityVolumeRendering
 
                 if(dialogMode == DialogMode.OpenFile || dialogMode == DialogMode.SaveFile)
                 {
-                    if (!string.IsNullOrEmpty(selectedFile))
+                    if (!string.IsNullOrEmpty(selectedFile) || dialogMode == DialogMode.SaveFile)
                     {
-                        FileInfo fileInfo = new FileInfo(selectedFile);
-                        string fileName = Path.GetFileName(selectedFile);
                         // Show filename textbox
                         fileName = GUILayout.TextField(fileName, GUILayout.Width(RIGHT_PANEL_WIDTH));
-                        selectedFile = Path.Combine(fileInfo.Directory.FullName, fileName);
+                        if (fileName.Length > 0)
+                            selectedFile = Path.Combine(currentDirectory, fileName);
                         GUILayout.FlexibleSpace();
                         // Show button
                         string buttonText = dialogMode == DialogMode.OpenFile ? "Open" : "Save";
-                        if ((File.Exists(selectedFile) || dialogMode == DialogMode.SaveFile) && GUILayout.Button(buttonText))
+                        if (!string.IsNullOrEmpty(fileName) && (File.Exists(selectedFile) || dialogMode == DialogMode.SaveFile) && GUILayout.Button(buttonText))
                         {
                             CloseBrowser(false, selectedFile);
                         }
