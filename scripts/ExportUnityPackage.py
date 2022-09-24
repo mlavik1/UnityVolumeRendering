@@ -1,4 +1,4 @@
-import os, shutil, errno
+import os, shutil, errno, sys
 
 def copy_filedir(src, dst):
     try:
@@ -8,7 +8,11 @@ def copy_filedir(src, dst):
             shutil.copy(src, dst)
         else: raise
 
-unity_path = "D:/Program Files/UnityEditors/2019.4.35f1/Editor/Unity.exe" # TODO
+if len(sys.argv) > 1:
+    unity_path = str(sys.argv[1])
+else:
+    unity_path = raw_input("Enter full filepath of Unity executable:")
+
 uvr_project_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir)
 export_project_path = "tmp-package-export"
 

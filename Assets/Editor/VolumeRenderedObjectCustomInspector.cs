@@ -39,7 +39,7 @@ namespace UnityVolumeRendering
                 if (GUILayout.Button("Edit transfer function"))
                 {
                     if (tfMode == TFRenderMode.TF1D)
-                        TransferFunctionEditorWindow.ShowWindow();
+                        TransferFunctionEditorWindow.ShowWindow(volrendObj);
                     else
                         TransferFunction2DEditorWindow.ShowWindow();
                 }

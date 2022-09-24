@@ -153,6 +153,12 @@ namespace UnityVolumeRendering
             }
         }
 
+        public void SetTransferFunction(TransferFunction tf)
+        {
+            this.transferFunction = tf;
+            UpdateMaterialProperties();
+        }
+
         private void UpdateMaterialProperties()
         {
             bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;

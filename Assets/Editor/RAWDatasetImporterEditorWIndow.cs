@@ -24,7 +24,7 @@ namespace UnityVolumeRendering
             fileToImport = filePath;
 
             if (Path.GetExtension(fileToImport) == ".ini")
-                fileToImport = fileToImport.Replace(".ini", ".raw");
+                fileToImport = fileToImport.Substring(0, fileToImport.Length - 4);
 
             // Try parse ini file (if available)
             DatasetIniData initData = DatasetIniReader.ParseIniFile(fileToImport + ".ini");
