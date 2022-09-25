@@ -78,10 +78,16 @@ namespace UnityVolumeRendering
             // Downlaod binaries zip
             using (var client = new WebClient())
             {
-                string downloadURL = "https://sourceforge.net/projects/simpleitk/files/SimpleITK/1.2.4/CSharp/SimpleITK-1.2.4-CSharp-win64-x64.zip/download";
+#if UNITY_EDITOR_WIN
+                string downloadURL = "https://github.com/SimpleITK/SimpleITK/releases/download/v2.2.0/SimpleITK-2.2.0-CSharp-win64-x64.zip";
+#elif UNITY_EDITOR_LINUX
+                string downloadURL = "https://github.com/SimpleITK/SimpleITK/releases/download/v2.2.0/SimpleITK-2.2.0-CSharp-linux.zip";
+#else
+                string downloadURL = "https://github.com/SimpleITK/SimpleITK/releases/download/v2.2.0/SimpleITK-2.2.0-CSharp-macosx-10.9-anycpu.zip";
+#endif
                 client.DownloadFile(downloadURL, zipPath);
 
-                EditorUtility.DisplayProgressBar("Downloading SimpleITK", "Downloading SimpleITK binaries.", 70);
+                EditorUtility.DisplayProgressBar("Downloading SimpleITK", "Extracting SimpleITK.", 70);
 
                 if (!File.Exists(zipPath))
                 {

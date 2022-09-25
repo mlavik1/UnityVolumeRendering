@@ -23,7 +23,6 @@ namespace UnityVolumeRendering
             bool showDownscalePrompt = EditorGUILayout.Toggle("Show downscale prompt", EditorPrefs.GetBool("DownscaleDatasetPrompt"));
             EditorPrefs.SetBool("DownscaleDatasetPrompt", showDownscalePrompt);
 
-#if UNITY_EDITOR_WIN
             EditorGUILayout.Space();
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("SimpleITK", headerStyle);
@@ -46,7 +45,6 @@ namespace UnityVolumeRendering
                     SimpleITKManager.EnableSITK(false);
                 }
             }
-#endif
         }
     }
 }

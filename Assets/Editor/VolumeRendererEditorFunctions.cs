@@ -88,7 +88,6 @@ namespace UnityVolumeRendering
             }
         }
 
-#if UNITY_EDITOR_WIN
         [MenuItem("Volume Rendering/Load dataset/Load NRRD dataset")]
         static void ShowNRRDDatasetImporter()
         {
@@ -122,9 +121,7 @@ namespace UnityVolumeRendering
                 Debug.LogError("File doesn't exist: " + file);
             }
         }
-#endif
 
-#if UNITY_EDITOR_WIN
         [MenuItem("Volume Rendering/Load dataset/Load NIFTI dataset")]
         static void ShowNIFTIDatasetImporter()
         {
@@ -158,7 +155,6 @@ namespace UnityVolumeRendering
                 Debug.LogError("File doesn't exist: " + file);
             }
         }
-#endif
 
         [MenuItem("Volume Rendering/Load dataset/Load PARCHG dataset")]
         static void ShowParDatasetImporter()
