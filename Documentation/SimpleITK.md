@@ -1,7 +1,5 @@
 # SimpleITK
 
-**NOTE: The SimpleITK importers currently only work on Windows!**
-
 SimpleITK is a library that supports a wide range for formats, such as:
 - DICOM (with JPEG compression)
 - NRRD
@@ -22,4 +20,6 @@ This will automatically download the SimpleITK binaries, and enable support for 
 
 ## Supported platforms
 
-Currently the SimpleITK integration only works on Windows, because the SimpleITK C# wrapper only has distributed binaries for Windows and no other platforms. However, SimpleITK is a cross platform library. To use it on other platforms you could probably try building [the official C# wrapper](https://github.com/SimpleITK/SimpleITK/tree/master/Wrapping/CSharp) for that platform, or manually download the SimpleITK binaries for that platform and create your own C# wrapper. However, I'll look into distributing binaries for at least Linux (which is what I use as a daily driver).
+Currently the SimpleITK integration supports Windows, Linux and MacOS. To use it on other platforms you could probably try building [the official C# wrapper](https://github.com/SimpleITK/SimpleITK/tree/master/Wrapping/CSharp) for that platform, or manually download the SimpleITK binaries for that platform and create your own C# wrapper. However, I'll look into distributing binaries for at least Linux (which is what I use as a daily driver).
+
+Note: If you wish to enable SimpleITK, you currently need to create the build on the same platform as your target platform. If you wish to create a Linux build on Windows, you would need to manually download the SimpleITK Linux binaries before you build.
