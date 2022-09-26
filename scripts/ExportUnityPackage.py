@@ -26,8 +26,10 @@ for asset in assets:
     dest_asset = os.path.join(export_project_path, "Assets", "UnityVolumeRendering", asset)
     copy_filedir(asset, dest_asset)
 
-command_string = "\"{unity_path}\" -batchmode -nographics -projectPath -silent-crashes {project_path} -exportPackage {assets} UnityVolumeRendering.unitypackage -quit".format(unity_path=unity_path, project_path=export_project_path, assets="Assets")
+command_string = "\"{unity_path}\" -projectPath {project_path} -exportPackage Assets UnityVolumeRendering.unitypackage -batchmode -nographics -silent-crashes -quit".format(unity_path=unity_path, project_path=export_project_path)
 print(command_string)
 os.system(command_string)
+
+shutil.copy(os.path.join(export_project_path, "UnityVolumeRendering.unitypackage"), "UnityVolumeRendering.unitypackage")
 
 shutil.rmtree(export_project_path)
