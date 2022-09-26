@@ -28,7 +28,7 @@ namespace UnityVolumeRendering
             EditorGUILayout.LabelField("SimpleITK", headerStyle);
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("SimpleITK is a library that adds support for JPEG-compressed DICOM, as well as NRRD and NIFTI formats.\n" +
-                "Enabling it will start a download of ca 100MBs of binaries. It currently only works on Windows (Linux is WIP)", EditorStyles.wordWrappedLabel);
+                "Enabling it will start a download of ca 100MBs of binaries. Supported platforms: Windows, Linux, MacOS.", EditorStyles.wordWrappedLabel);
 
             if (!SimpleITKManager.IsSITKEnabled())
             {
