@@ -73,7 +73,7 @@
 #define CROSS_SECTION_TYPE_BOX_INCL 2 
 #define CROSS_SECTION_TYPE_BOX_EXCL 3
             float4x4 _CrossSectionMatrices[8];
-            int _CrossSectionTypes[8];
+            float _CrossSectionTypes[8];
             int _NumCrossSections;
 #endif
 
@@ -226,11 +226,11 @@
 #if CROSS_SECTION_ON
                 // Move the reference in the middle of the mesh, like the pivot
                 float4 pos = float4(currPos - float3(0.5f, 0.5f, 0.5f), 1.0f);
-                
+
                 bool clipped = false;
                 for (int i = 0; i < _NumCrossSections && !clipped; ++i)
                 {
-                    const int type = _CrossSectionTypes[i];
+                    const int type = (int)_CrossSectionTypes[i];
                     const float4x4 mat = _CrossSectionMatrices[i];
 
                     // Convert from model space to plane's vector space

@@ -16,35 +16,24 @@ namespace UnityVolumeRendering
     [ExecuteInEditMode]
     public class CrossSectionManager : MonoBehaviour
     {
+        private const int MAX_CROSS_SECTIONS = 8;
+
         /// <summary>
         /// Volume dataset to cross section.
         /// </summary>
         private VolumeRenderedObject targetObject;
         private List<CrossSectionObject> crossSectionObjects = new List<CrossSectionObject>();
-        private List<Matrix4x4> crossSectionMatrices = new List<Matrix4x4>();
-        private List<float> crossSectionTypes = new List<float>();
+        private Matrix4x4[] crossSectionMatrices = new Matrix4x4[MAX_CROSS_SECTIONS];
+        private float[] crossSectionTypes = new float[MAX_CROSS_SECTIONS];
 
         public void AddCrossSectionObject(CrossSectionObject crossSectionObject)
         {
             crossSectionObjects.Add(crossSectionObject);
-            ClearDataArrays();
         }
 
         public void RemoveCrossSectionObject(CrossSectionObject crossSectionObject)
         {
             crossSectionObjects.Remove(crossSectionObject);
-            ClearDataArrays();
-        }
-
-        private void ClearDataArrays()
-        {
-            crossSectionMatrices.Clear();
-            crossSectionTypes.Clear();
-            foreach (CrossSectionObject crossSectionObject in crossSectionObjects)
-            {
-                crossSectionMatrices.Add(crossSectionObject.GetMatrix());
-                crossSectionTypes.Add((int)crossSectionObject.GetCrossSectionType());
-            }
         }
 
         private void Awake()
@@ -61,7 +50,7 @@ namespace UnityVolumeRendering
 
             if (crossSectionObjects.Count > 0)
             {
-                int numCrossSections = System.Math.Min(crossSectionObjects.Count, 8);
+                int numCrossSections = System.Math.Min(crossSectionObjects.Count, MAX_CROSS_SECTIONS);
 
                 for (int i = 0; i < numCrossSections; i++)
                 {

@@ -12,6 +12,7 @@ namespace UnityVolumeRendering
         /// <summary>
         /// Volume dataset to cross section.
         /// </summary>
+        [SerializeField]
         private VolumeRenderedObject targetObject;
 
         private void OnEnable()
