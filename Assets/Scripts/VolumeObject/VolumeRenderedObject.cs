@@ -33,6 +33,8 @@ namespace UnityVolumeRendering
         [SerializeField, HideInInspector]
         private bool dvrBackward = false;
 
+        private CrossSectionManager crossSectionManager;
+
         public SlicingPlane CreateSlicingPlane()
         {
             GameObject sliceRenderingPlane = GameObject.Instantiate(Resources.Load<GameObject>("SlicingPlane"));
@@ -89,6 +91,15 @@ namespace UnityVolumeRendering
         public LightSource GetLightSource()
         {
             return lightSource;
+        }
+
+        public CrossSectionManager GetCrossSectionManager()
+        {
+            if (crossSectionManager == null)
+                crossSectionManager = GetComponent<CrossSectionManager>();
+            if (crossSectionManager == null)
+                crossSectionManager = gameObject.AddComponent<CrossSectionManager>();
+            return crossSectionManager;
         }
 
         public void SetLightingEnabled(bool enable)

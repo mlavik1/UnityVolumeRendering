@@ -23,7 +23,7 @@
             CGPROGRAM
             #pragma multi_compile MODE_DVR MODE_MIP MODE_SURF
             #pragma multi_compile __ TF2D_ON
-            #pragma multi_compile __ CUTOUT_PLANE CUTOUT_BOX_INCL CUTOUT_BOX_EXCL
+            #pragma multi_compile __ CROSS_SECTION_ON
             #pragma multi_compile __ LIGHTING_ON
             #pragma multi_compile DEPTHWRITE_ON DEPTHWRITE_OFF
             #pragma multi_compile __ DVR_BACKWARD_ON
@@ -33,8 +33,6 @@
             #pragma fragment frag
 
             #include "UnityCG.cginc"
-
-            #define CUTOUT_ON CUTOUT_PLANE || CUTOUT_BOX_INCL || CUTOUT_BOX_EXCL
 
             #define AMBIENT_LIGHTING_FACTOR 0.5
             #define JITTER_FACTOR 5.0
@@ -70,8 +68,13 @@
             float _MinVal;
             float _MaxVal;
 
-#if CUTOUT_ON
-            float4x4 _CrossSectionMatrix;
+#if CROSS_SECTION_ON
+#define CROSS_SECTION_TYPE_PLANE 1 
+#define CROSS_SECTION_TYPE_BOX_INCL 2 
+#define CROSS_SECTION_TYPE_BOX_EXCL 3
+            float4x4 _CrossSectionMatrices[8];
+            int _CrossSectionTypes[8];
+            int _NumCrossSections;
 #endif
 
             struct RayInfo
@@ -220,20 +223,34 @@
 
             bool IsCutout(float3 currPos)
             {
-#if CUTOUT_ON
+#if CROSS_SECTION_ON
                 // Move the reference in the middle of the mesh, like the pivot
-                float3 pos = currPos - float3(0.5f, 0.5f, 0.5f);
-
-                // Convert from model space to plane's vector space
-                float3 planeSpacePos = mul(_CrossSectionMatrix, float4(pos, 1.0f));
+                float4 pos = float4(currPos - float3(0.5f, 0.5f, 0.5f), 1.0f);
                 
+                bool clipped = false;
+                for (int i = 0; i < _NumCrossSections && !clipped; ++i)
+                {
+                    const int type = _CrossSectionTypes[i];
+                    const float4x4 mat = _CrossSectionMatrices[i];
+
+                    // Convert from model space to plane's vector space
+                    float3 planeSpacePos = mul(mat, pos);
+                    if (type == CROSS_SECTION_TYPE_PLANE)
+                        clipped = planeSpacePos.z > 0.0f;
+                    else if(type == CROSS_SECTION_TYPE_BOX_INCL)
+                        clipped = !(planeSpacePos.x >= -0.5f && planeSpacePos.x <= 0.5f && planeSpacePos.y >= -0.5f && planeSpacePos.y <= 0.5f && planeSpacePos.z >= -0.5f && planeSpacePos.z <= 0.5f);
+                    else if(type == CROSS_SECTION_TYPE_BOX_EXCL)
+                        clipped = planeSpacePos.x >= -0.5f && planeSpacePos.x <= 0.5f && planeSpacePos.y >= -0.5f && planeSpacePos.y <= 0.5f && planeSpacePos.z >= -0.5f && planeSpacePos.z <= 0.5f;
+                }
+                return clipped;
+                /*
     #if CUTOUT_PLANE
                 return planeSpacePos.z > 0.0f;
     #elif CUTOUT_BOX_INCL
                 return !(planeSpacePos.x >= -0.5f && planeSpacePos.x <= 0.5f && planeSpacePos.y >= -0.5f && planeSpacePos.y <= 0.5f && planeSpacePos.z >= -0.5f && planeSpacePos.z <= 0.5f);
     #elif CUTOUT_BOX_EXCL
                 return planeSpacePos.x >= -0.5f && planeSpacePos.x <= 0.5f && planeSpacePos.y >= -0.5f && planeSpacePos.y <= 0.5f && planeSpacePos.z >= -0.5f && planeSpacePos.z <= 0.5f;
-    #endif
+    #endif*/
 #else
                 return false;
 #endif
@@ -279,7 +296,7 @@
                     const float3 currPos = lerp(ray.startPos, ray.endPos, t);
 
                     // Perform slice culling (cross section plane)
-#ifdef CUTOUT_ON
+#ifdef CROSS_SECTION_ON
                     if(IsCutout(currPos))
                     	continue;
 #endif
@@ -359,7 +376,7 @@
                     const float t = iStep * raymarchInfo.numStepsRecip;
                     const float3 currPos = lerp(ray.startPos, ray.endPos, t);
                     
-#ifdef CUTOUT_ON
+#ifdef CROSS_SECTION_ON
                     if (IsCutout(currPos))
                         continue;
 #endif
@@ -399,7 +416,7 @@
                     const float t = iStep * raymarchInfo.numStepsRecip;
                     const float3 currPos = lerp(ray.startPos, ray.endPos, t);
                     
-#ifdef CUTOUT_ON
+#ifdef CROSS_SECTION_ON
                     if (IsCutout(currPos))
                         continue;
 #endif

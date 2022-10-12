@@ -7,28 +7,44 @@ namespace UnityVolumeRendering
     /// Used for cutting a model (cross section view).
     /// </summary>
     [ExecuteInEditMode]
-    public class CrossSectionPlane : MonoBehaviour
+    public class CrossSectionPlane : MonoBehaviour, CrossSectionObject
     {
         /// <summary>
         /// Volume dataset to cross section.
         /// </summary>
-        public VolumeRenderedObject targetObject;
+        private VolumeRenderedObject targetObject;
+
+        private void OnEnable()
+        {
+            if (targetObject != null)
+                targetObject.GetCrossSectionManager().AddCrossSectionObject(this);
+        }
 
         private void OnDisable()
         {
             if (targetObject != null)
-                targetObject.meshRenderer.sharedMaterial.DisableKeyword("CUTOUT_PLANE");
+                targetObject.GetCrossSectionManager().RemoveCrossSectionObject(this);
         }
 
-        private void Update()
+        public void SetTargetObject(VolumeRenderedObject target)
         {
-            if (targetObject == null)
-                return;
+            if (this.enabled && targetObject != null)
+                targetObject.GetCrossSectionManager().RemoveCrossSectionObject(this);
+            
+            targetObject = target;
 
-            Material mat = targetObject.meshRenderer.sharedMaterial;
+            if (this.enabled && targetObject != null)
+                targetObject.GetCrossSectionManager().AddCrossSectionObject(this);
+        }
 
-            mat.EnableKeyword("CUTOUT_PLANE");
-            mat.SetMatrix("_CrossSectionMatrix", transform.worldToLocalMatrix * targetObject.transform.localToWorldMatrix);
+        public CrossSectionType GetCrossSectionType()
+        {
+            return CrossSectionType.Plane;
+        }
+
+        public Matrix4x4 GetMatrix()
+        {
+            return transform.worldToLocalMatrix * targetObject.transform.localToWorldMatrix;
         }
     }
 }
