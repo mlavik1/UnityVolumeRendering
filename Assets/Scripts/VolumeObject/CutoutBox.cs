@@ -12,34 +12,56 @@ namespace UnityVolumeRendering
     /// Used for cutting a model (cutout view).
     /// </summary>
     [ExecuteInEditMode]
-    public class CutoutBox : MonoBehaviour
+    public class CutoutBox : MonoBehaviour, CrossSectionObject
     {
         /// <summary>
-        /// Volume dataset to cut.
+        /// Volume dataset to cross section.
         /// </summary>
-        public VolumeRenderedObject targetObject;
+        [SerializeField]
+        private VolumeRenderedObject targetObject;
 
         public CutoutType cutoutType = CutoutType.Exclusive;
+
+
+        private void OnEnable()
+        {
+            if (targetObject != null)
+                targetObject.GetCrossSectionManager().AddCrossSectionObject(this);
+        }
 
         private void OnDisable()
         {
             if (targetObject != null)
+                targetObject.GetCrossSectionManager().RemoveCrossSectionObject(this);
+        }
+
+        public void SetTargetObject(VolumeRenderedObject target)
+        {
+            if (this.enabled && targetObject != null)
+                targetObject.GetCrossSectionManager().RemoveCrossSectionObject(this);
+            
+            targetObject = target;
+
+            if (this.enabled && targetObject != null)
+                targetObject.GetCrossSectionManager().AddCrossSectionObject(this);
+        }
+
+        public CrossSectionType GetCrossSectionType()
+        {
+            switch (cutoutType)
             {
-                targetObject.meshRenderer.sharedMaterial.DisableKeyword("CUTOUT_BOX_INCL");
-                targetObject.meshRenderer.sharedMaterial.DisableKeyword("CUTOUT_BOX_EXCL");
+                case CutoutType.Inclusive:
+                    return CrossSectionType.BoxInclusive;
+                case CutoutType.Exclusive:
+                    return CrossSectionType.BoxExclusive;
+                default:
+                    throw new System.NotImplementedException();
             }
         }
 
-        private void Update()
+        public Matrix4x4 GetMatrix()
         {
-            if (targetObject == null)
-                return;
-
-            Material mat = targetObject.meshRenderer.sharedMaterial;
-
-            mat.DisableKeyword(cutoutType == CutoutType.Inclusive ? "CUTOUT_BOX_EXCL" : "CUTOUT_BOX_INCL");
-            mat.EnableKeyword(cutoutType == CutoutType.Exclusive ? "CUTOUT_BOX_EXCL" : "CUTOUT_BOX_INCL");
-            mat.SetMatrix("_CrossSectionMatrix", transform.worldToLocalMatrix * targetObject.transform.localToWorldMatrix);
+            return transform.worldToLocalMatrix * targetObject.transform.localToWorldMatrix;
         }
     }
 }

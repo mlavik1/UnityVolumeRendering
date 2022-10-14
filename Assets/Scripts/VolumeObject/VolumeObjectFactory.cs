@@ -56,7 +56,7 @@ namespace UnityVolumeRendering
             GameObject quad = GameObject.Instantiate((GameObject)Resources.Load("CrossSectionPlane"));
             quad.transform.rotation = Quaternion.Euler(270.0f, 0.0f, 0.0f);
             CrossSectionPlane csplane = quad.gameObject.GetComponent<CrossSectionPlane>();
-            csplane.targetObject = volobj;
+            csplane.SetTargetObject(volobj);
             quad.transform.position = volobj.transform.position;
 
 #if UNITY_EDITOR
@@ -69,7 +69,7 @@ namespace UnityVolumeRendering
             GameObject obj = GameObject.Instantiate((GameObject)Resources.Load("CutoutBox"));
             obj.transform.rotation = Quaternion.Euler(270.0f, 0.0f, 0.0f);
             CutoutBox cbox = obj.gameObject.GetComponent<CutoutBox>();
-            cbox.targetObject = volobj;
+            cbox.SetTargetObject(volobj);
             obj.transform.position = volobj.transform.position;
 
 #if UNITY_EDITOR
