@@ -32,6 +32,8 @@ namespace UnityVolumeRendering
         private bool rayTerminationEnabled = true;
         [SerializeField, HideInInspector]
         private bool dvrBackward = false;
+        [SerializeField, HideInInspector]
+        private bool cubicInterpolationEnabled = false;
 
         private CrossSectionManager crossSectionManager;
 
@@ -164,6 +166,20 @@ namespace UnityVolumeRendering
             }
         }
 
+        public bool GetCubicInterpolationEnabled()
+        {
+            return cubicInterpolationEnabled;
+        }
+
+        public void SetCubicInterpolationEnabled(bool enable)
+        {
+            if (enable != cubicInterpolationEnabled)
+            {
+                cubicInterpolationEnabled = enable;
+                UpdateMaterialProperties();
+            }
+        }
+
         public void SetTransferFunction(TransferFunction tf)
         {
             this.transferFunction = tf;
@@ -223,24 +239,23 @@ namespace UnityVolumeRendering
 
             meshRenderer.sharedMaterial.SetFloat("_MinVal", visibilityWindow.x);
             meshRenderer.sharedMaterial.SetFloat("_MaxVal", visibilityWindow.y);
+            meshRenderer.sharedMaterial.SetVector("_TextureSize", new Vector3(dataset.dimX, dataset.dimY, dataset.dimZ));
 
             if (rayTerminationEnabled)
-            {
                 meshRenderer.sharedMaterial.EnableKeyword("RAY_TERMINATE_ON");
-            }
             else
-            {
                 meshRenderer.sharedMaterial.DisableKeyword("RAY_TERMINATE_ON");
-            }
 
             if (dvrBackward)
-            {
                 meshRenderer.sharedMaterial.EnableKeyword("DVR_BACKWARD_ON");
-            }
             else
-            {
                 meshRenderer.sharedMaterial.DisableKeyword("DVR_BACKWARD_ON");
-            }
+
+            if(cubicInterpolationEnabled)
+                meshRenderer.sharedMaterial.EnableKeyword("CUBIC_INTERPOLATION_ON");
+            else
+                meshRenderer.sharedMaterial.DisableKeyword("CUBIC_INTERPOLATION_ON");
+
         }
 
         private void Start()

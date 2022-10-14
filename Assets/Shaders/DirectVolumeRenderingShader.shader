@@ -29,10 +29,12 @@
             #pragma multi_compile __ DVR_BACKWARD_ON
             #pragma multi_compile __ RAY_TERMINATE_ON
             #pragma multi_compile __ USE_MAIN_LIGHT
+            #pragma multi_compile __ CUBIC_INTERPOLATION_ON
             #pragma vertex vert
             #pragma fragment frag
 
             #include "UnityCG.cginc"
+            #include "TricubicSampling.cginc"
 
             #define AMBIENT_LIGHTING_FACTOR 0.5
             #define JITTER_FACTOR 5.0
@@ -67,6 +69,7 @@
 
             float _MinVal;
             float _MaxVal;
+            float3 _TextureSize;
 
 #if CROSS_SECTION_ON
 #define CROSS_SECTION_TYPE_PLANE 1 
@@ -174,13 +177,21 @@
             // Gets the density at the specified position
             float getDensity(float3 pos)
             {
+#if CUBIC_INTERPOLATION_ON
+                return interpolateTricubicFast(_DataTex, float3(pos.x, pos.y, pos.z), _TextureSize);
+#else
                 return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f));
+#endif
             }
 
             // Gets the gradient at the specified position
             float3 getGradient(float3 pos)
             {
+#if CUBIC_INTERPOLATION_ON
+                return interpolateTricubicFast(_GradientTex, float3(pos.x, pos.y, pos.z), _TextureSize).rgb;
+#else
                 return tex3Dlod(_GradientTex, float4(pos.x, pos.y, pos.z, 0.0f)).rgb;
+#endif
             }
 
             // Get the light direction (using main light or view direction, based on setting)
