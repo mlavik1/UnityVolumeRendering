@@ -8,7 +8,7 @@ namespace UnityVolumeRendering
     {
         private bool tfSettings = true;
         private bool lightSettings = true;
-        private bool otherSettings = false;
+        private bool otherSettings = true;
 
         public override void OnInspectorGUI()
         {
@@ -64,14 +64,14 @@ namespace UnityVolumeRendering
                 }
             }
 
-            // Other settings for direct volume rendering
-            if (volrendObj.GetRenderMode() == RenderMode.DirectVolumeRendering)
+            // Other settings
+            GUILayout.Space(10);
+            otherSettings = EditorGUILayout.Foldout(otherSettings, "Other Settings");
+            if (otherSettings)
             {
-                GUILayout.Space(10);
-                otherSettings = EditorGUILayout.Foldout(otherSettings, "Other Settings");
-                if (otherSettings)
+                if (volrendObj.GetRenderMode() == RenderMode.DirectVolumeRendering)
                 {
-                    // Temporary back-to-front rendering option
+                    // Back-to-front rendering option
                     volrendObj.SetDVRBackwardEnabled(GUILayout.Toggle(volrendObj.GetDVRBackwardEnabled(), "Enable Back-to-Front Direct Volume Rendering"));
 
                     // Early ray termination for Front-to-back DVR
@@ -80,6 +80,8 @@ namespace UnityVolumeRendering
                         volrendObj.SetRayTerminationEnabled(GUILayout.Toggle(volrendObj.GetRayTerminationEnabled(), "Enable early ray termination"));
                     }
                 }
+
+                volrendObj.SetCubicInterpolationEnabled(GUILayout.Toggle(volrendObj.GetCubicInterpolationEnabled(), "Enable cubic interpolation (better quality)"));
             }
         }
     }
