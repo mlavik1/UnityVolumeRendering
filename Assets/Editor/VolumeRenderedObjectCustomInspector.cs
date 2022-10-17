@@ -8,7 +8,7 @@ namespace UnityVolumeRendering
     {
         private bool tfSettings = true;
         private bool lightSettings = true;
-        private bool otherSettings = false;
+        private bool otherSettings = true;
 
         public override void OnInspectorGUI()
         {
