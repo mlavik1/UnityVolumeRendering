@@ -21,7 +21,7 @@ namespace UnityVolumeRendering
                 return null;
             }
             int numDimensions = niftiFile.Header.dim[0];
-            if (numDimensions != 3)
+            if (numDimensions > 3)
             {
                 Debug.LogError($"Unsupported dimension. Expected 3-dimensional dataset, but got {numDimensions}.");
                 return null;
