@@ -92,7 +92,7 @@ namespace UnityVolumeRendering
                         #if UVR_USE_SIMPLEITK
                         return typeof(SimpleITKImageFileImporter);
                         #else
-                        return null;
+                        return typeof(NiftiImporter);
                         #endif
                     }
                 default:

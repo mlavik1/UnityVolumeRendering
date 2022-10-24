@@ -119,6 +119,25 @@ namespace Nifti.NET
                 Data = (T[])Data
             };
         }
+
+        public float[] ToSingleArray()
+        {
+            Type type = this.Data.GetType().GetElementType();
+            if (type == typeof(float))
+                return this.Data as float[];
+            else if(type == typeof(double))
+                return Array.ConvertAll<double, float>(this.Data as double[], Convert.ToSingle);
+            else if(type == typeof(int))
+                return Array.ConvertAll<int, float>(this.Data as int[], Convert.ToSingle);
+            else if(type == typeof(uint))
+                return Array.ConvertAll<uint, float>(this.Data as uint[], Convert.ToSingle);
+            else if(type == typeof(short))
+                return Array.ConvertAll<short, float>(this.Data as short[], Convert.ToSingle);
+            else if(type == typeof(ushort))
+                return Array.ConvertAll<ushort, float>(this.Data as ushort[], Convert.ToSingle);
+            else
+                return null;
+        }
     }
 
     /// <summary>
