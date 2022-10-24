@@ -125,16 +125,6 @@ namespace UnityVolumeRendering
         [MenuItem("Volume Rendering/Load dataset/Load NIFTI dataset")]
         static void ShowNIFTIDatasetImporter()
         {
-            if (!SimpleITKManager.IsSITKEnabled())
-            {
-                if (EditorUtility.DisplayDialog("Missing SimpleITK", "You need to download SimpleITK to load NRRD datasets from the import settings menu.\n" +
-                    "Do you want to open the import settings menu?", "Yes", "No"))
-                {
-                    ImportSettingsEditorWindow.ShowWindow();
-                }
-                return;
-            }
-
             string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nii)", "DataFiles", "");
             if (File.Exists(file))
             {

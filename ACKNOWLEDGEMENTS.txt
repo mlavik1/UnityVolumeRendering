@@ -6,6 +6,17 @@ http://opendicom.sourceforge.net/index.html
 
 Copyright (C) 2006-2007  Albert Gnandt
 
+(a modified version of openDICOM.net is included in this repository)
+
+
+nifti.NET
+released under MIT.
+https://github.com/plwp/Nifti.NET
+
+Copyright (c) 2019 Patrick Prendergast
+
+(a modified version of nifti.NET is included in this repository)
+
 
 SimpleITK
 released under Apache License 2.0
