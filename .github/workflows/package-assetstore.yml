@@ -3,6 +3,7 @@ name: Package for Unity Asset Store
 on:
   release:
     types: [created]
+  workflow_dispatch:
 
 jobs:
   package-unity-2019-4:
