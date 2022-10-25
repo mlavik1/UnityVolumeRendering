@@ -5,7 +5,7 @@ Have any questions? Create an issue or [contact me on Mastodon](https://fosstodo
 
 I also have [a tutorial video that shows how to use the project](https://www.youtube.com/watch?v=1pIvmhXPh0w)
 
-![alt tag](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Screenshots/front.jpg)
+![alt tag](Screenshots/front.jpg)
 
 # Requirements:
 - Unity 2018 1.5 or newer (should also work with some older versions, but I haven't tested)
