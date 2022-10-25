@@ -1,0 +1,57 @@
+name: Package for Unity Asset Store
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  package-unity-2019-4:
+    runs-on: ubuntu-latest
+    container:
+      image: unityci/editor:ubuntu-2019.4.40f1-base-1.0.1
+    steps:
+    - uses: actions/checkout@v1
+      with: 
+        submodules: true
+    - name: Get dependencies
+      run: |
+        apt update
+        apt install -y pandoc texlive-latex-base texlive-fonts-recommended texlive-extra-utils texlive-latex-extra
+    - name: Package
+      run: |
+        chmod a+x scripts/ci/activate-license.sh
+        ./scripts/ci/activate-license.sh
+        echo "Packaging..."
+        python scripts/ExportUnityPackage.py /opt/unity/Editor/Unity -assetstore -nodisplay
+      shell: bash
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE_BASE64 }}
+    - uses: actions/upload-artifact@v3
+      with:
+        name: EasyVolumeRenderer.unitypackage
+        path: EasyVolumeRenderer.unitypackage
+  package-unity-2021-3:
+    runs-on: ubuntu-latest
+    container:
+      image: unityci/editor:ubuntu-2021.3.9f1-base-1.0.1
+    steps:
+    - uses: actions/checkout@v1
+      with: 
+        submodules: true
+    - name: Get dependencies
+      run: |
+        apt update
+        apt install -y pandoc texlive-latex-base texlive-fonts-recommended texlive-extra-utils texlive-latex-extra
+    - name: Package
+      run: |
+        chmod a+x scripts/ci/activate-license.sh
+        ./scripts/ci/activate-license.sh
+        echo "Packaging..."
+        python scripts/ExportUnityPackage.py /opt/unity/Editor/Unity -assetstore -nodisplay
+      shell: bash
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE_BASE64 }}
+    - uses: actions/upload-artifact@v3
+      with:
+        name: EasyVolumeRenderer.unitypackage
+        path: EasyVolumeRenderer.unitypackage
