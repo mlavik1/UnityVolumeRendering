@@ -174,7 +174,7 @@ namespace UnityVolumeRendering
             {
                 cols = new Color[data.Length];
             }
-            catch (OutOfMemoryException ex)
+            catch (OutOfMemoryException)
             {
                 cols = null;
             }

@@ -159,22 +159,16 @@ namespace UnityVolumeRendering
             {
                 case DataContentFormat.Int8:
                     return 1;
-                    break;
                 case DataContentFormat.Uint8:
                     return 1;
-                    break;
                 case DataContentFormat.Int16:
                     return 2;
-                    break;
                 case DataContentFormat.Uint16:
                     return 2;
-                    break;
                 case DataContentFormat.Int32:
                     return 4;
-                    break;
                 case DataContentFormat.Uint32:
                     return 4;
-                    break;
             }
             throw new NotImplementedException();
         }
