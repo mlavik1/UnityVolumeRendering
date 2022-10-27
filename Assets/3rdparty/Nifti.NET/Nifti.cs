@@ -148,7 +148,7 @@ namespace Nifti.NET
     {
         public new T[] Data { get { return ((Nifti)this).Data as T[]; } set { ((Nifti)this).Data = value; } }
 
-        public new T this[params int[] idx]
+        public T this[params int[] idx]
         {
             get { return Data[DataIndexFor(idx)]; }
             set { Data[DataIndexFor(idx)] = value; }
