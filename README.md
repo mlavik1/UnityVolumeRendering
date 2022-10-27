@@ -13,8 +13,8 @@ I also have [a tutorial video that shows how to use the project](https://www.you
 # How to use sample scene
 - Open "TestScene.unity"
 - Click "Volume Rendering" in the menu bar
-- Select "Load Asset"
-- Pick a file in the "DataFiles" folder (I recommend vismale.dat)
+- Select "Load Raw dataset" (or something else, if you already have a dataset you want to import)
+- Pick a file in the "DataFiles" folder (I recommend VisMale.raw)
 - Click the "import"-button
 
 # Step-by-step instructions
@@ -47,8 +47,6 @@ You can move the model like any other GameObject. Simply select it in the scene 
 
 Select the model and find the "Volume Render Object" in the inspector.
 
-<img src="Screenshots/component-inspector.png" width="200px">
-
 Here you can change the "Render mode":
 
 <img src="Screenshots/rendermode.png" width="200px">
@@ -61,6 +59,14 @@ There are 3 render modes:
 - Direct Volume Rendering (using transfer functions)
 - Maximum Intensity Projection (shows the maximum density)
 - Isosurface Rendering
+
+There are also some other settings that you can adjust:
+- "Enable lighting": Enable lighting calculations during volume rendering.
+- Enable back-to-front direct volume rendering: Will raymarch the dataset back-to-front (towards camera). You normally *don't* want this.
+- Enable early ray termination: Optimisation (you usually want this on). Requires the above setting to be disabled.
+- Enable cubic interpolation: Use cubic interpolation of the 3D volume texture and gradient texture.
+
+<img src="Screenshots/volume-inspector-settings.jpg" width="300px">
 
 ****
 
@@ -78,16 +84,22 @@ These can also be used with direct volume rendering mode.
 
 <img src="Screenshots/isosurface.gif" width="500px">
 
+# Importing DICOM and NRRD
+
+If you're on Windows or Linux, I recommend [enabling the SimpleITK importer](Documentation/SimpleITK.md), which is a requirement for JPEG2000 compressed DICOM and NRRD.
+
 # (VR) performance
 
 Since VR requires two cameras to render each frame, you can expect worse performance. However, you can improve the FPS in two ways:
-- Open _DirectVolumeRenderingShader.shader_ and reduce the value of _NUM_STEPS_ inthe  _frag_dvr_ function. This will sacrifice quality for performance.
+- Open _DirectVolumeRenderingShader.shader_ and reduce the value of _MAX_NUM_STEPS_ in the  _frag_dvr_, _frag_mip_ and _frag_surf_ functions. This will sacrifice quality for performance.
 - Disable the DEPTHWRITE_ON shader variant. You can do this from code, or just remove the line "#pragma multi_compile DEPTHWRITE_ON DEPTHWRITE_OFF" in _DirectVolumeRenderingShader.shader_. Note: this will remove depth writing, so you won't be able to intersect multiple datasets.
+- Make sure "Enable cubic interpolation" is checked on the volume object's inspector.
+
+Your bottleneck will most likely be the pixel/fragment shader (where we do raymarching), so it might be possible to get better performance by enabling [DLSS](https://docs.unity3d.com/Manual/deep-learning-super-sampling.html). This requires HDRP, which this project currently does not officially support (might need to do some upgrading).
 
 # How to use in your own project
 - Create an instance of an importer (Directly, or indirectly using the `ImporterFactory`):<br>
 `IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.NRRD);`
-(alternatively, use the _DICOMImporter_)
 - Call the Import()-function, which returns a Dataset:<br>
 `VolumeDataset dataset = importer.Import(file);`
 - Use _VolumeObjectFactory_ to create an object from the dataset:<br> 
