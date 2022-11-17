@@ -73,6 +73,9 @@
             float _MaxVal;
             float3 _TextureSize;
 
+            // For clipping in any direction
+            float4 _ClipDimMin, _ClipDimMax;
+
 #if CROSS_SECTION_ON
 #define CROSS_SECTION_TYPE_PLANE 1 
 #define CROSS_SECTION_TYPE_BOX_INCL 2 
@@ -319,6 +322,11 @@
 
                     // Apply visibility window
                     if (density < _MinVal || density > _MaxVal) continue;
+
+                    // cut with clip dims
+                    if (currPos.x < _ClipDimMin.x || currPos.x > _ClipDimMax.x) continue;
+                    if (currPos.y < _ClipDimMin.y || currPos.y > _ClipDimMax.y) continue;
+                    if (currPos.z < _ClipDimMin.z || currPos.z > _ClipDimMax.z) continue;
 
                     // Calculate gradient (needed for lighting and 2D transfer functions)
 #if defined(TF2D_ON) || defined(LIGHTING_ON)
