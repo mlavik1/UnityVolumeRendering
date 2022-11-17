@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: DirectVolumeRenderingMaterial
-  m_Shader: {fileID: 4800000, guid: a8ce2343c9eb4ad42970cff15e48cd5f, type: 3}
+  m_Shader: {fileID: 4800000, guid: f9df7f8cb5dda3a48a945ab37d6b0d83, type: 3}
   m_ShaderKeywords: MODE_DVR TF2D_ON _MODE_DVR _MODE_MIP
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
