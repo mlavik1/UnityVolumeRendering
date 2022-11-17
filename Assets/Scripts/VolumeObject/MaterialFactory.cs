@@ -6,7 +6,7 @@ namespace UnityVolumeRendering
     {
         public static Material CreateMaterialDVR(VolumeDataset dataset)
         {
-            Shader shader = Shader.Find("VolumeRendering/DirectVolumeRenderingClipShader");
+            Shader shader = Shader.Find("VolumeRendering/DirectVolumeRenderingShader");
             Material material = new Material(shader);
 
             const int noiseDimX = 512;
