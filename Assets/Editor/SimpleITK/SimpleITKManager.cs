@@ -21,15 +21,22 @@ namespace UnityVolumeRendering
 
         public static bool IsSITKEnabled()
         {
-            BuildTarget target = EditorUserBuildSettings.activeBuildTarget;
-            BuildTargetGroup group = BuildPipeline.GetBuildTargetGroup(target);
-
-            HashSet<string> defines = new HashSet<string>(PlayerSettings.GetScriptingDefineSymbolsForGroup(group).Split(';'));
+            HashSet<string> defines = new HashSet<string>(PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone).Split(';'));
             return defines.Contains(SimpleITKDefinition);
         }
 
         public static void EnableSITK(bool enable)
         {
+            BuildTarget activeTarget = EditorUserBuildSettings.activeBuildTarget;
+            BuildTargetGroup activeGroup = BuildPipeline.GetBuildTargetGroup(activeTarget);
+            if (enable && activeGroup != BuildTargetGroup.Standalone
+                && !EditorUtility.DisplayDialog("Build target does not support SimpleITK.",
+                $"SimpleITK is only supported in standalone builds and editor, and will not work on your selected build target ({activeTarget.ToString()}).\n"
+                + "Enable SimpleITK for standalone (Windows, Linux, MacOS) and editor?", "Yes", "No"))
+            {
+                return;
+            }
+
             if (!HasDownloadedBinaries())
             {
                 EditorUtility.DisplayDialog("Missing SimpleITK binaries", "You need to download the SimpleITK binaries before you can enable SimpleITK.", "Ok");
