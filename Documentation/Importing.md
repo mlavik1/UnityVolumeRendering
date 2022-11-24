@@ -53,9 +53,9 @@ Possible parameters to _ImporterFactory.CreateImageFileImporter_:
 
 The available importer implementations are:
 - _ParDatasetImporter_: For VASP/PARCHG.
-- SimpleITKImageFileImporter: For NRRD and NIFTI. Currently only works on Windows.
+- SimpleITKImageFileImporter: For NRRD and NIFTI. Works on Windows and Linux (and hopefully MacOS too).
 
-For more information about NRRD and NIFTI support, see the page about [SimpleITK](SimpleITK.md).
+For more information about NRRD support, see the page about [SimpleITK](SimpleITK.md).
 
 ## Image sequence importer
 
