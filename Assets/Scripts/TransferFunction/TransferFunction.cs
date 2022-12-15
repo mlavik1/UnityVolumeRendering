@@ -98,6 +98,12 @@ namespace UnityVolumeRendering
             texture.Apply();
         }
 
+        public Color GetColour(float x)
+        {
+            int index = Mathf.RoundToInt(x * TEXTURE_WIDTH);
+            return tfCols[index];
+        }
+
         private void CreateTexture()
         {
             TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RGBAHalf) ? TextureFormat.RGBAHalf : TextureFormat.RGBAFloat;
