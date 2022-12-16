@@ -10,6 +10,12 @@ namespace UnityVolumeRendering
         BoxExclusive = 3
     }
 
+    public struct CrossSectionData
+    {
+        public CrossSectionType type;
+        public Matrix4x4 matrix;
+    }
+
     /// <summary>
     /// Manager for all cross section objects (planes and boxes).
     /// </summary>
@@ -25,7 +31,13 @@ namespace UnityVolumeRendering
         private List<CrossSectionObject> crossSectionObjects = new List<CrossSectionObject>();
         private Matrix4x4[] crossSectionMatrices = new Matrix4x4[MAX_CROSS_SECTIONS];
         private float[] crossSectionTypes = new float[MAX_CROSS_SECTIONS];
+        private CrossSectionData[] crossSectionData = new CrossSectionData[MAX_CROSS_SECTIONS];
 
+        public CrossSectionData[] GetCrossSectionData()
+        {
+            return crossSectionData;
+        }
+        
         public void AddCrossSectionObject(CrossSectionObject crossSectionObject)
         {
             crossSectionObjects.Add(crossSectionObject);
@@ -57,6 +69,7 @@ namespace UnityVolumeRendering
                     CrossSectionObject crossSectionObject = crossSectionObjects[i];
                     crossSectionMatrices[i] = crossSectionObject.GetMatrix();
                     crossSectionTypes[i] = (int)crossSectionObject.GetCrossSectionType();
+                    crossSectionData[i] = new CrossSectionData() { type = crossSectionObjects[i].GetCrossSectionType(), matrix = crossSectionMatrices[i] };
                 }
 
                 mat.EnableKeyword("CROSS_SECTION_ON");

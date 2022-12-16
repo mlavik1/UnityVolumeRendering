@@ -45,6 +45,11 @@ namespace UnityVolumeRendering
             {
                 EditSliceGUI.ShowWindow(GameObject.FindObjectOfType<SlicingPlane>());
             }
+            
+            if (GUILayout.Button("Show distance measure tool"))
+            {
+                DistanceMeasureTool.ShowWindow();
+            }
 
             GUILayout.EndVertical();
         }
