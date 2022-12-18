@@ -112,7 +112,6 @@ namespace UnityVolumeRendering
                     if (mouseIsDown)
                         measurePoint = relMousePosNormalised;
                     Vector3 worldSpacePoint = GetWorldPosition(measurePoint, planeObj);
-                    Debug.DrawLine(worldSpacePoint, worldSpacePoint + Vector3.forward, Color.red, 5.0f);
                     float value = GetValueAtPosition(measurePoint, planeObj);
                     GUI.Label(new Rect(0.0f, bgRect.y + bgRect.height + 0.0f, 150.0f, 30.0f), $"Value: {value.ToString()}");
                 }
