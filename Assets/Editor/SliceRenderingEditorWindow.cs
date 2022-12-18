@@ -6,9 +6,24 @@ namespace UnityVolumeRendering
     public class SliceRenderingEditorWindow : EditorWindow
     {
         private int selectedPlaneIndex = -1;
-        private bool handleMouseMovement = false;
+        private bool mouseIsDown = false;
+        private Vector2 mousePressPosition;
         private Vector2 prevMousePos;
+        private Vector2 measurePoint;
 
+        private Texture moveIconTexture;
+        private Texture inspectIconTexture;
+        private Texture measureIconTexture;
+
+        private InputMode inputMode;
+
+        private enum InputMode
+        {
+            Move,
+            Inspect,
+            Measure
+        }
+        
         public static void ShowWindow()
         {
             SliceRenderingEditorWindow wnd = new SliceRenderingEditorWindow();
@@ -19,9 +34,18 @@ namespace UnityVolumeRendering
         private void SetInitialPosition()
         {
             Rect rect = this.position;
-            rect.width = 800.0f;
-            rect.height = 500.0f;
+            rect.width = 600.0f;
+            rect.height = 600.0f;
             this.position = rect;
+        }
+
+        private void Awake()
+        {
+            Debug.Log("Awake");
+            moveIconTexture = Resources.Load<Texture>("Icons/MoveIcon");
+            inspectIconTexture = Resources.Load<Texture>("Icons/InspectIcon");
+            measureIconTexture = Resources.Load<Texture>("Icons/MeasureIcon");
+            Debug.Log(inspectIconTexture);
         }
 
         private void OnFocus()
@@ -41,36 +65,87 @@ namespace UnityVolumeRendering
             if (spawnedPlanes.Length > 0)
                 selectedPlaneIndex = selectedPlaneIndex % spawnedPlanes.Length;
 
-            float bgWidth = Mathf.Min(this.position.width - 20.0f, (this.position.height - 50.0f) * 2.0f);
-            Rect bgRect = new Rect(0.0f, 0.0f, bgWidth, bgWidth * 0.5f);
+            if (GUI.Button(new Rect(0.0f, 0.0f, 40.0f, 40.0f), new GUIContent(moveIconTexture, "Move slice")))
+                inputMode = InputMode.Move;
+            if (GUI.Button(new Rect(40.0f, 0.0f, 40.0f, 40.0f), new GUIContent(inspectIconTexture, "Inspect values")))
+                inputMode = InputMode.Inspect;
+            if (GUI.Button(new Rect(80.0f, 0.0f, 40.0f, 40.0f), new GUIContent(measureIconTexture, "Inspect values")))
+                inputMode = InputMode.Measure;
+
+            Rect bgRect = new Rect(0.0f, 40.0f, 0.0f, 0.0f);
+            
             if (selectedPlaneIndex != -1 && spawnedPlanes.Length > 0)
             {
                 SlicingPlane planeObj = spawnedPlanes[System.Math.Min(selectedPlaneIndex, spawnedPlanes.Length - 1)];
+                Vector3 planeScale = planeObj.transform.lossyScale;
+                
+                float heightWidthRatio = planeScale.z / planeScale.x;
+                float bgWidth = Mathf.Min(this.position.width - 20.0f, (this.position.height - 50.0f) * 2.0f);
+                float bgHeight = Mathf.Min(bgWidth, this.position.height - 150.0f);
+                bgWidth = bgHeight / heightWidthRatio;
+                bgRect = new Rect(0.0f, 40.0f, bgWidth, bgHeight);
+                
                 // Draw the slice view
                 Material mat = planeObj.GetComponent<MeshRenderer>().sharedMaterial;
                 Graphics.DrawTexture(bgRect, mat.GetTexture("_DataTex"), mat);
 
+                Vector2 relMousePos = Event.current.mousePosition - bgRect.position;
+                Vector2 relMousePosNormalised = relMousePos / new Vector2(bgRect.width, bgRect.height);
+
                 // Handle mouse click inside slice view (activates moving the plane with mouse)
                 if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && bgRect.Contains(new Vector2(Event.current.mousePosition.x, Event.current.mousePosition.y)))
                 {
-                    handleMouseMovement = true;
-                    prevMousePos = Event.current.mousePosition;
+                    mouseIsDown = true;
+                    mousePressPosition = prevMousePos = relMousePosNormalised;
                 }
-
-                // Handle mouse movement (move the plane)
-                if (handleMouseMovement)
+                
+                // Move the plane.
+                if (inputMode == InputMode.Move && mouseIsDown)
                 {
-                    Vector2 mouseOffset = (Event.current.mousePosition - prevMousePos) / new Vector2(bgRect.width, bgRect.height);
+                    Vector2 mouseOffset = relMousePosNormalised - prevMousePos;
                     if (Mathf.Abs(mouseOffset.y) > 0.00001f)
-                    {
                         planeObj.transform.Translate(Vector3.up * mouseOffset.y);
-                        prevMousePos = Event.current.mousePosition;
-                    }
                 }
-            }
+                // Show value at mouse position.
+                else if (inputMode == InputMode.Inspect)
+                {
+                    if (mouseIsDown)
+                        measurePoint = relMousePosNormalised;
+                    Vector3 worldSpacePoint = GetWorldPosition(measurePoint, planeObj);
+                    Debug.DrawLine(worldSpacePoint, worldSpacePoint + Vector3.forward, Color.red, 5.0f);
+                    float value = GetValueAtPosition(measurePoint, planeObj);
+                    GUI.Label(new Rect(0.0f, bgRect.y + bgRect.height + 0.0f, 150.0f, 30.0f), $"Value: {value.ToString()}");
+                }
+                // Measure distance between two points.
+                else if (inputMode == InputMode.Measure)
+                {
+                    if (mouseIsDown)
+                        measurePoint = relMousePosNormalised;
+                    
+                    Vector2 start = mousePressPosition;
+                    Vector2 end = measurePoint;
+                    Vector3 startWorld = GetWorldPosition(start, planeObj);
+                    Vector3 endWorld = GetWorldPosition(end, planeObj);
+                    
+                    // Display distance
+                    float distance = Vector3.Distance(startWorld, endWorld);
+                    GUI.Label(new Rect(0.0f, bgRect.y + bgRect.height + 0.0f, 150.0f, 30.0f), $"Distance: {distance.ToString()}");
+                    
+                    // Draw line
+                    Vector2 lineStart = start * new Vector2(bgRect.width, bgRect.height) + new Vector2(bgRect.x, bgRect.y);
+                    Vector2 lineEnd = end * new Vector2(bgRect.width, bgRect.height) + new Vector2(bgRect.x, bgRect.y);
+                    Handles.BeginGUI();
+                    Handles.color = Color.red;
+                    Handles.DrawLine(lineStart, lineEnd);
+                    Handles.EndGUI();
+                }
 
-            if (Event.current.type == EventType.MouseUp)
-                handleMouseMovement = false;
+                if (mouseIsDown)
+                    prevMousePos = relMousePosNormalised;
+            
+                if (Event.current.type == EventType.MouseUp)
+                    mouseIsDown = false;
+            }
 
             // Show buttons for changing the active plane
             if (spawnedPlanes.Length > 0)
@@ -114,5 +189,24 @@ namespace UnityVolumeRendering
         {
             Repaint();
         }
+
+        private Vector3 GetWorldPosition(Vector2 relativeMousePosition, SlicingPlane slicingPlane)
+        {
+            Vector3 planePoint = new Vector3(0.5f - relativeMousePosition.x, 0.0f, relativeMousePosition.y - 0.5f) * 10.0f;
+            return slicingPlane.transform.TransformPoint(planePoint);
+        }
+
+        private float GetValueAtPosition(Vector2 relativeMousePosition, SlicingPlane slicingPlane)
+        {
+            Vector3 worldSpacePosition = GetWorldPosition(relativeMousePosition, slicingPlane);
+            Vector3 objSpacePoint = slicingPlane.transform.parent.InverseTransformPoint(worldSpacePosition);
+            VolumeDataset dataset = slicingPlane.targetObject.dataset;
+            // Convert to texture coordinates.
+            Vector3 uvw = objSpacePoint + Vector3.one * 0.5f;
+            // Look up data value at current position.
+            Vector3Int index = new Vector3Int((int)(uvw.x * dataset.dimX), (int)(uvw.y * dataset.dimY), (int)(uvw.z * dataset.dimZ));
+            return dataset.GetData(index.x, index.y, index.z);
+        }
+
     }
 }

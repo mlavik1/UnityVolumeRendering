@@ -5,6 +5,7 @@ namespace UnityVolumeRendering
     [ExecuteInEditMode]
     public class SlicingPlane : MonoBehaviour
     {
+        public VolumeRenderedObject targetObject;
         private MeshRenderer meshRenderer;
 
         private void Start()
