@@ -36,6 +36,13 @@ namespace UnityVolumeRendering
         private bool cubicInterpolationEnabled = false;
 
         private CrossSectionManager crossSectionManager;
+        
+        [SerializeField, HideInInspector]
+        private Vector2 ClipDim1 = new Vector2(0.0f, 1.0f);
+        [SerializeField, HideInInspector]
+        private Vector2 ClipDim2 = new Vector2(0.0f, 1.0f);
+        [SerializeField, HideInInspector]
+        private Vector2 ClipDim3 = new Vector2(0.0f, 1.0f);
 
         public SlicingPlane CreateSlicingPlane()
         {
@@ -137,6 +144,47 @@ namespace UnityVolumeRendering
         {
             return visibilityWindow;
         }
+
+        public void SetClipDims(Vector2 dim1, Vector2 dim2, Vector2 dim3)
+        {
+            bool different = false;
+
+            if (dim1 != ClipDim1)
+            {
+                ClipDim1 = dim1;
+                different = true;
+            }
+            if (dim2 != ClipDim2)
+            {
+                ClipDim2 = dim2;
+                different = true;
+            }
+            if (dim3 != ClipDim3)
+            {
+                ClipDim3 = dim3;
+                different = true;
+            }
+            if (different)
+            {
+                UpdateMaterialProperties();
+            }
+        }
+
+        public Vector2 GetClipDim1()
+        {
+            return ClipDim1;
+        }
+
+        public Vector2 GetClipDim2()
+        {
+            return ClipDim2;
+        }
+
+        public Vector2 GetClipDim3()
+        {
+            return ClipDim3;
+        }
+
 
         public bool GetRayTerminationEnabled()
         {
@@ -240,6 +288,9 @@ namespace UnityVolumeRendering
             meshRenderer.sharedMaterial.SetFloat("_MinVal", visibilityWindow.x);
             meshRenderer.sharedMaterial.SetFloat("_MaxVal", visibilityWindow.y);
             meshRenderer.sharedMaterial.SetVector("_TextureSize", new Vector3(dataset.dimX, dataset.dimY, dataset.dimZ));
+
+            meshRenderer.sharedMaterial.SetVector("_ClipDimMin", new Vector4(ClipDim1.x, ClipDim2.x, ClipDim3.x, 1f));
+            meshRenderer.sharedMaterial.SetVector("_ClipDimMax", new Vector4(ClipDim1.y, ClipDim2.y, ClipDim3.y, 1f));
 
             if (rayTerminationEnabled)
                 meshRenderer.sharedMaterial.EnableKeyword("RAY_TERMINATE_ON");

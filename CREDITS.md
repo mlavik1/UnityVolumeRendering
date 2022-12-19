@@ -14,5 +14,7 @@ GUI for modifying slicing plane positiomn/orientation.
 Memory leak fix
 - [Vahid](https://github.com/vahpy)
 Texture downscaling, optimisation.
+- [Walter](https://github.com/smallvalthoss)
+Adding xyz Dimensional Clipping to DirectVolumeRendering.
 
 Feel free to add yourself to this list when contributing to this project.

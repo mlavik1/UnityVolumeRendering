@@ -6,6 +6,7 @@ namespace UnityVolumeRendering
     [CustomEditor(typeof(VolumeRenderedObject))]
     public class VolumeRenderedObjectCustomInspector : Editor
     {
+        private bool clipSettings = false;
         private bool tfSettings = true;
         private bool lightSettings = true;
         private bool otherSettings = true;
@@ -19,6 +20,30 @@ namespace UnityVolumeRendering
             RenderMode newRenderMode = (RenderMode)EditorGUILayout.EnumPopup("Render mode", oldRenderMode);
             if (newRenderMode != oldRenderMode)
                 volrendObj.SetRenderMode(newRenderMode);
+
+            #region ClippingData
+            EditorGUILayout.Space();
+            clipSettings = EditorGUILayout.Foldout(clipSettings, "Clipping Settings");
+
+            if (clipSettings)
+            {
+                // Clip dim 1
+                Vector2 ClipDim1 = volrendObj.GetClipDim1();
+                EditorGUILayout.MinMaxSlider("Clipping Dimension x", ref ClipDim1.x, ref ClipDim1.y, 0.0f, 1.0f);
+
+                // Clip dim 2
+                Vector2 ClipDim2 = volrendObj.GetClipDim2();
+                EditorGUILayout.MinMaxSlider("Clipping Dimension y", ref ClipDim2.x, ref ClipDim2.y, 0.0f, 1.0f);
+
+                // Clip dim 3
+                Vector2 ClipDim3 = volrendObj.GetClipDim3();
+                EditorGUILayout.MinMaxSlider("Clipping Dimension y", ref ClipDim3.x, ref ClipDim3.y, 0.0f, 1.0f);
+
+                // setting clip dims
+                volrendObj.SetClipDims(ClipDim1, ClipDim2, ClipDim3);
+            }
+            #endregion EndClippingData
+
 
             // Visibility window
             Vector2 visibilityWindow = volrendObj.GetVisibilityWindow();
