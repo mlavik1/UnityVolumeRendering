@@ -121,11 +121,12 @@ namespace UnityVolumeRendering
                     
                     Vector2 start = mousePressPosition;
                     Vector2 end = measurePoint;
-                    Vector3 startWorld = GetWorldPosition(start, planeObj);
-                    Vector3 endWorld = GetWorldPosition(end, planeObj);
+                    // Convert to data coordinates
+                    Vector3 startDataPos = GetDataPosition(start, planeObj);
+                    Vector3 endDatapos = GetDataPosition(end, planeObj);
                     
                     // Display distance
-                    float distance = Vector3.Distance(startWorld, endWorld);
+                    float distance = Vector3.Distance(startDataPos, endDatapos);
                     GUI.Label(new Rect(0.0f, bgRect.y + bgRect.height + 0.0f, 150.0f, 30.0f), $"Distance: {distance.ToString()}");
                     
                     // Draw line
@@ -210,11 +211,20 @@ namespace UnityVolumeRendering
             Vector3 planePoint = new Vector3(0.5f - relativeMousePosition.x, 0.0f, relativeMousePosition.y - 0.5f) * 10.0f;
             return slicingPlane.transform.TransformPoint(planePoint);
         }
+        
+        private Vector3 GetDataPosition(Vector2 relativeMousePosition, SlicingPlane slicingPlane)
+        {
+            Vector3 worldSpacePosition = GetWorldPosition(relativeMousePosition, slicingPlane);
+            Vector3 objSpacePoint = slicingPlane.targetObject.transform.InverseTransformPoint(worldSpacePosition);
+            Vector3 uvw = objSpacePoint + Vector3.one * 0.5f;
+            VolumeDataset dataset = slicingPlane.targetObject.dataset;
+            return new Vector3(uvw.x * dataset.scaleX, uvw.y * dataset.scaleY,uvw.z * dataset.scaleZ);
+        }
 
         private float GetValueAtPosition(Vector2 relativeMousePosition, SlicingPlane slicingPlane)
         {
             Vector3 worldSpacePosition = GetWorldPosition(relativeMousePosition, slicingPlane);
-            Vector3 objSpacePoint = slicingPlane.transform.parent.InverseTransformPoint(worldSpacePosition);
+            Vector3 objSpacePoint = slicingPlane.targetObject.transform.InverseTransformPoint(worldSpacePosition);
             VolumeDataset dataset = slicingPlane.targetObject.dataset;
             // Convert to texture coordinates.
             Vector3 uvw = objSpacePoint + Vector3.one * 0.5f;
