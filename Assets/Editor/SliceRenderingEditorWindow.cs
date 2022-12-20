@@ -41,11 +41,9 @@ namespace UnityVolumeRendering
 
         private void Awake()
         {
-            Debug.Log("Awake");
             moveIconTexture = Resources.Load<Texture>("Icons/MoveIcon");
             inspectIconTexture = Resources.Load<Texture>("Icons/InspectIcon");
             measureIconTexture = Resources.Load<Texture>("Icons/MeasureIcon");
-            Debug.Log(inspectIconTexture);
         }
 
         private void OnFocus()
@@ -65,11 +63,11 @@ namespace UnityVolumeRendering
             if (spawnedPlanes.Length > 0)
                 selectedPlaneIndex = selectedPlaneIndex % spawnedPlanes.Length;
 
-            if (GUI.Button(new Rect(0.0f, 0.0f, 40.0f, 40.0f), new GUIContent(moveIconTexture, "Move slice")))
+            if (GUI.Toggle(new Rect(0.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Move, new GUIContent(moveIconTexture, "Move slice"), GUI.skin.button))
                 inputMode = InputMode.Move;
-            if (GUI.Button(new Rect(40.0f, 0.0f, 40.0f, 40.0f), new GUIContent(inspectIconTexture, "Inspect values")))
+            if (GUI.Toggle(new Rect(40.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Inspect, new GUIContent(inspectIconTexture, "Inspect values"), GUI.skin.button))
                 inputMode = InputMode.Inspect;
-            if (GUI.Button(new Rect(80.0f, 0.0f, 40.0f, 40.0f), new GUIContent(measureIconTexture, "Inspect values")))
+            if (GUI.Toggle(new Rect(80.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Measure, new GUIContent(measureIconTexture, "Inspect values"), GUI.skin.button))
                 inputMode = InputMode.Measure;
 
             Rect bgRect = new Rect(0.0f, 40.0f, 0.0f, 0.0f);
@@ -149,12 +147,14 @@ namespace UnityVolumeRendering
             // Show buttons for changing the active plane
             if (spawnedPlanes.Length > 0)
             {
-                if (GUI.Button(new Rect(0.0f, bgRect.y + bgRect.height + 20.0f, 70.0f, 30.0f), "previous\nplane"))
+                GUI.Label(new Rect(0.0f, bgRect.y + bgRect.height + 20.0f, 450.0f, 20.0f), "Select a plane (previous / next).");
+                
+                if (GUI.Button(new Rect(0.0f, bgRect.y + bgRect.height + 40.0f, 70.0f, 20.0f), "<"))
                 {
                     selectedPlaneIndex = (selectedPlaneIndex - 1) % spawnedPlanes.Length;
                     Selection.activeGameObject = spawnedPlanes[selectedPlaneIndex].gameObject;
                 }
-                if (GUI.Button(new Rect(90.0f, bgRect.y + bgRect.height + 20.0f, 70.0f, 30.0f), "next\nplane"))
+                if (GUI.Button(new Rect(90.0f, bgRect.y + bgRect.height + 40.0f, 70.0f, 20.0f), ">"))
                 {
                     selectedPlaneIndex = (selectedPlaneIndex + 1) % spawnedPlanes.Length;
                     Selection.activeGameObject = spawnedPlanes[selectedPlaneIndex].gameObject;
@@ -162,26 +162,42 @@ namespace UnityVolumeRendering
             }
 
             // Show button for adding new plane
-            if (GUI.Button(new Rect(180.0f, bgRect.y + bgRect.height + 20.0f, 70.0f, 30.0f), "add\nplane"))
+            VolumeRenderedObject volRend = FindObjectOfType<VolumeRenderedObject>();
+            if (volRend != null)
             {
-                VolumeRenderedObject volRend = FindObjectOfType<VolumeRenderedObject>();
-                if (volRend != null)
+                if (GUI.Button(new Rect(200.0f, bgRect.y + bgRect.height + 0.0f, 120.0f, 20.0f), "Create XY plane"))
                 {
                     selectedPlaneIndex = spawnedPlanes.Length;
                     volRend.CreateSlicingPlane();
                 }
+                else if (GUI.Button(new Rect(200.0f, bgRect.y + bgRect.height + 20.0f, 120.0f, 20.0f), "Create XZ plane"))
+                {
+                    selectedPlaneIndex = spawnedPlanes.Length;
+                    SlicingPlane plane = volRend.CreateSlicingPlane();
+                    plane.transform.localRotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
+                }
+                else if (GUI.Button(new Rect(200.0f, bgRect.y + bgRect.height + 40.0f, 120.0f, 20.0f), "Create ZY plane"))
+                {
+                    selectedPlaneIndex = spawnedPlanes.Length;
+                    SlicingPlane plane = volRend.CreateSlicingPlane();
+                    plane.transform.localRotation = Quaternion.Euler(0.0f, 0.0f, 90.0f);
+                }
             }
 
             // Show button for removing
-            if (spawnedPlanes.Length > 0 && GUI.Button(new Rect(270.0f, bgRect.y + bgRect.height + 20.0f, 70.0f, 30.0f), "remove\nplane"))
+            if (spawnedPlanes.Length > 0 && GUI.Button(new Rect(320.0f, bgRect.y + bgRect.height + 20.0f, 70.0f, 30.0f), "remove\nplane"))
             {
                 SlicingPlane planeToRemove = spawnedPlanes[selectedPlaneIndex];
                 GameObject.DestroyImmediate(planeToRemove.gameObject);
             }
 
             // Show hint
-            if (spawnedPlanes.Length > 0)
-                GUI.Label(new Rect(0.0f, bgRect.y + bgRect.height + 60.0f, 450.0f, 30.0f), "Move plane by left clicking in the above view and dragging the mouse,\n or simply move it in the object hierarchy.");
+            if (inputMode == InputMode.Move && spawnedPlanes.Length > 0)
+                GUI.Label(new Rect(0.0f, bgRect.y + bgRect.height + 70.0f, 450.0f, 30.0f), "Move plane by left clicking in the above view and dragging the mouse,\n or simply move it in the object hierarchy.");
+            else if (inputMode == InputMode.Inspect)
+                GUI.Label(new Rect(0.0f, bgRect.y + bgRect.height + 70.0f, 450.0f, 30.0f), "Click somewhere to display the data value at a location.");
+            else if (inputMode == InputMode.Measure)
+                GUI.Label(new Rect(0.0f, bgRect.y + bgRect.height + 70.0f, 450.0f, 30.0f), "Click and drag to measure the distance between two points.");
         }
 
         public void OnInspectorUpdate()
