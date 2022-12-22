@@ -68,7 +68,6 @@ namespace UnityVolumeRendering
             dataset.dimX = dimX;
             dataset.dimY = dimY;
             dataset.dimZ = dimZ;
-            dataset.scaleX = dataset.scaleY = dataset.scaleZ = 1.0f; // TODO: Allow setting spacing etc?
 
             // Skip header (if any)
             if (skipBytes > 0)
