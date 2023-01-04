@@ -52,7 +52,9 @@ namespace UnityVolumeRendering
             sliceMat.SetMatrix("_parentInverseMat", transform.worldToLocalMatrix);
             sliceMat.SetMatrix("_planeMat", Matrix4x4.TRS(sliceRenderingPlane.transform.position, sliceRenderingPlane.transform.rotation, transform.lossyScale)); // TODO: allow changing scale
 
-            return sliceRenderingPlane.GetComponent<SlicingPlane>();
+            SlicingPlane slicingPlaneComp = sliceRenderingPlane.GetComponent<SlicingPlane>();
+            slicingPlaneComp.targetObject = this;
+            return slicingPlaneComp;
         }
 
         public void SetRenderMode(RenderMode mode)

@@ -33,7 +33,6 @@ namespace UnityVolumeRendering
 
             Vector3 pixdim = new Vector3(niftiFile.Header.pixdim[1], niftiFile.Header.pixdim[2], niftiFile.Header.pixdim[3]);
             Vector3 size = new Vector3(dimX * pixdim.x, dimY * pixdim.y, dimZ * pixdim.z);
-            float maxSize = Mathf.Max(size.x, size.y, size.z);
 
             // Create dataset
             VolumeDataset volumeDataset = new VolumeDataset();
@@ -43,9 +42,9 @@ namespace UnityVolumeRendering
             volumeDataset.dimZ = dimZ;
             volumeDataset.datasetName = "test";
             volumeDataset.filePath = filePath;
-            volumeDataset.scaleX = size.x / maxSize;
-            volumeDataset.scaleY = size.y / maxSize;
-            volumeDataset.scaleZ = size.z / maxSize;
+            volumeDataset.scaleX = size.x;
+            volumeDataset.scaleY = size.y;
+            volumeDataset.scaleZ = size.z;
 
             volumeDataset.FixDimensions();
 

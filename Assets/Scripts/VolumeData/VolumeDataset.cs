@@ -20,7 +20,12 @@ namespace UnityVolumeRendering
         public int dimX, dimY, dimZ;
 
         [SerializeField]
-        public float scaleX = 0.0f, scaleY = 0.0f, scaleZ = 0.0f;
+        public float scaleX = 1.0f;
+        [SerializeField]
+        public float scaleY = 1.0f;
+        [SerializeField]
+        public float scaleZ = 1.0f;
+        
         public float volumeScale;
 
         [SerializeField]
