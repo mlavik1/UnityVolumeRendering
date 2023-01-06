@@ -122,7 +122,9 @@ namespace UnityVolumeRendering
 
         private Texture3D CreateTextureInternal()
         {
-            TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RHalf) ? TextureFormat.RHalf : TextureFormat.RFloat;
+            // DISABLE FOR VOLUME SERIALIZE TEST
+            //TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RHalf) ? TextureFormat.RHalf : TextureFormat.RFloat;
+            TextureFormat texformat = TextureFormat.RFloat;
             Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
             texture.wrapMode = TextureWrapMode.Clamp;
 
@@ -130,7 +132,7 @@ namespace UnityVolumeRendering
             float maxValue = GetMaxDataValue();
             float maxRange = maxValue - minValue;
 
-            bool isHalfFloat = texformat == TextureFormat.RHalf;
+            bool isHalfFloat = false;//texformat == TextureFormat.RHalf; // DISABLE FOR VOLUME SERIALIZE TEST
             try
             {
                 // Create a byte array for filling the texture. Store has half (16 bit) or single (32 bit) float values.
