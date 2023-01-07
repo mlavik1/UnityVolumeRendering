@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Unity.Collections;
 using UnityEngine;
 
 namespace UnityVolumeRendering
@@ -138,21 +139,22 @@ namespace UnityVolumeRendering
             bool isHalfFloat = texformat == TextureFormat.RHalf;
             try
             {
-                // Create a byte array for filling the texture. Store has half (16 bit) or single (32 bit) float values.
-                int sampleSize = isHalfFloat ? 2 : 4;
-                byte[] bytes = new byte[data.Length * sampleSize]; // This can cause OutOfMemoryException
-                for (int iData = 0; iData < data.Length; iData++)
+                if (isHalfFloat)
                 {
-                    float pixelValue = (float)(data[iData] - minValue) / maxRange;
-                    byte[] pixelBytes = isHalfFloat ? BitConverter.GetBytes(Mathf.FloatToHalf(pixelValue)) : BitConverter.GetBytes(pixelValue);
-
-                    Array.Copy(pixelBytes, 0, bytes, iData * sampleSize, sampleSize);
+                    NativeArray<ushort> pixelBytes = new NativeArray<ushort>(data.Length, Allocator.Temp);
+                    for (int iData = 0; iData < data.Length; iData++)
+                        pixelBytes[iData] = Mathf.FloatToHalf((float)(data[iData] - minValue) / maxRange);
+                    texture.SetPixelData(pixelBytes, 0);
                 }
-
-                texture.SetPixelData(bytes, 0);
+                else
+                {
+                    NativeArray<float> pixelBytes = new NativeArray<float>(data.Length, Allocator.Temp);
+                    for (int iData = 0; iData < data.Length; iData++)
+                        pixelBytes[iData] = (float)(data[iData] - minValue) / maxRange;
+                    texture.SetPixelData(pixelBytes, 0);
+                }
             }
-            
-            catch (OutOfMemoryException ex)
+            catch (OutOfMemoryException)
             {
                 Debug.LogWarning("Out of memory when creating texture. Using fallback method.");
                 for (int x = 0; x < dimX; x++)
