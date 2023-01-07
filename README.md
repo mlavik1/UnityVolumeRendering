@@ -127,6 +127,8 @@ Since VR requires two cameras to render each frame, you can expect worse perform
 
 Your bottleneck will most likely be the pixel/fragment shader (where we do raymarching), so it might be possible to get better performance by enabling [DLSS](https://docs.unity3d.com/Manual/deep-learning-super-sampling.html). This requires HDRP, which this project currently does not officially support (might need to do some upgrading).
 
+Also, some users have reporter having significantly lower performance with OpenXR mode, compared to OpenVR. It might we worth a try to switch between these.
+
 ## Can I use WebGL?
 Yes! But keep in mind that memory will be limited, so you might not be able to load very large datasets.
 
