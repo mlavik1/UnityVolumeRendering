@@ -106,7 +106,7 @@ If you're on Windows or Linux, I recommend [enabling the SimpleITK importer](Doc
 - Use _VolumeObjectFactory_ to create an object from the dataset:<br> 
 `VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);`
 
-See the [importer documentation](Documentation/Importing.md) for more detailed information.
+See the [importer documentation](Documentation/Scripting/Importing.md) for more detailed information.
 
 # FAQ (Frequently Asked Questions)
 - [Does this work in VR?](#does-this-work-in-vr)
@@ -114,6 +114,7 @@ See the [importer documentation](Documentation/Importing.md) for more detailed i
 - [Can I use WebGL?](#can-i-use-webgl)
 - [Is this project free to use?](#is-this-project-free-to-use)
 - [How can I make it look better?](#how-can-i-make-it-look-better)
+- [How can I raycast the scene to find an intersection?](#how-can-i-raycast-the-scene-to-find-an-intersection)
 - [I'm stuck! How can I get help?](#im-stuck-how-can-i-get-help)
 
 ## Does this work in VR?
@@ -145,6 +146,9 @@ Yes, it's free even for commercial projects. The license ([MIT](https://chooseal
 ## How can I make it look better?
 - Try [enabling cubic sampling](https://github.com/mlavik1/UnityVolumeRendering/pull/121#issuecomment-1281289885) in the inspector.
 - Try increasing the value of "MAX_NUM_STEPS" in the [DirectVolumeRenderingShader.shader](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Assets/Shaders/DirectVolumeRenderingShader.shader)
+
+## How can I raycast the scene to find an intersection?
+- See the [VolumeRaycasting documentation](Documentation/Scripting/VolumeRaycasting.md).
 
 ## I'm stuck! How can I get help?
 [Create an issue](https://github.com/mlavik1/UnityVolumeRendering/issues).
