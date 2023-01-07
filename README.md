@@ -1,7 +1,7 @@
 # UnityVolumeRendering
 A volume renderer, made in Unity3D.
 I have written a [tutorial explaining the basic implementation](https://matiaslavik.wordpress.com/2020/01/19/volume-rendering-in-unity/).
-Have any questions? Create an issue or [contact me on Mastodon](https://fosstodon.org/web/accounts/106931417271268077).
+Have any questions? Create an issue or [contact me on Mastodon](https://fosstodon.org/@unityvolrend).
 
 I also have [a tutorial video that shows how to use the project](https://www.youtube.com/watch?v=1pIvmhXPh0w)
 
@@ -152,7 +152,7 @@ Yes, it's free even for commercial projects. The license ([MIT](https://chooseal
 
 ## I'm stuck! How can I get help?
 [Create an issue](https://github.com/mlavik1/UnityVolumeRendering/issues).
-You can also reach me on [Mastodon](https://floss.social/).
+You can also reach me on [Mastodon](https://floss.social/@sigsegv).
 
 # Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute.
