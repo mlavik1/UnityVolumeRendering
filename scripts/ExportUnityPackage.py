@@ -32,7 +32,7 @@ if assetstore_package:
     with open('Third-Party Notices.txt', 'r') as original:
         third_party_contents = original.read()
     with open('Third-Party Notices.txt', 'w') as modified:
-        modified.write("nThis asset is governed by the Asset Store EULA; however, the following components are governed by the licenses indicated below:\n" + third_party_contents)
+        modified.write("This asset is governed by the Asset Store EULA; however, the following components are governed by the licenses indicated below:\n" + third_party_contents)
 
 if assetstore_package:
     assets = ["Assets", "DataFiles", "Third-Party Notices.txt", "MANUAL.pdf"]
