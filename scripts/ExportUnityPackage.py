@@ -29,10 +29,10 @@ if assetstore_package:
     os.system("pandoc README.md -o MANUAL.pdf")
 
 if assetstore_package:
-    with open("Third-Party Notices.txt", "r+") as f:
-        content = f.read()
-        f.seek(0, 0)
-        f.write(line.rstrip("\r\n") + "\n" + "This asset is governed by the Asset Store EULA; however, the following components are governed by the licenses indicated below:")
+    with open('Third-Party Notices.txt', 'r') as original:
+        third_party_contents = original.read()
+    with open('Third-Party Notices.txt', 'w') as modified:
+        modified.write("nThis asset is governed by the Asset Store EULA; however, the following components are governed by the licenses indicated below:\n" + third_party_contents)
 
 if assetstore_package:
     assets = ["Assets", "DataFiles", "Third-Party Notices.txt", "MANUAL.pdf"]
