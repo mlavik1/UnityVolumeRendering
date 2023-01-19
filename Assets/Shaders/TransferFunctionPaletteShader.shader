@@ -48,6 +48,10 @@
             {
                 float4 col = tex2D(_TFTex, float2(i.uv.x, 0.0f));
                 col.a = 1.0f;
+#if !UNITY_COLORSPACE_GAMMA
+#define INVERSA_GAMMA 0.4545454
+                col.rgb = pow(col.rgb, float3(INVERSA_GAMMA, INVERSA_GAMMA, INVERSA_GAMMA));
+#endif
                 
                 return col;
             }
