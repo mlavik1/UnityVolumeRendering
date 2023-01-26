@@ -29,9 +29,15 @@ if assetstore_package:
     os.system("pandoc README.md -o MANUAL.pdf")
 
 if assetstore_package:
-    assets = ["Assets", "DataFiles", "ACKNOWLEDGEMENTS.txt", "MANUAL.pdf"]
+    with open('Third-Party Notices.txt', 'r') as original:
+        third_party_contents = original.read()
+    with open('Third-Party Notices.txt', 'w') as modified:
+        modified.write("This asset is governed by the Asset Store EULA; however, the following components are governed by the licenses indicated below:\n" + third_party_contents)
+
+if assetstore_package:
+    assets = ["Assets", "DataFiles", "Third-Party Notices.txt", "MANUAL.pdf"]
 else:
-    assets = ["Assets", "DataFiles", "ACKNOWLEDGEMENTS.txt", "CREDITS.md", "LICENSE", "README.md"]
+    assets = ["Assets", "DataFiles", "Third-Party Notices.txt", "CREDITS.md", "LICENSE", "README.md"]
 
 for asset in assets:
     dest_asset = os.path.join(export_project_path, "Assets", plugin_folder_name, asset)

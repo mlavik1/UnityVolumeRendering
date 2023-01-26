@@ -89,7 +89,7 @@ namespace UnityVolumeRendering
 
                 for (int iY = 0; iY < TEXTURE_HEIGHT; iY++)
                 {
-                    tfCols[iX + iY * TEXTURE_WIDTH] = pixCol;
+                    tfCols[iX + iY * TEXTURE_WIDTH] = QualitySettings.activeColorSpace == ColorSpace.Linear ? pixCol.linear : pixCol;
                 }
             }
 
