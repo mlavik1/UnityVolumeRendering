@@ -1,4 +1,4 @@
-name: Package for Unity Asset Store
+name: Package for Release
 
 on:
   release:
