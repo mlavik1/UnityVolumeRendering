@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace UnityVolumeRendering
 {
@@ -16,5 +17,6 @@ namespace UnityVolumeRendering
     public interface IImageFileImporter
     {
         VolumeDataset Import(String filePath);
+        Task<VolumeDataset> ImportAsync(String filePath);
     }
 }

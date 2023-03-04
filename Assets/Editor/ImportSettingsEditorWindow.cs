@@ -25,6 +25,17 @@ namespace UnityVolumeRendering
 
             EditorGUILayout.Space();
             EditorGUILayout.Space();
+
+            EditorGUILayout.LabelField("Async loading", headerStyle);
+            EditorGUILayout.Space();
+
+            EditorGUILayout.LabelField("Use async loading to avoid freezes during loading? [Experimental]");
+            bool useAsync = EditorGUILayout.Toggle("Use async", EditorPrefs.GetBool("UseAsync"));
+            EditorPrefs.SetBool("UseAsync", useAsync);
+
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+
             EditorGUILayout.LabelField("SimpleITK", headerStyle);
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("SimpleITK is a library that adds support for JPEG-compressed DICOM, as well as NRRD and NIFTI formats.\n" +

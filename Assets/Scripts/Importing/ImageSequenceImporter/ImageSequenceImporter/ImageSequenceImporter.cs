@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace UnityVolumeRendering
 {
@@ -166,6 +167,50 @@ namespace UnityVolumeRendering
                 scaleY = (float)dimensions.y / (float)dimensions.x,
                 scaleZ = (float)dimensions.z / (float)dimensions.x
             };
+
+            return dataset;
+        }
+
+        public async Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> files)
+        {
+            Dictionary<string, ImageSequenceSeries> sequenceByFiletype = new Dictionary<string, ImageSequenceSeries>();
+
+            await Task.Run(() =>
+            {
+                foreach (string filePath in files)
+                {
+                    string fileExt = Path.GetExtension(filePath).ToLower();
+                    if (supportedImageTypes.Contains(fileExt))
+                    {
+                        if (!sequenceByFiletype.ContainsKey(fileExt))
+                            sequenceByFiletype[fileExt] = new ImageSequenceSeries();
+
+                        ImageSequenceFile imgSeqFile = new ImageSequenceFile();
+                        imgSeqFile.filePath = filePath;
+                        sequenceByFiletype[fileExt].files.Add(imgSeqFile);
+                    }
+                }
+            });
+            
+
+            if (sequenceByFiletype.Count == 0)
+                Debug.LogError("Found no image files of supported formats. Currently supported formats are: " + supportedImageTypes.ToString());
+
+            return sequenceByFiletype.Select(f => f.Value).ToList();
+        }
+
+        public async Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series)
+        {
+            List<string> imagePaths = null;
+
+            await Task.Run(() => { imagePaths = series.GetFiles().Select(f => f.GetFilePath()).ToList(); });
+
+            Vector3Int dimensions = GetVolumeDimensions(imagePaths);
+            int[] data = FillSequentialData(dimensions, imagePaths);
+
+            VolumeDataset dataset = FillVolumeDataset(data, dimensions);
+            dataset.FixDimensions();
+
 
             return dataset;
         }

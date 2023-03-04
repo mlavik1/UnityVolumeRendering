@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using System.Threading.Tasks;
 
 namespace UnityVolumeRendering
 {
@@ -344,6 +345,79 @@ namespace UnityVolumeRendering
                 }
             }
             dataGrid = data.ToArray();
+        }
+
+        public async Task<VolumeDataset> ImportAsync(string filePath)
+        {
+            this.filePath = filePath;
+            VolumeDataset dataFiller = new VolumeDataset(); //volume object then gets sent to VolumeObjectFactory
+
+            var extension = Path.GetExtension(filePath);
+            if (!File.Exists(filePath))
+            {
+                Debug.LogError("The file does not exist: " + filePath);
+                return null;
+            }
+
+            await Task.Run(() =>
+            {
+                
+
+                fileContentLines = File.ReadLines(filePath).Where(x => x.Trim(' ') != "").ToArray();
+                fileContentIndex = 0;
+
+                ReadSystemTitle();
+                ReadLatticeConstant();
+                ReadLatticeVectors();
+                GetVolume();
+                ReadAtomNames();
+                ReadAtomSum();
+                ReadCoordinateSystemType();
+                ReadCoordinates();
+                if (isDirect)
+                {
+                    cartesiancoordinatebasisCells = ToCartesian();
+                }
+
+                ReadDimensions();
+                dimTotal = dimArray[0] * dimArray[1] * dimArray[2];
+                nx = dimArray[0];
+                ny = dimArray[1];
+                nz = dimArray[2]; // dimensions 
+
+                CalculateDataLines();
+                ReadGrid();
+
+                dataFiller.datasetName = fileName;
+                dataFiller.filePath = filePath;
+                dataFiller.dimX = nx;
+                dataFiller.dimY = ny;
+                dataFiller.dimZ = nz;
+                dataFiller.volumeScale = (float)(1 / volumeScale);
+                dataFiller.data = new float[dimTotal];
+                volumeScaledData = new float[dimTotal];
+
+                for (int ix = 0; ix < nx; ix++)
+                {
+                    for (int iy = 0; iy < ny; iy++)
+                    {
+                        for (int iz = 0; iz < nz; iz++)
+                        {
+                            int itr = (iz * nx * ny) + (iy * nx) + ix;
+                            volumeScaledData[itr] = (float)dataGrid[itr] * (float)dataFiller.volumeScale * (float)0.036749309; //density * volumescale * e_units
+                        }
+                    }
+                }
+                for (int i = 0; i < dimTotal; i++)
+                {
+                    dataFiller.data[i] = dataGrid[i];
+                }
+
+                Debug.Log("Loaded dataset in range: " + dataFiller.GetMinDataValue() + "  -  " + dataFiller.GetMaxDataValue());
+
+            });
+           
+            return dataFiller;
         }
     }
 }

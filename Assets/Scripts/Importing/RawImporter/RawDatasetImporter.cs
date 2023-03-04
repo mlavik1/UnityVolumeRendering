@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace UnityVolumeRendering
@@ -90,7 +91,62 @@ namespace UnityVolumeRendering
 
             return dataset;
         }
+        public async Task<VolumeDataset> ImportAsync()
+        {
+            // Check that the file exists
+            if (!File.Exists(filePath))
+            {
+                Debug.LogError("The file does not exist: " + filePath);
+                return null;
+            }
+            FileStream fs = null;
+            BinaryReader reader = null;
 
+            await Task.Run(() => {
+                fs = new FileStream(filePath, FileMode.Open);
+                reader = new BinaryReader(fs);    
+            });
+
+            // Check that the dimension does not exceed the file size
+            long expectedFileSize = (long)(dimX * dimY * dimZ) * GetSampleFormatSize(contentFormat) + skipBytes;
+            if (fs.Length < expectedFileSize)
+            {
+                Debug.LogError($"The dimension({dimX}, {dimY}, {dimZ}) exceeds the file size. Expected file size is {expectedFileSize} bytes, while the actual file size is {fs.Length} bytes");
+                reader.Close();
+                fs.Close();
+                return null;
+            }
+
+            VolumeDataset dataset = new VolumeDataset();
+            dataset.datasetName = Path.GetFileName(filePath);
+            dataset.filePath = filePath;
+            dataset.dimX = dimX;
+            dataset.dimY = dimY;
+            dataset.dimZ = dimZ;
+
+            await Task.Run(() => {
+                // Skip header (if any)
+                if (skipBytes > 0)
+                    reader.ReadBytes(skipBytes);
+
+                int uDimension = dimX * dimY * dimZ;
+                dataset.data = new float[uDimension];
+
+                // Read the data/sample values
+                for (int i = 0; i < uDimension; i++)
+                {
+                    dataset.data[i] = (float)ReadDataValue(reader);
+                }
+                Debug.Log("Loaded dataset in range: " + dataset.GetMinDataValue() + "  -  " + dataset.GetMaxDataValue());
+
+                reader.Close();
+                fs.Close();
+
+                dataset.FixDimensions();
+            });
+
+            return dataset;
+        }
         private int ReadDataValue(BinaryReader reader)
         {
             switch (contentFormat)
