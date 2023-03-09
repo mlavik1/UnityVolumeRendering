@@ -1,4 +1,7 @@
-﻿using UnityEditor;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace UnityVolumeRendering
@@ -26,12 +29,32 @@ namespace UnityVolumeRendering
             EditorGUILayout.Space();
             EditorGUILayout.Space();
 
-            EditorGUILayout.LabelField("Async loading", headerStyle);
+            EditorGUILayout.LabelField("Async loading [Experimental]", headerStyle);
             EditorGUILayout.Space();
 
-            EditorGUILayout.LabelField("Use async loading to avoid freezes during loading? [Experimental]");
-            bool useAsync = EditorGUILayout.Toggle("Use async", EditorPrefs.GetBool("UseAsync"));
-            EditorPrefs.SetBool("UseAsync", useAsync);
+            EditorGUILayout.LabelField("Use async loading to avoid freezes during loading? (Image sequence (.jpg,.png) not supported)");
+
+            if (!AsyncManager.IsAsyncEnabled())
+            {
+                if (GUILayout.Button("Enable Async Loading"))
+                {
+                    AsyncManager.EnableAsync(true);
+                }
+            }
+            else
+            {
+                if (GUILayout.Button("Disable Async Loading"))
+                {
+                    AsyncManager.EnableAsync(false);
+                }
+            }
+
+            // Save project and recompile scripts
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+#if UNITY_2019_3_OR_NEWER
+            UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
+#endif
 
             EditorGUILayout.Space();
             EditorGUILayout.Space();

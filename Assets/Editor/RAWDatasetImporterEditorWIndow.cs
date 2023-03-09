@@ -65,6 +65,30 @@ namespace UnityVolumeRendering
 
             this.Close();
         }
+        private async void ImportDatasetAsync()
+        {
+            RawDatasetImporter importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, endianness, bytesToSkip);
+            VolumeDataset dataset = await importer.ImportAsync();
+
+            if (dataset != null)
+            {
+                if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
+                {
+                    if (EditorUtility.DisplayDialog("Optional DownScaling",
+                        $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
+                    {
+                        await dataset.DownScaleDataAsync();
+                    }
+                }
+                VolumeRenderedObject obj = await VolumeObjectFactory.CreateObjectAsync(dataset);
+            }
+            else
+            {
+                Debug.LogError("Failed to import datset");
+            }
+
+            this.Close();
+        }
 
         private void OnGUI()
         {
@@ -76,7 +100,13 @@ namespace UnityVolumeRendering
             endianness = (Endianness)EditorGUILayout.EnumPopup("Endianness", endianness);
 
             if (GUILayout.Button("Import"))
+            {
+#if USE_ASYNC_LOADING
+                ImportDatasetAsync();
+#else
                 ImportDataset();
+#endif
+            }
 
             if (GUILayout.Button("Cancel"))
                 this.Close();

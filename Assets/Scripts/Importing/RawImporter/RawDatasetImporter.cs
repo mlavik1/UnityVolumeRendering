@@ -93,6 +93,9 @@ namespace UnityVolumeRendering
         }
         public async Task<VolumeDataset> ImportAsync()
         {
+            VolumeDataset dataset = new VolumeDataset();
+
+
             // Check that the file exists
             if (!File.Exists(filePath))
             {
@@ -117,14 +120,14 @@ namespace UnityVolumeRendering
                 return null;
             }
 
-            VolumeDataset dataset = new VolumeDataset();
-            dataset.datasetName = Path.GetFileName(filePath);
-            dataset.filePath = filePath;
-            dataset.dimX = dimX;
-            dataset.dimY = dimY;
-            dataset.dimZ = dimZ;
-
             await Task.Run(() => {
+
+                dataset.datasetName = Path.GetFileName(filePath);
+                dataset.filePath = filePath;
+                dataset.dimX = dimX;
+                dataset.dimY = dimY;
+                dataset.dimZ = dimZ;
+
                 // Skip header (if any)
                 if (skipBytes > 0)
                     reader.ReadBytes(skipBytes);

@@ -4,6 +4,7 @@ using System.IO;
 using UnityEngine;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace UnityVolumeRendering
 {
@@ -170,6 +171,26 @@ namespace UnityVolumeRendering
 
             return dataset;
         }
+        private async Task<VolumeDataset> FillVolumeDatasetAsync(int[] data, Vector3Int dimensions)
+        {
+            VolumeDataset dataset = new VolumeDataset();
+            string name = Path.GetFileName(directoryPath);
+            dataset.name = name;
+
+            await Task.Run(() => {
+
+                dataset.datasetName = name;
+                dataset.data = Array.ConvertAll(data, new Converter<int, float>((int val) => { return Convert.ToSingle(val); }));
+                dataset.dimX = dimensions.x;
+                dataset.dimY = dimensions.y;
+                dataset.dimZ = dimensions.z;
+                dataset.scaleX = 1f; // Scale arbitrarily normalised around the x-axis 
+                dataset.scaleY = (float)dimensions.y / (float)dimensions.x;
+                dataset.scaleZ = (float)dimensions.z / (float)dimensions.x;
+            });
+          
+            return dataset;
+        }
 
         public async Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> files)
         {
@@ -202,16 +223,15 @@ namespace UnityVolumeRendering
         public async Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series)
         {
             List<string> imagePaths = null;
+            VolumeDataset dataset = null;
 
-            await Task.Run(() => { imagePaths = series.GetFiles().Select(f => f.GetFilePath()).ToList(); });
+            await Task.Run(() => {imagePaths = series.GetFiles().Select(f => f.GetFilePath()).ToList(); }); ;
 
             Vector3Int dimensions = GetVolumeDimensions(imagePaths);
-            int[] data = FillSequentialData(dimensions, imagePaths);
-
-            VolumeDataset dataset = FillVolumeDataset(data, dimensions);
+            int[] data = FillSequentialData(dimensions, imagePaths);        //Long
+            dataset = await FillVolumeDatasetAsync(data, dimensions);      
             dataset.FixDimensions();
-
-
+            
             return dataset;
         }
     }

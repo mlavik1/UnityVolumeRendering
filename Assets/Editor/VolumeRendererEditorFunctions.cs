@@ -31,10 +31,11 @@ namespace UnityVolumeRendering
         [MenuItem("Volume Rendering/Load dataset/Load DICOM")]
         static void ShowDICOMImporter()
         {
-            if (EditorPrefs.GetBool("UseAsync"))
-                DicomImportAsync();     
-            else
-                DicomImport();
+#if USE_ASYNC_LOADING
+            DicomImportAsync();
+#else
+            DicomImport();
+#endif
         }
         static void DicomImport()
         {
@@ -168,10 +169,11 @@ namespace UnityVolumeRendering
                 return;
             }
 
-            if (EditorPrefs.GetBool("UseAsync"))
-                ImportNRRDDatasetAsync();
-            else
-                ImportNRRDDataset();
+#if USE_ASYNC_LOADING
+            ImportNRRDDatasetAsync();
+#else
+            ImportNRRDDataset();
+#endif
         }
         static void ImportNRRDDataset()
         {
@@ -223,10 +225,11 @@ namespace UnityVolumeRendering
         [MenuItem("Volume Rendering/Load dataset/Load NIFTI dataset")]
         static void ShowNIFTIDatasetImporter()
         {
-            if (EditorPrefs.GetBool("UseAsync"))
-                ImportNIFTIDatasetAsync();
-            else
-                ImportNIFTIDataset();
+#if USE_ASYNC_LOADING
+            ImportNIFTIDatasetAsync();
+#else
+            ImportNIFTIDataset();
+#endif
         }
         static void ImportNIFTIDataset()
         {
@@ -278,11 +281,11 @@ namespace UnityVolumeRendering
         [MenuItem("Volume Rendering/Load dataset/Load PARCHG dataset")]
         static void ShowParDatasetImporter()
         {
-            if (EditorPrefs.GetBool("UseAsync"))
-                ImportParDatasetAsync();
-            else
-                ImportParDataset();
-
+#if USE_ASYNC_LOADING
+            ImportParDatasetAsync();
+#else
+            ImportParDataset();
+#endif
         }
         static void ImportParDataset()
         {
@@ -334,10 +337,11 @@ namespace UnityVolumeRendering
         [MenuItem("Volume Rendering/Load dataset/Load image sequence")]
         static void ShowSequenceImporter()
         {
-            if (EditorPrefs.GetBool("UseAsync"))
-                ImportSequenceAsync();
-            else
-                ImportSequence();
+#if USE_ASYNC_LOADING
+            ImportSequenceAsync();
+#else
+            ImportSequence();
+#endif
         }
         static void ImportSequence()
         {
@@ -395,7 +399,7 @@ namespace UnityVolumeRendering
                             if (EditorUtility.DisplayDialog("Optional DownScaling",
                                 $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
                             {
-                                dataset.DownScaleData();
+                                await dataset.DownScaleDataAsync();
                             }
                         }
                         await VolumeObjectFactory.CreateObjectAsync(dataset);

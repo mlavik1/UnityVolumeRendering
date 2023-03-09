@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 namespace UnityVolumeRendering
@@ -13,45 +14,36 @@ namespace UnityVolumeRendering
     /// </summary>
     public class RuntimeGUI : MonoBehaviour
     {
-        [SerializeField] bool _useAsyncLoading = false;
-
         private void OnGUI()
         {
             GUILayout.BeginVertical();
 
-            
-            // Show dataset import buttons
-            if(GUILayout.Button("Import RAW dataset"))
+             // Show dataset import buttons
+            if (GUILayout.Button("Import RAW dataset"))
             {
-                if (_useAsyncLoading)
-                {
-                    RuntimeFileBrowser.ShowOpenFileDialog(OnOpenRAWDatasetResultAsync, "DataFiles");
-                    Debug.Log("Loading the dataset. Hold on.");
-                }
-                else
-                    RuntimeFileBrowser.ShowOpenFileDialog(OnOpenRAWDatasetResult, "DataFiles");
+#if USE_ASYNC_LOADING
+                RuntimeFileBrowser.ShowOpenFileDialog(OnOpenRAWDatasetResultAsync, "DataFiles");
+#else
+                RuntimeFileBrowser.ShowOpenFileDialog(OnOpenRAWDatasetResult, "DataFiles");
+#endif
             }
 
             if(GUILayout.Button("Import PARCHG dataset"))
             {
-                if (_useAsyncLoading)
-                {
+#if USE_ASYNC_LOADING
                     RuntimeFileBrowser.ShowOpenFileDialog(OnOpenPARDatasetResultAsync, "DataFiles");
-                    Debug.Log("Loading the dataset. Hold on.");
-                }
-                else
+#else
                     RuntimeFileBrowser.ShowOpenFileDialog(OnOpenPARDatasetResult, "DataFiles");
+#endif
             }
 
             if (GUILayout.Button("Import DICOM dataset"))
             {
-                if (_useAsyncLoading)
-                {
-                    RuntimeFileBrowser.ShowOpenDirectoryDialog(OnOpenDICOMDatasetResultAsync);
-                    Debug.Log("Loading the dataset. Hold on.");
-                }
-                else
-                    RuntimeFileBrowser.ShowOpenDirectoryDialog(OnOpenDICOMDatasetResult);
+#if USE_ASYNC_LOADING
+                RuntimeFileBrowser.ShowOpenDirectoryDialog(OnOpenDICOMDatasetResultAsync);
+#else
+                RuntimeFileBrowser.ShowOpenDirectoryDialog(OnOpenDICOMDatasetResult);
+#endif
             }
 
             // Show button for opening the dataset editor (for changing the visualisation)
@@ -92,6 +84,8 @@ namespace UnityVolumeRendering
         {
             if (!result.cancelled)
             {
+                Debug.Log("Async dataset load. Hold on.");
+
                 DespawnAllDatasets();
                 string filePath = result.path;
                 IImageFileImporter parimporter = ImporterFactory.CreateImageFileImporter(ImageFileFormat.VASP);
@@ -135,6 +129,7 @@ namespace UnityVolumeRendering
         {
             if (!result.cancelled)
             {
+                Debug.Log("Async dataset load. Hold on.");
 
                 // We'll only allow one dataset at a time in the runtime GUI (for simplicity)
                 DespawnAllDatasets();
@@ -194,6 +189,8 @@ namespace UnityVolumeRendering
         {
             if (!result.cancelled)
             {
+                Debug.Log("Async dataset load. Hold on.");
+
                 // We'll only allow one dataset at a time in the runtime GUI (for simplicity)
                 DespawnAllDatasets();
 
