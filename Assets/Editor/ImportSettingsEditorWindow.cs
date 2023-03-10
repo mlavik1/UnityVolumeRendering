@@ -49,13 +49,6 @@ namespace UnityVolumeRendering
                 }
             }
 
-            // Save project and recompile scripts
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-#if UNITY_2019_3_OR_NEWER
-            UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
-#endif
-
             EditorGUILayout.Space();
             EditorGUILayout.Space();
 

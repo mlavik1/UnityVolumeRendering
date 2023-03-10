@@ -175,6 +175,9 @@ namespace UnityVolumeRendering
             VectorUInt32 size = null;
             VectorString dicomNames = null;
 
+            // Create dataset
+            VolumeDataset volumeDataset = new VolumeDataset();
+
             ImageSequenceSeries sequenceSeries = (ImageSequenceSeries)series;
             if (sequenceSeries.files.Count == 0)
             {
@@ -210,23 +213,22 @@ namespace UnityVolumeRendering
 
                 for (int i = 0; i < pixelData.Length; i++)
                     pixelData[i] = Mathf.Clamp(pixelData[i], -1024, 3071);
+
+
+                VectorDouble spacing = image.GetSpacing();
+
+                volumeDataset.data = pixelData;
+                volumeDataset.dimX = (int)size[0];
+                volumeDataset.dimY = (int)size[1];
+                volumeDataset.dimZ = (int)size[2];
+                volumeDataset.datasetName = "test";
+                volumeDataset.filePath = dicomNames[0];
+                volumeDataset.scaleX = (float)(spacing[0] * size[0]);
+                volumeDataset.scaleY = (float)(spacing[1] * size[1]);
+                volumeDataset.scaleZ = (float)(spacing[2] * size[2]);
+
+                volumeDataset.FixDimensions();
             });
-
-            VectorDouble spacing = image.GetSpacing();
-
-            // Create dataset
-            VolumeDataset volumeDataset = new VolumeDataset();
-            volumeDataset.data = pixelData;
-            volumeDataset.dimX = (int)size[0];
-            volumeDataset.dimY = (int)size[1];
-            volumeDataset.dimZ = (int)size[2];
-            volumeDataset.datasetName = "test";
-            volumeDataset.filePath = dicomNames[0];
-            volumeDataset.scaleX = (float)(spacing[0] * size[0]);
-            volumeDataset.scaleY = (float)(spacing[1] * size[1]);
-            volumeDataset.scaleZ = (float)(spacing[2] * size[2]);
-
-            volumeDataset.FixDimensions();
 
             return volumeDataset;
         }

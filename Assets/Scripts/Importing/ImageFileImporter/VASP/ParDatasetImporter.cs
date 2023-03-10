@@ -360,9 +360,7 @@ namespace UnityVolumeRendering
             }
 
             await Task.Run(() =>
-            {
-                
-
+            {                
                 fileContentLines = File.ReadLines(filePath).Where(x => x.Trim(' ') != "").ToArray();
                 fileContentIndex = 0;
 

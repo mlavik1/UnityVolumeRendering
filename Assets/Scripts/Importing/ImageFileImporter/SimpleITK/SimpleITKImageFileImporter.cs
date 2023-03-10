@@ -60,6 +60,9 @@ namespace UnityVolumeRendering
             VectorUInt32 size = null;
             VectorDouble spacing = null;
 
+            // Create dataset
+            VolumeDataset volumeDataset = new VolumeDataset();
+
             await Task.Run(() => {
                 ImageFileReader reader = new ImageFileReader();
 
@@ -82,21 +85,20 @@ namespace UnityVolumeRendering
                 Marshal.Copy(imgBuffer, pixelData, 0, numPixels);
 
                 spacing = image.GetSpacing();
+
+
+                volumeDataset.data = pixelData;
+                volumeDataset.dimX = (int)size[0];
+                volumeDataset.dimY = (int)size[1];
+                volumeDataset.dimZ = (int)size[2];
+                volumeDataset.datasetName = "test";
+                volumeDataset.filePath = filePath;
+                volumeDataset.scaleX = (float)(spacing[0] * size[0]);
+                volumeDataset.scaleY = (float)(spacing[1] * size[1]);
+                volumeDataset.scaleZ = (float)(spacing[2] * size[2]);
+
+                volumeDataset.FixDimensions();
             });
-
-            // Create dataset
-            VolumeDataset volumeDataset = new VolumeDataset();
-            volumeDataset.data = pixelData;
-            volumeDataset.dimX = (int)size[0];
-            volumeDataset.dimY = (int)size[1];
-            volumeDataset.dimZ = (int)size[2];
-            volumeDataset.datasetName = "test";
-            volumeDataset.filePath = filePath;
-            volumeDataset.scaleX = (float)(spacing[0] * size[0]);
-            volumeDataset.scaleY = (float)(spacing[1] * size[1]);
-            volumeDataset.scaleZ = (float)(spacing[2] * size[2]);
-
-            volumeDataset.FixDimensions();
 
             return volumeDataset;
         }
