@@ -15,13 +15,9 @@ namespace UnityVolumeRendering
         {
             BuildTarget activeTarget = EditorUserBuildSettings.activeBuildTarget;
             BuildTargetGroup activeGroup = BuildPipeline.GetBuildTargetGroup(activeTarget);
-            if (enable && activeGroup != BuildTargetGroup.Standalone)
-            {
-                return;
-            }
 
             // Enable the ASYNC_LOADING preprocessor definition for standalone target
-            List<BuildTargetGroup> buildTargetGroups = new List<BuildTargetGroup>() { BuildTargetGroup.Standalone };
+            List<BuildTargetGroup> buildTargetGroups = new List<BuildTargetGroup>() { activeGroup };
             foreach (BuildTargetGroup group in buildTargetGroups)
             {
                 List<string> defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(group).Split(';').ToList();
@@ -33,7 +29,10 @@ namespace UnityVolumeRendering
         }
         public static bool IsAsyncEnabled()
         {
-            HashSet<string> defines = new HashSet<string>(PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone).Split(';'));
+            BuildTarget activeTarget = EditorUserBuildSettings.activeBuildTarget;
+            BuildTargetGroup activeGroup = BuildPipeline.GetBuildTargetGroup(activeTarget);
+
+            HashSet<string> defines = new HashSet<string>(PlayerSettings.GetScriptingDefineSymbolsForGroup(activeGroup).Split(';'));
             return defines.Contains(_asyncDefinition);
         }
     }
