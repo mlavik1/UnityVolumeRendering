@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
 using System.IO.Compression;
+using UnityEngine;
 
 namespace Nifti.NET
 {
@@ -69,9 +69,9 @@ namespace Nifti.NET
         /// <param name="gzip"></param>
         public static void Write(Nifti nifti, string path, bool gzip = false)
         {
-            if (typeof(Color[]) == nifti.Data.GetType())
+            if (typeof(Color32[]) == nifti.Data.GetType())
             {
-                System.Console.WriteLine("Detected Color data. Converting to 24bit RBG representation.");
+                System.Console.WriteLine("Detected Color32 data. Converting to 24bit RBG representation.");
                 nifti = ConvertToRGB(nifti);
             }
 
@@ -232,7 +232,7 @@ namespace Nifti.NET
                 }
                 case NiftiHeader.DT_RGB24:
                 {
-                    Color[] data = new Color[bytelen / 3];
+                    Color32[] data = new Color32[bytelen / 3];
                     for (int i = 0; i < data.Length; ++i)
                         data[i] = ReadRGB(stream, reverseBytes);
                     resultData = data;
@@ -240,7 +240,7 @@ namespace Nifti.NET
                 }
                 case NiftiHeader.DT_RGBA32:
                 {
-                    Color[] data = new Color[bytelen / 4];
+                    Color32[] data = new Color32[bytelen / 4];
                     for (int i = 0; i < data.Length; ++i)
                         data[i] = ReadRGBA(stream, reverseBytes);
                     resultData = data;
@@ -292,11 +292,11 @@ namespace Nifti.NET
                         Write(stream, voxel);
                     break;
                 case NiftiHeader.DT_RGB24:
-                    foreach(var voxel in data as Color[])
+                    foreach(var voxel in data as Color32[])
                         WriteRGB(stream, voxel);
                     break;
                 case NiftiHeader.DT_RGBA32:
-                    foreach(var voxel in data as Color[])
+                    foreach(var voxel in data as Color32[])
                         WriteRGBA(stream, voxel);
                     break;
                 default:
@@ -486,19 +486,19 @@ namespace Nifti.NET
             stream.WriteByte(val);
         }
 
-        private static void WriteRGB(Stream stream, Color val)
+        private static void WriteRGB(Stream stream, Color32 val)
         {
-            stream.WriteByte(val.R);
-            stream.WriteByte(val.G);
-            stream.WriteByte(val.B);
+            stream.WriteByte(val.r);
+            stream.WriteByte(val.g);
+            stream.WriteByte(val.b);
         }
 
-        private static void WriteRGBA(Stream stream, Color val)
+        private static void WriteRGBA(Stream stream, Color32 val)
         {
-            stream.WriteByte(val.R);
-            stream.WriteByte(val.G);
-            stream.WriteByte(val.B);
-            stream.WriteByte(val.A);
+            stream.WriteByte(val.r);
+            stream.WriteByte(val.g);
+            stream.WriteByte(val.b);
+            stream.WriteByte(val.a);
         }
 
         //private static void Write(Stream stream, byte[] vals) { foreach (var val in vals) Write(stream, val); }
@@ -587,16 +587,16 @@ namespace Nifti.NET
                 : BitConverter.ToInt64(ReadBytesReversed(stream, 8), 0);
         }
 
-        private static Color ReadRGB(Stream stream, bool reverseBytes)
+        private static Color32 ReadRGB(Stream stream, bool reverseBytes)
         {
             byte[] rgb = ReadBytes(stream, 3);
-            return Color.FromArgb(rgb[0], rgb[1], rgb[2]);
+            return new Color32(rgb[0], rgb[1], rgb[2], 255);
         }
 
-        private static Color ReadRGBA(Stream stream, bool reverseBytes)
+        private static Color32 ReadRGBA(Stream stream, bool reverseBytes)
         {
             byte[] rgba = ReadBytes(stream, 4);
-            return Color.FromArgb(rgba[3], rgba[0], rgba[1], rgba[2]);
+            return new Color32(rgba[3], rgba[0], rgba[1], rgba[2]);
 
         }
 
@@ -616,7 +616,7 @@ namespace Nifti.NET
 
         private static Nifti ConvertToRGB(Nifti nifti)
         {
-            // Setup the header info in case someone converted from non-color input
+            // Setup the header info in case someone converted from non-Color32 input
             nifti.Header.dim[0] = 5; // RGB and RGBA both have 5 dimensions
             nifti.Header.dim[4] = 1;
             nifti.Header.dim[5] = 1;
