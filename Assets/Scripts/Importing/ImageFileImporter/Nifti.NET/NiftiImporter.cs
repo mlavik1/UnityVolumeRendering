@@ -27,27 +27,10 @@ namespace UnityVolumeRendering
                 Debug.LogError($"Unsupported dimension. Expected 3-dimensional dataset, but got {numDimensions}.");
                 return null;
             }
-            int dimX = niftiFile.Header.dim[1];
-            int dimY = niftiFile.Header.dim[2];
-            int dimZ = niftiFile.Header.dim[3];
-            float[] pixelData = niftiFile.ToSingleArray();
-
-            Vector3 pixdim = new Vector3(niftiFile.Header.pixdim[1], niftiFile.Header.pixdim[2], niftiFile.Header.pixdim[3]);
-            Vector3 size = new Vector3(dimX * pixdim.x, dimY * pixdim.y, dimZ * pixdim.z);
-
+           
             // Create dataset
             VolumeDataset volumeDataset = new VolumeDataset();
-            volumeDataset.data = pixelData;
-            volumeDataset.dimX = dimX;
-            volumeDataset.dimY = dimY;
-            volumeDataset.dimZ = dimZ;
-            volumeDataset.datasetName = "test";
-            volumeDataset.filePath = filePath;
-            volumeDataset.scaleX = size.x;
-            volumeDataset.scaleY = size.y;
-            volumeDataset.scaleZ = size.z;
-
-            volumeDataset.FixDimensions();
+            ImportInternal(volumeDataset, niftiFile, filePath);
 
             return volumeDataset;
         }
@@ -57,11 +40,8 @@ namespace UnityVolumeRendering
             Nifti.NET.Nifti niftiFile = null;
             VolumeDataset volumeDataset = new VolumeDataset();
 
-            await Task.Run(() =>
-            {
-                niftiFile = NiftiFile.Read(filePath);
+            await Task.Run(() =>niftiFile = NiftiFile.Read(filePath));
 
-            });
             if (niftiFile == null)
             {
                 Debug.LogError("Failed to read NIFTI dataset");
@@ -75,30 +55,32 @@ namespace UnityVolumeRendering
                 return null;
             }
 
-            await Task.Run(() => {
-                int dimX = niftiFile.Header.dim[1];
-                int dimY = niftiFile.Header.dim[2];
-                int dimZ = niftiFile.Header.dim[3];
-                float[] pixelData = niftiFile.ToSingleArray();
-
-                Vector3 pixdim = new Vector3(niftiFile.Header.pixdim[1], niftiFile.Header.pixdim[2], niftiFile.Header.pixdim[3]);
-                Vector3 size = new Vector3(dimX * pixdim.x, dimY * pixdim.y, dimZ * pixdim.z);
-
-                // Create dataset
-                volumeDataset.data = pixelData;
-                volumeDataset.dimX = dimX;
-                volumeDataset.dimY = dimY;
-                volumeDataset.dimZ = dimZ;
-                volumeDataset.datasetName = "test";
-                volumeDataset.filePath = filePath;
-                volumeDataset.scaleX = size.x;
-                volumeDataset.scaleY = size.y;
-                volumeDataset.scaleZ = size.z;
-
-                volumeDataset.FixDimensions();
-            });
+            await Task.Run(() => ImportInternal(volumeDataset,niftiFile,filePath));
 
             return volumeDataset;
+        }
+        private void ImportInternal(VolumeDataset volumeDataset,Nifti.NET.Nifti niftiFile,string filePath)
+        {
+            int dimX = niftiFile.Header.dim[1];
+            int dimY = niftiFile.Header.dim[2];
+            int dimZ = niftiFile.Header.dim[3];
+            float[] pixelData = niftiFile.ToSingleArray();
+
+            Vector3 pixdim = new Vector3(niftiFile.Header.pixdim[1], niftiFile.Header.pixdim[2], niftiFile.Header.pixdim[3]);
+            Vector3 size = new Vector3(dimX * pixdim.x, dimY * pixdim.y, dimZ * pixdim.z);
+
+            // Create dataset
+            volumeDataset.data = pixelData;
+            volumeDataset.dimX = dimX;
+            volumeDataset.dimY = dimY;
+            volumeDataset.dimZ = dimZ;
+            volumeDataset.datasetName = "test";
+            volumeDataset.filePath = filePath;
+            volumeDataset.scaleX = size.x;
+            volumeDataset.scaleY = size.y;
+            volumeDataset.scaleZ = size.z;
+
+            volumeDataset.FixDimensions();
         }
     }
 }

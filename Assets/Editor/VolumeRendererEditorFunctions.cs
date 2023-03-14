@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace UnityVolumeRendering
 {
@@ -135,7 +136,8 @@ namespace UnityVolumeRendering
                                 if (EditorUtility.DisplayDialog("Optional DownScaling",
                                     $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
                                 {
-                                    await dataset.DownScaleDataAsync();
+                                    Debug.Log("Async dataset downscale. Hold on.");
+                                    await Task.Run(() => dataset.DownScaleData());
                                 }
                             }
 
@@ -399,7 +401,8 @@ namespace UnityVolumeRendering
                             if (EditorUtility.DisplayDialog("Optional DownScaling",
                                 $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
                             {
-                                await dataset.DownScaleDataAsync();
+                                Debug.Log("Async dataset downscale. Hold on.");
+                                await Task.Run(()=>dataset.DownScaleData());
                             }
                         }
                         await VolumeObjectFactory.CreateObjectAsync(dataset);

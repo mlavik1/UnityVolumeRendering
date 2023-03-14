@@ -5,6 +5,7 @@ using UnityEngine;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using openDicom.Encoding;
 
 namespace UnityVolumeRendering
 {
@@ -44,7 +45,28 @@ namespace UnityVolumeRendering
         public IEnumerable<IImageSequenceSeries> LoadSeries(IEnumerable<string> files)
         {
             Dictionary<string, ImageSequenceSeries> sequenceByFiletype = new Dictionary<string, ImageSequenceSeries>();
-            foreach(string filePath in files)
+
+            LoadSeriesInternal(files, sequenceByFiletype);
+
+            if (sequenceByFiletype.Count == 0)
+                Debug.LogError("Found no image files of supported formats. Currently supported formats are: " + supportedImageTypes.ToString());
+
+            return sequenceByFiletype.Select(f => f.Value).ToList();
+        }
+        public async Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> files)
+        {
+            Dictionary<string, ImageSequenceSeries> sequenceByFiletype = new Dictionary<string, ImageSequenceSeries>();
+
+            await Task.Run(() =>LoadSeriesInternal(files,sequenceByFiletype));
+
+            if (sequenceByFiletype.Count == 0)
+                Debug.LogError("Found no image files of supported formats. Currently supported formats are: " + supportedImageTypes.ToString());
+
+            return sequenceByFiletype.Select(f => f.Value).ToList();
+        }
+        private void LoadSeriesInternal(IEnumerable<string> files, Dictionary<string, ImageSequenceSeries> sequenceByFiletype)
+        {
+            foreach (string filePath in files)
             {
                 string fileExt = Path.GetExtension(filePath).ToLower();
                 if (supportedImageTypes.Contains(fileExt))
@@ -57,11 +79,6 @@ namespace UnityVolumeRendering
                     sequenceByFiletype[fileExt].files.Add(imgSeqFile);
                 }
             }
-
-            if (sequenceByFiletype.Count == 0)
-                Debug.LogError("Found no image files of supported formats. Currently supported formats are: " + supportedImageTypes.ToString());
-
-            return sequenceByFiletype.Select(f => f.Value).ToList();
         }
 
         public VolumeDataset ImportSeries(IImageSequenceSeries series)
@@ -72,6 +89,20 @@ namespace UnityVolumeRendering
             int[] data = FillSequentialData(dimensions, imagePaths);
             VolumeDataset dataset = FillVolumeDataset(data, dimensions);
 
+            dataset.FixDimensions();
+
+            return dataset;
+        }
+        public async Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series)
+        {
+            List<string> imagePaths = null;
+            VolumeDataset dataset = null;
+
+            await Task.Run(() => { imagePaths = series.GetFiles().Select(f => f.GetFilePath()).ToList(); }); ;
+
+            Vector3Int dimensions = GetVolumeDimensions(imagePaths);
+            int[] data = FillSequentialData(dimensions, imagePaths);        //Long
+            dataset = await FillVolumeDatasetAsync(data, dimensions);
             dataset.FixDimensions();
 
             return dataset;
@@ -156,18 +187,8 @@ namespace UnityVolumeRendering
         {
             string name = Path.GetFileName(directoryPath);
 
-            VolumeDataset dataset = new VolumeDataset()
-            {
-                name = name,
-                datasetName = name,
-                data = Array.ConvertAll(data, new Converter<int, float>((int val) => { return Convert.ToSingle(val); })),
-                dimX = dimensions.x,
-                dimY = dimensions.y,
-                dimZ = dimensions.z,
-                scaleX = 1f, // Scale arbitrarily normalised around the x-axis 
-                scaleY = (float)dimensions.y / (float)dimensions.x,
-                scaleZ = (float)dimensions.z / (float)dimensions.x
-            };
+            VolumeDataset dataset = new VolumeDataset();
+            FillVolumeInternal(dataset, name, data, dimensions);
 
             return dataset;
         }
@@ -177,62 +198,22 @@ namespace UnityVolumeRendering
             string name = Path.GetFileName(directoryPath);
             dataset.name = name;
 
-            await Task.Run(() => {
-
-                dataset.datasetName = name;
-                dataset.data = Array.ConvertAll(data, new Converter<int, float>((int val) => { return Convert.ToSingle(val); }));
-                dataset.dimX = dimensions.x;
-                dataset.dimY = dimensions.y;
-                dataset.dimZ = dimensions.z;
-                dataset.scaleX = 1f; // Scale arbitrarily normalised around the x-axis 
-                dataset.scaleY = (float)dimensions.y / (float)dimensions.x;
-                dataset.scaleZ = (float)dimensions.z / (float)dimensions.x;
-            });
+            await Task.Run(() => FillVolumeInternal(dataset, name, data, dimensions));
           
             return dataset;
         }
-
-        public async Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> files)
+        private void FillVolumeInternal(VolumeDataset dataset,string name,int[] data, Vector3Int dimensions)
         {
-            Dictionary<string, ImageSequenceSeries> sequenceByFiletype = new Dictionary<string, ImageSequenceSeries>();
-
-            await Task.Run(() =>
-            {
-                foreach (string filePath in files)
-                {
-                    string fileExt = Path.GetExtension(filePath).ToLower();
-                    if (supportedImageTypes.Contains(fileExt))
-                    {
-                        if (!sequenceByFiletype.ContainsKey(fileExt))
-                            sequenceByFiletype[fileExt] = new ImageSequenceSeries();
-
-                        ImageSequenceFile imgSeqFile = new ImageSequenceFile();
-                        imgSeqFile.filePath = filePath;
-                        sequenceByFiletype[fileExt].files.Add(imgSeqFile);
-                    }
-                }
-            });
-            
-
-            if (sequenceByFiletype.Count == 0)
-                Debug.LogError("Found no image files of supported formats. Currently supported formats are: " + supportedImageTypes.ToString());
-
-            return sequenceByFiletype.Select(f => f.Value).ToList();
+            dataset.datasetName = name;
+            dataset.data = Array.ConvertAll(data, new Converter<int, float>((int val) => { return Convert.ToSingle(val); }));
+            dataset.dimX = dimensions.x;
+            dataset.dimY = dimensions.y;
+            dataset.dimZ = dimensions.z;
+            dataset.scaleX = 1f; // Scale arbitrarily normalised around the x-axis 
+            dataset.scaleY = (float)dimensions.y / (float)dimensions.x;
+            dataset.scaleZ = (float)dimensions.z / (float)dimensions.x;
         }
 
-        public async Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series)
-        {
-            List<string> imagePaths = null;
-            VolumeDataset dataset = null;
-
-            await Task.Run(() => {imagePaths = series.GetFiles().Select(f => f.GetFilePath()).ToList(); }); ;
-
-            Vector3Int dimensions = GetVolumeDimensions(imagePaths);
-            int[] data = FillSequentialData(dimensions, imagePaths);        //Long
-            dataset = await FillVolumeDatasetAsync(data, dimensions);      
-            dataset.FixDimensions();
-            
-            return dataset;
-        }
+        
     }
 }

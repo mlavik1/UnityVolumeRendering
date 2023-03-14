@@ -98,11 +98,7 @@ namespace UnityVolumeRendering
             {
                 Debug.LogWarning("Dimension exceeds limits (maximum: "+MAX_DIM+"). Dataset is downscaled by 2 on each axis!");
 
-#if USE_ASYNC_LOADING
-                DownScaleDataAsync();
-#else
                 DownScaleData();
-#endif
             }
         }
 
@@ -133,34 +129,6 @@ namespace UnityVolumeRendering
             dimX = halfDimX;
             dimY = halfDimY;
             dimZ = halfDimZ;
-        }
-        public async Task DownScaleDataAsync()
-        {
-            Debug.Log("Async dataset downscaling. Hold on.");
-            await Task.Run(() => {
-                int halfDimX = dimX / 2 + dimX % 2;
-                int halfDimY = dimY / 2 + dimY % 2;
-                int halfDimZ = dimZ / 2 + dimZ % 2;
-                float[] downScaledData = new float[halfDimX * halfDimY * halfDimZ];
-
-                for (int x = 0; x < halfDimX; x++)
-                {
-                    for (int y = 0; y < halfDimY; y++)
-                    {
-                        for (int z = 0; z < halfDimZ; z++)
-                        {
-                            downScaledData[x + y * halfDimX + z * (halfDimX * halfDimY)] = Mathf.Round(GetAvgerageVoxelValues(x * 2, y * 2, z * 2));
-                        }
-                    }
-                }
-
-                //Update data & data dimensions
-                data = downScaledData;
-                dimX = halfDimX;
-                dimY = halfDimY;
-                dimZ = halfDimZ;
-            });
-            Debug.Log("Async Dataset downscale done");
         }
 
         private void CalculateValueBounds()

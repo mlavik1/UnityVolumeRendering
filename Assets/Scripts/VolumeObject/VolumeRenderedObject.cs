@@ -204,70 +204,7 @@ namespace UnityVolumeRendering
 
             meshRenderer.sharedMaterial.SetTexture("_GradientTex", useGradientTexture ? dataset.GetGradientTexture() : null);
 
-            if (tfRenderMode == TFRenderMode.TF2D)
-            {
-                meshRenderer.sharedMaterial.SetTexture("_TFTex", transferFunction2D.GetTexture());
-                meshRenderer.sharedMaterial.EnableKeyword("TF2D_ON");
-            }
-            else
-            {
-                meshRenderer.sharedMaterial.SetTexture("_TFTex", transferFunction.GetTexture());
-                meshRenderer.sharedMaterial.DisableKeyword("TF2D_ON");
-            }
-
-            if (lightingEnabled)
-                meshRenderer.sharedMaterial.EnableKeyword("LIGHTING_ON");
-            else
-                meshRenderer.sharedMaterial.DisableKeyword("LIGHTING_ON");
-
-            if (lightSource == LightSource.SceneMainLight)
-                meshRenderer.sharedMaterial.EnableKeyword("USE_MAIN_LIGHT");
-            else
-                meshRenderer.sharedMaterial.DisableKeyword("USE_MAIN_LIGHT");
-
-            switch (renderMode)
-            {
-                case RenderMode.DirectVolumeRendering:
-                    {
-                        meshRenderer.sharedMaterial.EnableKeyword("MODE_DVR");
-                        meshRenderer.sharedMaterial.DisableKeyword("MODE_MIP");
-                        meshRenderer.sharedMaterial.DisableKeyword("MODE_SURF");
-                        break;
-                    }
-                case RenderMode.MaximumIntensityProjectipon:
-                    {
-                        meshRenderer.sharedMaterial.DisableKeyword("MODE_DVR");
-                        meshRenderer.sharedMaterial.EnableKeyword("MODE_MIP");
-                        meshRenderer.sharedMaterial.DisableKeyword("MODE_SURF");
-                        break;
-                    }
-                case RenderMode.IsosurfaceRendering:
-                    {
-                        meshRenderer.sharedMaterial.DisableKeyword("MODE_DVR");
-                        meshRenderer.sharedMaterial.DisableKeyword("MODE_MIP");
-                        meshRenderer.sharedMaterial.EnableKeyword("MODE_SURF");
-                        break;
-                    }
-            }
-
-            meshRenderer.sharedMaterial.SetFloat("_MinVal", visibilityWindow.x);
-            meshRenderer.sharedMaterial.SetFloat("_MaxVal", visibilityWindow.y);
-            meshRenderer.sharedMaterial.SetVector("_TextureSize", new Vector3(dataset.dimX, dataset.dimY, dataset.dimZ));
-
-            if (rayTerminationEnabled)
-                meshRenderer.sharedMaterial.EnableKeyword("RAY_TERMINATE_ON");
-            else
-                meshRenderer.sharedMaterial.DisableKeyword("RAY_TERMINATE_ON");
-
-            if (dvrBackward)
-                meshRenderer.sharedMaterial.EnableKeyword("DVR_BACKWARD_ON");
-            else
-                meshRenderer.sharedMaterial.DisableKeyword("DVR_BACKWARD_ON");
-
-            if (cubicInterpolationEnabled)
-                meshRenderer.sharedMaterial.EnableKeyword("CUBIC_INTERPOLATION_ON");
-            else
-                meshRenderer.sharedMaterial.DisableKeyword("CUBIC_INTERPOLATION_ON");
+            UpdateMatInternal();
         }
         private async void UpdateMatAsync()
         {
@@ -275,6 +212,10 @@ namespace UnityVolumeRendering
 
             meshRenderer.sharedMaterial.SetTexture("_GradientTex", useGradientTexture ? await dataset.GetGradientTextureAsync() : null);
 
+            UpdateMatInternal();
+        }
+        private void UpdateMatInternal()
+        {
             if (tfRenderMode == TFRenderMode.TF2D)
             {
                 meshRenderer.sharedMaterial.SetTexture("_TFTex", transferFunction2D.GetTexture());

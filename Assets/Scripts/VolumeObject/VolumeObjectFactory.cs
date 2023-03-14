@@ -12,42 +12,11 @@ namespace UnityVolumeRendering
             VolumeRenderedObject volObj = outerObject.AddComponent<VolumeRenderedObject>();
 
             GameObject meshContainer = GameObject.Instantiate((GameObject)Resources.Load("VolumeContainer"));
-            meshContainer.transform.parent = outerObject.transform;
-            meshContainer.transform.localScale = Vector3.one;
-            meshContainer.transform.localPosition = Vector3.zero;
-            meshContainer.transform.parent = outerObject.transform;
-            outerObject.transform.localRotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
-
             MeshRenderer meshRenderer = meshContainer.GetComponent<MeshRenderer>();
-            meshRenderer.sharedMaterial = new Material(meshRenderer.sharedMaterial);
-            volObj.meshRenderer = meshRenderer;
-            volObj.dataset = dataset;
 
-            const int noiseDimX = 512;
-            const int noiseDimY = 512;
-            Texture2D noiseTexture = NoiseTextureGenerator.GenerateNoiseTexture(noiseDimX, noiseDimY);
-
-            TransferFunction tf = TransferFunctionDatabase.CreateTransferFunction();
-            Texture2D tfTexture = tf.GetTexture();
-            volObj.transferFunction = tf;
-
-            TransferFunction2D tf2D = TransferFunctionDatabase.CreateTransferFunction2D();
-            volObj.transferFunction2D = tf2D;
+            CreateObjectInternal(dataset,meshContainer, meshRenderer, volObj, outerObject);
 
             meshRenderer.sharedMaterial.SetTexture("_DataTex", dataset.GetDataTexture());
-            meshRenderer.sharedMaterial.SetTexture("_GradientTex", null);
-            meshRenderer.sharedMaterial.SetTexture("_NoiseTex", noiseTexture);
-            meshRenderer.sharedMaterial.SetTexture("_TFTex", tfTexture);
-
-            meshRenderer.sharedMaterial.EnableKeyword("MODE_DVR");
-            meshRenderer.sharedMaterial.DisableKeyword("MODE_MIP");
-            meshRenderer.sharedMaterial.DisableKeyword("MODE_SURF");
-
-            if(dataset.scaleX != 0.0f && dataset.scaleY != 0.0f && dataset.scaleZ != 0.0f)
-            {
-                float maxScale = Mathf.Max(dataset.scaleX, dataset.scaleY, dataset.scaleZ);
-                volObj.transform.localScale = new Vector3(dataset.scaleX / maxScale, dataset.scaleY / maxScale, dataset.scaleZ / maxScale);
-            }
 
             return volObj;
         }
@@ -57,13 +26,22 @@ namespace UnityVolumeRendering
             VolumeRenderedObject volObj = outerObject.AddComponent<VolumeRenderedObject>();
 
             GameObject meshContainer = GameObject.Instantiate((GameObject)Resources.Load("VolumeContainer"));
+            MeshRenderer meshRenderer = meshContainer.GetComponent<MeshRenderer>();
+
+            CreateObjectInternal(dataset,meshContainer, meshRenderer,volObj,outerObject) ;
+
+            meshRenderer.sharedMaterial.SetTexture("_DataTex", await dataset.GetDataTextureAsync());
+
+            return volObj;
+        }
+        private static void CreateObjectInternal(VolumeDataset dataset, GameObject meshContainer, MeshRenderer meshRenderer, VolumeRenderedObject volObj, GameObject outerObject)
+        {            
             meshContainer.transform.parent = outerObject.transform;
             meshContainer.transform.localScale = Vector3.one;
             meshContainer.transform.localPosition = Vector3.zero;
             meshContainer.transform.parent = outerObject.transform;
             outerObject.transform.localRotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
 
-            MeshRenderer meshRenderer = meshContainer.GetComponent<MeshRenderer>();
             meshRenderer.sharedMaterial = new Material(meshRenderer.sharedMaterial);
             volObj.meshRenderer = meshRenderer;
             volObj.dataset = dataset;
@@ -79,7 +57,6 @@ namespace UnityVolumeRendering
             TransferFunction2D tf2D = TransferFunctionDatabase.CreateTransferFunction2D();
             volObj.transferFunction2D = tf2D;
 
-            meshRenderer.sharedMaterial.SetTexture("_DataTex", await dataset.GetDataTextureAsync());
             meshRenderer.sharedMaterial.SetTexture("_GradientTex", null);
             meshRenderer.sharedMaterial.SetTexture("_NoiseTex", noiseTexture);
             meshRenderer.sharedMaterial.SetTexture("_TFTex", tfTexture);
@@ -93,8 +70,6 @@ namespace UnityVolumeRendering
                 float maxScale = Mathf.Max(dataset.scaleX, dataset.scaleY, dataset.scaleZ);
                 volObj.transform.localScale = new Vector3(dataset.scaleX / maxScale, dataset.scaleY / maxScale, dataset.scaleZ / maxScale);
             }
-
-            return volObj;
         }
 
         public static void SpawnCrossSectionPlane(VolumeRenderedObject volobj)

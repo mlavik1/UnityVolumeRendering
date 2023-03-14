@@ -10,6 +10,8 @@ using openDicom.Image;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Collections;
+using System.Data;
 
 namespace UnityVolumeRendering
 {
@@ -53,6 +55,66 @@ namespace UnityVolumeRendering
         {
             DataElementDictionary dataElementDictionary = new DataElementDictionary();
             UidDictionary uidDictionary = new UidDictionary();
+
+            // Split parsed DICOM files into series (by DICOM series UID)
+            Dictionary<string, DICOMSeries> seriesByUID = new Dictionary<string, DICOMSeries>();
+
+            LoadSeriesFromResourcesInternal(dataElementDictionary, uidDictionary);
+
+            // Load all DICOM files
+            LoadSeriesInternal(fileCandidates, seriesByUID);
+
+            Debug.Log($"Loaded {seriesByUID.Count} DICOM series");
+
+            return new List<DICOMSeries>(seriesByUID.Values);
+        }
+        public async Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> fileCandidates)
+        {
+            DataElementDictionary dataElementDictionary = new DataElementDictionary();
+            UidDictionary uidDictionary = new UidDictionary();
+
+            // Split parsed DICOM files into series (by DICOM series UID)
+            Dictionary<string, DICOMSeries> seriesByUID = new Dictionary<string, DICOMSeries>();
+
+            LoadSeriesFromResourcesInternal(dataElementDictionary, uidDictionary);
+
+            await Task.Run(()=> LoadSeriesInternal(fileCandidates, seriesByUID));
+
+            Debug.Log($"Loaded {seriesByUID.Count} DICOM series");
+
+
+            return new List<DICOMSeries>(seriesByUID.Values);
+        }
+        private void LoadSeriesInternal(IEnumerable<string> fileCandidates, Dictionary<string, DICOMSeries> seriesByUID)
+        {
+            // Load all DICOM files
+            List<DICOMSliceFile> files = new List<DICOMSliceFile>();
+
+            IEnumerable<string> sortedFiles = fileCandidates.OrderBy(s => s);
+
+            foreach (string filePath in sortedFiles)
+            {
+                DICOMSliceFile sliceFile = ReadDICOMFile(filePath);
+                if (sliceFile != null)
+                {
+                    if (sliceFile.file.PixelData.IsJpeg)
+                        Debug.LogError("DICOM with JPEG not supported by importer. Please enable SimpleITK from volume rendering import settings.");
+                    else
+                        files.Add(sliceFile);
+                }
+            }
+
+            foreach (DICOMSliceFile file in files)
+            {
+                if (!seriesByUID.ContainsKey(file.seriesUID))
+                {
+                    seriesByUID.Add(file.seriesUID, new DICOMSeries());
+                }
+                seriesByUID[file.seriesUID].dicomFiles.Add(file);
+            }
+        }
+        private void LoadSeriesFromResourcesInternal(DataElementDictionary dataElementDictionary, UidDictionary uidDictionary)
+        {
             try
             {
                 // Load .dic files from Resources
@@ -67,40 +129,7 @@ namespace UnityVolumeRendering
             catch (Exception dictionaryException)
             {
                 Debug.LogError("Problems processing dictionaries:\n" + dictionaryException);
-                return null;
             }
-
-            // Load all DICOM files
-            List<DICOMSliceFile> files = new List<DICOMSliceFile>();
-            
-            IEnumerable<string> sortedFiles = fileCandidates.OrderBy(s => s);
-            
-            foreach (string filePath in sortedFiles)
-            {
-                DICOMSliceFile sliceFile = ReadDICOMFile(filePath);
-                if(sliceFile != null)
-                {
-                    if (sliceFile.file.PixelData.IsJpeg)
-                        Debug.LogError("DICOM with JPEG not supported by importer. Please enable SimpleITK from volume rendering import settings.");
-                    else
-                        files.Add(sliceFile);
-                }
-            }
-
-            // Split parsed DICOM files into series (by DICOM series UID)
-            Dictionary<string, DICOMSeries> seriesByUID = new Dictionary<string, DICOMSeries>();
-            foreach(DICOMSliceFile file in files)
-            {
-                if(!seriesByUID.ContainsKey(file.seriesUID))
-                {
-                    seriesByUID.Add(file.seriesUID, new DICOMSeries());
-                }
-                seriesByUID[file.seriesUID].dicomFiles.Add(file);
-            }
-
-            Debug.Log($"Loaded {seriesByUID.Count} DICOM series");
-
-            return new List<DICOMSeries>(seriesByUID.Values);
         }
 
         public VolumeDataset ImportSeries(IImageSequenceSeries series)
@@ -108,6 +137,39 @@ namespace UnityVolumeRendering
             DICOMSeries dicomSeries = (DICOMSeries)series;
             List<DICOMSliceFile> files = dicomSeries.dicomFiles;
 
+            if (files.Count <= 1)
+            {
+                Debug.LogError("Insufficient number of slices.");
+                return null;
+            }
+
+            // Create dataset
+            VolumeDataset dataset = new VolumeDataset();
+
+            ImportSeriesInternal(files, dataset);
+
+            return dataset;
+        }
+        public async Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series)
+        {
+            DICOMSeries dicomSeries = (DICOMSeries)series;
+            List<DICOMSliceFile> files = dicomSeries.dicomFiles;
+
+            if (files.Count <= 1)
+            {
+                Debug.LogError("Insufficient number of slices.");
+                return null;
+            }
+
+            // Create dataset
+            VolumeDataset dataset = new VolumeDataset();
+
+            await Task.Run(() => ImportSeriesInternal(files,dataset));
+
+            return dataset;
+        }
+        private void ImportSeriesInternal(List<DICOMSliceFile> files,VolumeDataset dataset)
+        {
             // Check if the series is missing the slice location tag
             bool needsCalcLoc = false;
             foreach (DICOMSliceFile file in files)
@@ -118,25 +180,16 @@ namespace UnityVolumeRendering
             // Calculate slice location from "Image Position" (0020,0032)
             if (needsCalcLoc)
                 CalcSliceLocFromPos(files);
-            
+
             // Sort files by slice location
             files.Sort((DICOMSliceFile a, DICOMSliceFile b) => { return a.location.CompareTo(b.location); });
 
             Debug.Log($"Importing {files.Count} DICOM slices");
 
-            if (files.Count <= 1)
-            {
-                Debug.LogError("Insufficient number of slices.");
-                return null;
-            }
-
-            // Create dataset
-            VolumeDataset dataset = new VolumeDataset();
             dataset.datasetName = Path.GetFileName(files[0].filePath);
             dataset.dimX = files[0].file.PixelData.Columns;
             dataset.dimY = files[0].file.PixelData.Rows;
             dataset.dimZ = files.Count;
-
             int dimension = dataset.dimX * dataset.dimY * dataset.dimZ;
             dataset.data = new float[dimension];
 
@@ -171,8 +224,6 @@ namespace UnityVolumeRendering
             }
 
             dataset.FixDimensions();
-
-            return dataset;
         }
 
         private DICOMSliceFile ReadDICOMFile(string filePath)
@@ -348,141 +399,6 @@ namespace UnityVolumeRendering
                 float dot = Vector3.Dot(ap, v);
                 slices[i].location = dot;
             }
-        }
-
-        public async Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> fileCandidates)
-        {
-            DataElementDictionary dataElementDictionary = new DataElementDictionary();
-            UidDictionary uidDictionary = new UidDictionary();
-
-            // Split parsed DICOM files into series (by DICOM series UID)
-            Dictionary<string, DICOMSeries> seriesByUID = new Dictionary<string, DICOMSeries>();
-            try
-            {
-                // Load .dic files from Resources
-                TextAsset dcmElemAsset = (TextAsset)Resources.Load("dicom-elements-2007.dic");
-                Debug.Assert(dcmElemAsset != null, "dicom-elements-2007.dic is missing from the Resources folder");
-                TextAsset dcmUidsAsset = (TextAsset)Resources.Load("dicom-uids-2007.dic");
-                Debug.Assert(dcmUidsAsset != null, "dicom-uids-2007.dic is missing from the Resources folder");
-
-                dataElementDictionary.LoadFromMemory(new MemoryStream(dcmElemAsset.bytes), DictionaryFileFormat.BinaryFile);
-                uidDictionary.LoadFromMemory(new MemoryStream(dcmUidsAsset.bytes), DictionaryFileFormat.BinaryFile);
-            }
-            catch (Exception dictionaryException)
-            {
-                Debug.LogError("Problems processing dictionaries:\n" + dictionaryException);
-                return null;
-            }
-
-            await Task.Run(() =>
-            {
-                // Load all DICOM files
-                List<DICOMSliceFile> files = new List<DICOMSliceFile>();
-
-                IEnumerable<string> sortedFiles = fileCandidates.OrderBy(s => s);
-
-                foreach (string filePath in sortedFiles)
-                {
-                    DICOMSliceFile sliceFile = ReadDICOMFile(filePath);
-                    if (sliceFile != null)
-                    {
-                        if (sliceFile.file.PixelData.IsJpeg)
-                            Debug.LogError("DICOM with JPEG not supported by importer. Please enable SimpleITK from volume rendering import settings.");
-                        else
-                            files.Add(sliceFile);
-                    }
-                }
-
-                foreach (DICOMSliceFile file in files)
-                {
-                    if (!seriesByUID.ContainsKey(file.seriesUID))
-                    {
-                        seriesByUID.Add(file.seriesUID, new DICOMSeries());
-                    }
-                    seriesByUID[file.seriesUID].dicomFiles.Add(file);
-                }
-
-                Debug.Log($"Loaded {seriesByUID.Count} DICOM series");
-            });
-
-            return new List<DICOMSeries>(seriesByUID.Values);
-        }
-
-        public async Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series)
-        {
-            DICOMSeries dicomSeries = (DICOMSeries)series;
-            List<DICOMSliceFile> files = dicomSeries.dicomFiles;
-
-            if (files.Count <= 1)
-            {
-                Debug.LogError("Insufficient number of slices.");
-                return null;
-            }
-
-            // Create dataset
-            VolumeDataset dataset = new VolumeDataset();
-
-            await Task.Run(() =>
-            {
-                
-                // Check if the series is missing the slice location tag
-                bool needsCalcLoc = false;
-                foreach (DICOMSliceFile file in files)
-                {
-                    needsCalcLoc |= file.missingLocation;
-                }
-
-                // Calculate slice location from "Image Position" (0020,0032)
-                if (needsCalcLoc)
-                    CalcSliceLocFromPos(files);
-
-                // Sort files by slice location
-                files.Sort((DICOMSliceFile a, DICOMSliceFile b) => { return a.location.CompareTo(b.location); });
-
-                Debug.Log($"Importing {files.Count} DICOM slices");
-
-                dataset.datasetName = Path.GetFileName(files[0].filePath);
-                dataset.dimX = files[0].file.PixelData.Columns;
-                dataset.dimY = files[0].file.PixelData.Rows;
-                dataset.dimZ = files.Count;
-
-                int dimension = dataset.dimX * dataset.dimY * dataset.dimZ;
-                dataset.data = new float[dimension];
-
-                for (int iSlice = 0; iSlice < files.Count; iSlice++)
-                {
-                    DICOMSliceFile slice = files[iSlice];
-                    PixelData pixelData = slice.file.PixelData;
-                    int[] pixelArr = ToPixelArray(pixelData);
-                    if (pixelArr == null) // This should not happen
-                        pixelArr = new int[pixelData.Rows * pixelData.Columns];
-
-                    for (int iRow = 0; iRow < pixelData.Rows; iRow++)
-                    {
-                        for (int iCol = 0; iCol < pixelData.Columns; iCol++)
-                        {
-                            int pixelIndex = (iRow * pixelData.Columns) + iCol;
-                            int dataIndex = (iSlice * pixelData.Columns * pixelData.Rows) + (iRow * pixelData.Columns) + iCol;
-
-                            int pixelValue = pixelArr[pixelIndex];
-                            float hounsfieldValue = pixelValue * slice.slope + slice.intercept;
-
-                            dataset.data[dataIndex] = Mathf.Clamp(hounsfieldValue, -1024.0f, 3071.0f);
-                        }
-                    }
-                }
-
-                if (files[0].pixelSpacing > 0.0f)
-                {
-                    dataset.scaleX = files[0].pixelSpacing * dataset.dimX;
-                    dataset.scaleY = files[0].pixelSpacing * dataset.dimY;
-                    dataset.scaleZ = Mathf.Abs(files[files.Count - 1].location - files[0].location);
-                }
-
-                dataset.FixDimensions();
-            });
-
-            return dataset;
-        }
+        }  
     }
 }
