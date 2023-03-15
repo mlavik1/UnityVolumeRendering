@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Threading.Tasks;
+using UnityEditor;
+using UnityEngine;
 
 namespace UnityVolumeRendering
 {
@@ -190,9 +192,30 @@ namespace UnityVolumeRendering
 
         private void UpdateMaterialProperties()
         {
+#if USE_ASYNC_LOADING
+            UpdateMatAsync();
+#else
+            UpdateMat();
+#endif
+        }
+        private void UpdateMat()
+        {
             bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
+
             meshRenderer.sharedMaterial.SetTexture("_GradientTex", useGradientTexture ? dataset.GetGradientTexture() : null);
 
+            UpdateMatInternal();
+        }
+        private async void UpdateMatAsync()
+        {
+            bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
+
+            meshRenderer.sharedMaterial.SetTexture("_GradientTex", useGradientTexture ? await dataset.GetGradientTextureAsync() : null);
+
+            UpdateMatInternal();
+        }
+        private void UpdateMatInternal()
+        {
             if (tfRenderMode == TFRenderMode.TF2D)
             {
                 meshRenderer.sharedMaterial.SetTexture("_TFTex", transferFunction2D.GetTexture());
@@ -253,11 +276,10 @@ namespace UnityVolumeRendering
             else
                 meshRenderer.sharedMaterial.DisableKeyword("DVR_BACKWARD_ON");
 
-            if(cubicInterpolationEnabled)
+            if (cubicInterpolationEnabled)
                 meshRenderer.sharedMaterial.EnableKeyword("CUBIC_INTERPOLATION_ON");
             else
                 meshRenderer.sharedMaterial.DisableKeyword("CUBIC_INTERPOLATION_ON");
-
         }
 
         private void Start()

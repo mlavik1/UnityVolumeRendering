@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace UnityVolumeRendering
 {
@@ -33,12 +34,14 @@ namespace UnityVolumeRendering
         /// <param name="files">Files to load. Typically all the files stored in a specific (DICOM) directory.</param>
         /// <returns>List of image sequence series.</returns>
         IEnumerable<IImageSequenceSeries> LoadSeries(IEnumerable<string> files);
-        
+        Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> files);
+
         /// <summary>
         /// Import a single image sequence series.
         /// </summary>
         /// <param name="series">The series to import</param>
         /// <returns>Imported 3D volume dataset.</returns>
         VolumeDataset ImportSeries(IImageSequenceSeries series);
+        Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series);
     }
 }

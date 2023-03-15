@@ -1,4 +1,7 @@
-﻿using UnityEditor;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace UnityVolumeRendering
@@ -25,6 +28,30 @@ namespace UnityVolumeRendering
 
             EditorGUILayout.Space();
             EditorGUILayout.Space();
+
+            EditorGUILayout.LabelField("Async loading [Experimental]", headerStyle);
+            EditorGUILayout.Space();
+
+            EditorGUILayout.LabelField("Use async loading to avoid freezes during loading? (Image sequence (.jpg,.png) not supported)");
+
+            if (!AsyncManager.IsAsyncEnabled())
+            {
+                if (GUILayout.Button("Enable Async Loading"))
+                {
+                    AsyncManager.EnableAsync(true);
+                }
+            }
+            else
+            {
+                if (GUILayout.Button("Disable Async Loading"))
+                {
+                    AsyncManager.EnableAsync(false);
+                }
+            }
+
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+
             EditorGUILayout.LabelField("SimpleITK", headerStyle);
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("SimpleITK is a library that adds support for JPEG-compressed DICOM, as well as NRRD and NIFTI formats.\n" +

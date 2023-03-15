@@ -18,6 +18,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using System.Threading.Tasks;
+using System.Globalization;
 
 namespace UnityVolumeRendering
 {
@@ -57,7 +59,25 @@ namespace UnityVolumeRendering
         public VolumeDataset Import(string filePath)
         {
             this.filePath = filePath;
-            
+            VolumeDataset dataFiller = new VolumeDataset(); //volume object then gets sent to VolumeObjectFactory
+
+            var extension = Path.GetExtension(filePath);
+            if (!File.Exists(filePath))
+            {
+                Debug.LogError("The file does not exist: " + filePath);
+                return null;
+            }
+            ImportInternal(dataFiller);
+
+            Debug.Log("Loaded dataset in range: " + dataFiller.GetMinDataValue() + "  -  " + dataFiller.GetMaxDataValue());
+
+            return dataFiller;
+        }
+        public async Task<VolumeDataset> ImportAsync(string filePath)
+        {
+            this.filePath = filePath;
+            VolumeDataset dataFiller = new VolumeDataset(); //volume object then gets sent to VolumeObjectFactory
+
             var extension = Path.GetExtension(filePath);
             if (!File.Exists(filePath))
             {
@@ -65,6 +85,14 @@ namespace UnityVolumeRendering
                 return null;
             }
 
+            await Task.Run(() =>ImportInternal(dataFiller));
+
+            Debug.Log("Loaded dataset in range: " + dataFiller.GetMinDataValue() + "  -  " + dataFiller.GetMaxDataValue());
+
+            return dataFiller;
+        }
+        private void ImportInternal(VolumeDataset dataFiller)
+        {
             fileContentLines = File.ReadLines(filePath).Where(x => x.Trim(' ') != "").ToArray();
             fileContentIndex = 0;
 
@@ -90,7 +118,6 @@ namespace UnityVolumeRendering
             CalculateDataLines();
             ReadGrid();
 
-            VolumeDataset dataFiller = new VolumeDataset(); //volume object then gets sent to VolumeObjectFactory
             dataFiller.datasetName = fileName;
             dataFiller.filePath = filePath;
             dataFiller.dimX = nx;
@@ -115,10 +142,6 @@ namespace UnityVolumeRendering
             {
                 dataFiller.data[i] = dataGrid[i];
             }
-
-            Debug.Log("Loaded dataset in range: " + dataFiller.GetMinDataValue() + "  -  " + dataFiller.GetMaxDataValue());
-
-            return dataFiller;
         }
 
         private string ParseLine()
@@ -146,7 +169,7 @@ namespace UnityVolumeRendering
             var line = ParseLine();
             string[] bits = line.Trim().Split(' ').Where(x => x != "").ToArray();
 
-            latticeConstant = float.Parse(bits[0]);
+            latticeConstant = float.Parse(bits[0],CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -165,9 +188,9 @@ namespace UnityVolumeRendering
                 string[] vectorString = latticeLine.Trim().Split(' ').Where(t => t.Length > 0).ToArray();
                 Debug.Assert(vectorString.Length == 3);
 
-                basisCells[i][0] = float.Parse(vectorString[0]) * latticeConstant;
-                basisCells[i][1] = float.Parse(vectorString[1]) * latticeConstant;
-                basisCells[i][2] = float.Parse(vectorString[2]) * latticeConstant;
+                basisCells[i][0] = float.Parse(vectorString[0], CultureInfo.InvariantCulture) * latticeConstant;
+                basisCells[i][1] = float.Parse(vectorString[1], CultureInfo.InvariantCulture) * latticeConstant;
+                basisCells[i][2] = float.Parse(vectorString[2], CultureInfo.InvariantCulture) * latticeConstant;
             }
         }
 
@@ -228,9 +251,9 @@ namespace UnityVolumeRendering
             {
                 latticeLine = ParseLine();
                 string[] vectorString = latticeLine.Trim().Split(' ').Where(x => x != "").ToArray();
-                coordinatebasisCells[i][0] = float.Parse(vectorString[0]);
-                coordinatebasisCells[i][1] = float.Parse(vectorString[1]);
-                coordinatebasisCells[i][2] = float.Parse(vectorString[2]);
+                coordinatebasisCells[i][0] = float.Parse(vectorString[0], CultureInfo.InvariantCulture);
+                coordinatebasisCells[i][1] = float.Parse(vectorString[1], CultureInfo.InvariantCulture);
+                coordinatebasisCells[i][2] = float.Parse(vectorString[2], CultureInfo.InvariantCulture);
             }
         }
 
@@ -339,11 +362,11 @@ namespace UnityVolumeRendering
                 {
                     if (!string.IsNullOrEmpty(densityTrim[r]) && (Regex.IsMatch(densityTrim[r], @"\d")) && !string.IsNullOrWhiteSpace(densityTrim[r]))
                     {
-                        data.Add(float.Parse(densityTrim[r]));
+                        data.Add(float.Parse(densityTrim[r], CultureInfo.InvariantCulture));
                     }
                 }
             }
             dataGrid = data.ToArray();
-        }
+        } 
     }
 }
