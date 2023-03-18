@@ -32,70 +32,9 @@ namespace UnityVolumeRendering
         [MenuItem("Volume Rendering/Load dataset/Load DICOM")]
         static void ShowDICOMImporter()
         {
-#if USE_ASYNC_LOADING
             DicomImportAsync();
-#else
-            DicomImport();
-#endif
         }
-        static void DicomImport()
-        {
-            string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
-            if (Directory.Exists(dir))
-            {
-                bool recursive = true;
 
-                // Read all files
-                IEnumerable<string> fileCandidates = Directory.EnumerateFiles(dir, "*.*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
-                    .Where(p => p.EndsWith(".dcm", StringComparison.InvariantCultureIgnoreCase) || p.EndsWith(".dicom", StringComparison.InvariantCultureIgnoreCase) || p.EndsWith(".dicm", StringComparison.InvariantCultureIgnoreCase));
-
-                if (!fileCandidates.Any())
-                {
-#if UNITY_EDITOR
-                    if (UnityEditor.EditorUtility.DisplayDialog("Could not find any DICOM files",
-                        $"Failed to find any files with DICOM file extension.{Environment.NewLine}Do you want to include files without DICOM file extension?", "Yes", "No"))
-                    {
-                        fileCandidates = Directory.EnumerateFiles(dir, "*.*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-                    }
-#endif
-                }
-
-                if (fileCandidates.Any())
-                {
-                    IImageSequenceImporter importer = ImporterFactory.CreateImageSequenceImporter(ImageSequenceFormat.DICOM);
-                    IEnumerable<IImageSequenceSeries> seriesList = importer.LoadSeries(fileCandidates);
-                    float numVolumesCreated = 0;
-
-                    foreach (IImageSequenceSeries series in seriesList)
-                    {
-                        VolumeDataset dataset = importer.ImportSeries(series);
-                        if (dataset != null)
-                        {
-                            if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
-                            {
-                                if (EditorUtility.DisplayDialog("Optional DownScaling",
-                                    $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
-                                {
-                                    dataset.DownScaleData();
-                                }
-                            }
-
-                            VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
-                            obj.transform.position = new Vector3(numVolumesCreated, 0, 0);
-                            numVolumesCreated++;
-                        }
-                    }
-                }
-                else
-                    Debug.LogError("Could not find any DICOM files to import.");
-
-
-            }
-            else
-            {
-                Debug.LogError("Directory doesn't exist: " + dir);
-            }
-        }
         static async void DicomImportAsync()
         {
             string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
@@ -111,13 +50,11 @@ namespace UnityVolumeRendering
 
                 if (!fileCandidates.Any())
                 {
-#if UNITY_EDITOR
                     if (UnityEditor.EditorUtility.DisplayDialog("Could not find any DICOM files",
                         $"Failed to find any files with DICOM file extension.{Environment.NewLine}Do you want to include files without DICOM file extension?", "Yes", "No"))
                     {
                         fileCandidates = Directory.EnumerateFiles(dir, "*.*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
                     }
-#endif
                 }
 
                 if (fileCandidates.Any())
