@@ -20,6 +20,7 @@ namespace UnityVolumeRendering
         private int bytesToSkip = 0;
         private DataContentFormat dataFormat = DataContentFormat.Int16;
         private Endianness endianness = Endianness.LittleEndian;
+        private bool importing = false;
 
         public RAWDatasetImporterEditorWindow(string filePath)
         {
@@ -43,31 +44,7 @@ namespace UnityVolumeRendering
             this.minSize = new Vector2(300.0f, 200.0f);
         }
 
-        private void ImportDataset()
-        {
-            RawDatasetImporter importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, endianness, bytesToSkip);
-            VolumeDataset dataset = importer.Import();
-
-            if (dataset != null)
-            {
-                if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
-                {
-                    if (EditorUtility.DisplayDialog("Optional DownScaling",
-                        $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
-                    {
-                        dataset.DownScaleData();
-                    }
-                }
-                VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
-            }
-            else
-            {
-                Debug.LogError("Failed to import datset");
-            }
-
-            this.Close();
-        }
-        private async void ImportDatasetAsync()
+        private async Task ImportDatasetAsync()
         {
             RawDatasetImporter importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, endianness, bytesToSkip);
             VolumeDataset dataset = await importer.ImportAsync();
@@ -93,26 +70,43 @@ namespace UnityVolumeRendering
             this.Close();
         }
 
+        private async void StartImport()
+        {
+            try
+            {
+                importing = true;
+                await ImportDatasetAsync();
+            }
+            catch (Exception ex)
+            {
+                importing = false;
+                Debug.LogException(ex);
+            }
+        }
+
         private void OnGUI()
         {
-            dimX = EditorGUILayout.IntField("X dimension", dimX);
-            dimY = EditorGUILayout.IntField("Y dimension", dimY);
-            dimZ = EditorGUILayout.IntField("Z dimension", dimZ);
-            bytesToSkip = EditorGUILayout.IntField("Bytes to skip", bytesToSkip);
-            dataFormat = (DataContentFormat)EditorGUILayout.EnumPopup("Data format", dataFormat);
-            endianness = (Endianness)EditorGUILayout.EnumPopup("Endianness", endianness);
-
-            if (GUILayout.Button("Import"))
+            if (importing)
             {
-#if USE_ASYNC_LOADING
-                ImportDatasetAsync();
-#else
-                ImportDataset();
-#endif
+                EditorGUILayout.LabelField("Importing dataset. Please wait..");
             }
+            else
+            {
+                dimX = EditorGUILayout.IntField("X dimension", dimX);
+                dimY = EditorGUILayout.IntField("Y dimension", dimY);
+                dimZ = EditorGUILayout.IntField("Z dimension", dimZ);
+                bytesToSkip = EditorGUILayout.IntField("Bytes to skip", bytesToSkip);
+                dataFormat = (DataContentFormat)EditorGUILayout.EnumPopup("Data format", dataFormat);
+                endianness = (Endianness)EditorGUILayout.EnumPopup("Endianness", endianness);
 
-            if (GUILayout.Button("Cancel"))
-                this.Close();
+                if (GUILayout.Button("Import"))
+                {
+                    StartImport();
+                }
+
+                if (GUILayout.Button("Cancel"))
+                    this.Close();
+            }
         }
     }
 }
