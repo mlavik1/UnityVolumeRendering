@@ -4,6 +4,7 @@ namespace UnityVolumeRendering
 {
     public class MaterialFactory
     {
+        [System.Obsolete("This method is deprecated, and will be removed. Use VolumeObjectFactory, or custom re-implementation.", false)]
         public static Material CreateMaterialDVR(VolumeDataset dataset)
         {
             Shader shader = Shader.Find("VolumeRendering/DirectVolumeRenderingShader");
