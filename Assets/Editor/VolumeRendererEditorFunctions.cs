@@ -41,6 +41,8 @@ namespace UnityVolumeRendering
             if (Directory.Exists(dir))
             {
                 Debug.Log("Async dataset load. Hold on.");
+                using ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView());
+                progressHandler.Start("DICOM import", "Importing DICOM...");
 
                 bool recursive = true;
 
@@ -59,13 +61,22 @@ namespace UnityVolumeRendering
 
                 if (fileCandidates.Any())
                 {
+                    progressHandler.StartStage(0.6f, "Loading DICOM series");
+
                     IImageSequenceImporter importer = ImporterFactory.CreateImageSequenceImporter(ImageSequenceFormat.DICOM);
-                    IEnumerable<IImageSequenceSeries> seriesList = await importer.LoadSeriesAsync(fileCandidates);
+                    IEnumerable<IImageSequenceSeries> seriesList = await importer.LoadSeriesAsync(fileCandidates, new ImageSequenceImportSettings { progressHandler = progressHandler });
                     float numVolumesCreated = 0;
 
+                    progressHandler.EndStage();
+                    progressHandler.StartStage(0.4f);
+
+                    int seriesIndex = 0, numSeries = seriesList.Count();
                     foreach (IImageSequenceSeries series in seriesList)
                     {
-                        VolumeDataset dataset = await importer.ImportSeriesAsync(series);
+                        progressHandler.ReportProgress(seriesIndex, numSeries, $"Importing series {seriesIndex} of {numSeries}");
+                        progressHandler.StartStage(0.8f);
+                        VolumeDataset dataset = await importer.ImportSeriesAsync(series, new ImageSequenceImportSettings { progressHandler = progressHandler });
+                        progressHandler.EndStage();
                         if (dataset != null)
                         {
                             if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
@@ -82,12 +93,14 @@ namespace UnityVolumeRendering
                             obj.transform.position = new Vector3(numVolumesCreated, 0, 0);
                             numVolumesCreated++;
                         }
+                        seriesIndex++;
                     }
+
+                    progressHandler.EndStage();
                 }
                 else
                     Debug.LogError("Could not find any DICOM files to import.");
-
-
+                progressHandler.Finish();
             }
             else
             {
@@ -108,44 +121,23 @@ namespace UnityVolumeRendering
                 return;
             }
 
-#if USE_ASYNC_LOADING
             ImportNRRDDatasetAsync();
-#else
-            ImportNRRDDataset();
-#endif
         }
-        static void ImportNRRDDataset()
-        {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nrrd)", "DataFiles", "");
-            if (File.Exists(file))
-            {
-                IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.NRRD);
-                VolumeDataset dataset = importer.Import(file);
 
-                if (dataset != null)
-                {
-                    VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
-                }
-                else
-                {
-                    Debug.LogError("Failed to import datset");
-                }
-            }
-            else
-            {
-                Debug.LogError("File doesn't exist: " + file);
-            }
-        }
         static async void ImportNRRDDatasetAsync()
         {
             string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nrrd)", "DataFiles", "");
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
+                using ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView());
+                progressHandler.Start("NRRD import", "Importing NRRD...");
+                progressHandler.ReportProgress(0.0f, "Importing NRRD dataset");
 
                 IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.NRRD);
                 VolumeDataset dataset = await importer.ImportAsync(file);
 
+                progressHandler.ReportProgress(0.8f, "Creating object");
                 if (dataset != null)
                 {
                     VolumeRenderedObject obj = await VolumeObjectFactory.CreateObjectAsync(dataset);
@@ -154,6 +146,7 @@ namespace UnityVolumeRendering
                 {
                     Debug.LogError("Failed to import datset");
                 }
+                progressHandler.Finish();
             }
             else
             {
@@ -164,43 +157,23 @@ namespace UnityVolumeRendering
         [MenuItem("Volume Rendering/Load dataset/Load NIFTI dataset")]
         static void ShowNIFTIDatasetImporter()
         {
-#if USE_ASYNC_LOADING
             ImportNIFTIDatasetAsync();
-#else
-            ImportNIFTIDataset();
-#endif
         }
-        static void ImportNIFTIDataset()
-        {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nii)", "DataFiles", "");
-            if (File.Exists(file))
-            {
-                IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.NIFTI);
-                VolumeDataset dataset = importer.Import(file);
 
-                if (dataset != null)
-                {
-                    VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
-                }
-                else
-                {
-                    Debug.LogError("Failed to import datset");
-                }
-            }
-            else
-            {
-                Debug.LogError("File doesn't exist: " + file);
-            }
-        }
         static async void ImportNIFTIDatasetAsync()
         {
             string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nii)", "DataFiles", "");
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
+                using ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView());
+                progressHandler.Start("NIfTI import", "Importing NIfTI...");
+                progressHandler.ReportProgress(0.0f, "Importing NIfTI dataset");
 
                 IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.NIFTI);
                 VolumeDataset dataset = await importer.ImportAsync(file);
+
+                progressHandler.ReportProgress(0.0f, "Creating object");
 
                 if (dataset != null)
                 {
@@ -210,6 +183,7 @@ namespace UnityVolumeRendering
                 {
                     Debug.LogError("Failed to import datset");
                 }
+                progressHandler.Finish();
             }
             else
             {
@@ -220,43 +194,23 @@ namespace UnityVolumeRendering
         [MenuItem("Volume Rendering/Load dataset/Load PARCHG dataset")]
         static void ShowParDatasetImporter()
         {
-#if USE_ASYNC_LOADING
             ImportParDatasetAsync();
-#else
-            ImportParDataset();
-#endif
         }
-        static void ImportParDataset()
-        {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "DataFiles", "");
-            if (File.Exists(file))
-            {
-                IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.VASP);
-                VolumeDataset dataset = importer.Import(file);
 
-                if (dataset != null)
-                {
-                    VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
-                }
-                else
-                {
-                    Debug.LogError("Failed to import datset");
-                }
-            }
-            else
-            {
-                Debug.LogError("File doesn't exist: " + file);
-            }
-        }
         static async void ImportParDatasetAsync()
         {
             string file = EditorUtility.OpenFilePanel("Select a dataset to load", "DataFiles", "");
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
+                using ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView());
+                progressHandler.Start("VASP import", "Importing VASP...");
+                progressHandler.ReportProgress(0.0f, "Importing VASP dataset");
 
                 IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.VASP);
                 VolumeDataset dataset = await importer.ImportAsync(file);
+
+                progressHandler.ReportProgress(0.0f, "Creating object");
 
                 if (dataset != null)
                 {
@@ -266,6 +220,7 @@ namespace UnityVolumeRendering
                 {
                     Debug.LogError("Failed to import datset");
                 }
+                progressHandler.Finish();
             }
             else
             {
@@ -276,45 +231,9 @@ namespace UnityVolumeRendering
         [MenuItem("Volume Rendering/Load dataset/Load image sequence")]
         static void ShowSequenceImporter()
         {
-#if USE_ASYNC_LOADING
             ImportSequenceAsync();
-#else
-            ImportSequence();
-#endif
         }
-        static void ImportSequence()
-        {
-            string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
 
-            if (Directory.Exists(dir))
-            {
-                List<string> filePaths = Directory.GetFiles(dir).ToList();
-                IImageSequenceImporter importer = ImporterFactory.CreateImageSequenceImporter(ImageSequenceFormat.ImageSequence);
-
-                IEnumerable<IImageSequenceSeries> seriesList = importer.LoadSeries(filePaths);
-
-                foreach (IImageSequenceSeries series in seriesList)
-                {
-                    VolumeDataset dataset = importer.ImportSeries(series);
-                    if (dataset != null)
-                    {
-                        if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
-                        {
-                            if (EditorUtility.DisplayDialog("Optional DownScaling",
-                                $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
-                            {
-                                dataset.DownScaleData();
-                            }
-                        }
-                        VolumeObjectFactory.CreateObject(dataset);
-                    }
-                }
-            }
-            else
-            {
-                Debug.LogError("Directory doesn't exist: " + dir);
-            }
-        }
         static async void ImportSequenceAsync()
         {
             string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");

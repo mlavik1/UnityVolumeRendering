@@ -19,6 +19,24 @@ namespace UnityVolumeRendering
         IEnumerable<IImageSequenceFile> GetFiles();
     }
 
+    public struct ImageSequenceImportSettings
+    {
+        public IProgressHandler progressHandler
+        {
+            get
+            {
+                return progressHandlerInternal ?? new NullProgressHandler();
+            }
+
+            set
+            {
+                progressHandlerInternal = value;
+            }
+        }
+
+        private IProgressHandler progressHandlerInternal;
+    }
+
     /// <summary>
     /// Importer for image sequence datasets, such as DICOM and image sequences.
     /// These datasets usually contain one file per slice.
@@ -33,15 +51,15 @@ namespace UnityVolumeRendering
         /// </summary>
         /// <param name="files">Files to load. Typically all the files stored in a specific (DICOM) directory.</param>
         /// <returns>List of image sequence series.</returns>
-        IEnumerable<IImageSequenceSeries> LoadSeries(IEnumerable<string> files);
-        Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> files);
+        IEnumerable<IImageSequenceSeries> LoadSeries(IEnumerable<string> files, ImageSequenceImportSettings settings = new ImageSequenceImportSettings());
+        Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> files, ImageSequenceImportSettings settings = new ImageSequenceImportSettings());
 
         /// <summary>
         /// Import a single image sequence series.
         /// </summary>
         /// <param name="series">The series to import</param>
         /// <returns>Imported 3D volume dataset.</returns>
-        VolumeDataset ImportSeries(IImageSequenceSeries series);
-        Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series);
+        VolumeDataset ImportSeries(IImageSequenceSeries series, ImageSequenceImportSettings settings = new ImageSequenceImportSettings());
+        Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series, ImageSequenceImportSettings settings = new ImageSequenceImportSettings());
     }
 }

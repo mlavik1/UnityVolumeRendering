@@ -42,32 +42,34 @@ namespace UnityVolumeRendering
             ".jpeg"
         };
 
-        public IEnumerable<IImageSequenceSeries> LoadSeries(IEnumerable<string> files)
+        public IEnumerable<IImageSequenceSeries> LoadSeries(IEnumerable<string> files, ImageSequenceImportSettings settings)
         {
             Dictionary<string, ImageSequenceSeries> sequenceByFiletype = new Dictionary<string, ImageSequenceSeries>();
 
-            LoadSeriesInternal(files, sequenceByFiletype);
+            LoadSeriesInternal(files, sequenceByFiletype, settings.progressHandler);
 
             if (sequenceByFiletype.Count == 0)
                 Debug.LogError("Found no image files of supported formats. Currently supported formats are: " + supportedImageTypes.ToString());
 
             return sequenceByFiletype.Select(f => f.Value).ToList();
         }
-        public async Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> files)
+        public async Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> files, ImageSequenceImportSettings settings)
         {
             Dictionary<string, ImageSequenceSeries> sequenceByFiletype = new Dictionary<string, ImageSequenceSeries>();
 
-            await Task.Run(() =>LoadSeriesInternal(files,sequenceByFiletype));
+            await Task.Run(() =>LoadSeriesInternal(files,sequenceByFiletype, settings.progressHandler));
 
             if (sequenceByFiletype.Count == 0)
                 Debug.LogError("Found no image files of supported formats. Currently supported formats are: " + supportedImageTypes.ToString());
 
             return sequenceByFiletype.Select(f => f.Value).ToList();
         }
-        private void LoadSeriesInternal(IEnumerable<string> files, Dictionary<string, ImageSequenceSeries> sequenceByFiletype)
+        private void LoadSeriesInternal(IEnumerable<string> files, Dictionary<string, ImageSequenceSeries> sequenceByFiletype, IProgressHandler progress)
         {
+            int fileIndex = 0, numFiles = files.Count();
             foreach (string filePath in files)
             {
+                progress.ReportProgress(fileIndex, numFiles, $"Loading DICOM file {fileIndex} of {numFiles}");
                 string fileExt = Path.GetExtension(filePath).ToLower();
                 if (supportedImageTypes.Contains(fileExt))
                 {
@@ -81,7 +83,7 @@ namespace UnityVolumeRendering
             }
         }
 
-        public VolumeDataset ImportSeries(IImageSequenceSeries series)
+        public VolumeDataset ImportSeries(IImageSequenceSeries series, ImageSequenceImportSettings settings)
         {
             List<string> imagePaths = series.GetFiles().Select(f => f.GetFilePath()).ToList();
 
@@ -93,7 +95,7 @@ namespace UnityVolumeRendering
 
             return dataset;
         }
-        public async Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series)
+        public async Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series, ImageSequenceImportSettings settings)
         {
             List<string> imagePaths = null;
             VolumeDataset dataset = null;
@@ -101,7 +103,7 @@ namespace UnityVolumeRendering
             await Task.Run(() => { imagePaths = series.GetFiles().Select(f => f.GetFilePath()).ToList(); }); ;
 
             Vector3Int dimensions = GetVolumeDimensions(imagePaths);
-            int[] data = FillSequentialData(dimensions, imagePaths);        //Long
+            int[] data = FillSequentialData(dimensions, imagePaths);
             dataset = await FillVolumeDatasetAsync(data, dimensions);
             dataset.FixDimensions();
 
