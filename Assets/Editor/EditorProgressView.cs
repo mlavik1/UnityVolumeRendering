@@ -15,11 +15,11 @@ namespace UnityVolumeRendering
             EditorApplication.update += EditorUpdate;
         }
 
-        public void FinishProgress(bool failed = false)
+        public void FinishProgress(ProgressStatus status = ProgressStatus.Succeeded)
         {
             if (progressId != -1)
             {
-                Progress.Finish(progressId, failed ? Progress.Status.Failed : Progress.Status.Succeeded);
+                Progress.Finish(progressId, status == ProgressStatus.Failed ? Progress.Status.Failed : Progress.Status.Succeeded);
                 progressId = -1;
             }
             EditorApplication.update -= EditorUpdate;
