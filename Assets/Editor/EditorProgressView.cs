@@ -1,3 +1,4 @@
+#if UNITY_2020_1_OR_NEWER
 using UnityEditor;
 
 namespace UnityVolumeRendering
@@ -46,3 +47,22 @@ namespace UnityVolumeRendering
         }
     }
 }
+#else
+namespace UnityVolumeRendering
+{
+    public class EditorProgressView : IProgressView
+    {
+        public void StartProgress(string title, string description)
+        {
+        }
+
+        public void FinishProgress(ProgressStatus status = ProgressStatus.Succeeded)
+        {
+        }
+
+        public void UpdateProgress(float progress, string description)
+        {
+        }
+    }
+}
+#endif

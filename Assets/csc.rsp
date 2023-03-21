@@ -1,0 +1,2 @@
+﻿-r:System.IO.Compression.FileSystem.dll
+-r:System.IO.Compression.dll

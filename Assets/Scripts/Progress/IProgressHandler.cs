@@ -2,9 +2,9 @@ namespace UnityVolumeRendering
 {
     public interface IProgressHandler
     {
-        public void StartStage(float weight, string description = "");
-        public void EndStage();
-        public void ReportProgress(float progress, string description = "");
-        public void ReportProgress(int currentStep, int totalSteps, string description = "");
+        void StartStage(float weight, string description = "");
+        void EndStage();
+        void ReportProgress(float progress, string description = "");
+        void ReportProgress(int currentStep, int totalSteps, string description = "");
     }
 }

@@ -4,7 +4,6 @@ using System.IO;
 using System;
 using System.Threading.Tasks;
 
-
 namespace UnityVolumeRendering
 {
     /// <summary>
@@ -46,36 +45,38 @@ namespace UnityVolumeRendering
 
         private async Task ImportDatasetAsync()
         {
-            using ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView());
-            progressHandler.Start("RAW import", "Importing RAW...");
-            progressHandler.ReportProgress(0.0f, "Importing RAW dataset");
-
-            RawDatasetImporter importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, endianness, bytesToSkip);
-            VolumeDataset dataset = await importer.ImportAsync();
-
-            if (dataset != null)
+            using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
             {
-                if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
+                progressHandler.Start("RAW import", "Importing RAW...");
+                progressHandler.ReportProgress(0.0f, "Importing RAW dataset");
+
+                RawDatasetImporter importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, endianness, bytesToSkip);
+                VolumeDataset dataset = await importer.ImportAsync();
+
+                if (dataset != null)
                 {
-                    if (EditorUtility.DisplayDialog("Optional DownScaling",
-                        $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
+                    if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
                     {
-                        Debug.Log("Async dataset downscale. Hold on.");
-                        progressHandler.ReportProgress(0.7f, "Downscaling dataset");
-                        await Task.Run(() =>  dataset.DownScaleData());
+                        if (EditorUtility.DisplayDialog("Optional DownScaling",
+                            $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
+                        {
+                            Debug.Log("Async dataset downscale. Hold on.");
+                            progressHandler.ReportProgress(0.7f, "Downscaling dataset");
+                            await Task.Run(() =>  dataset.DownScaleData());
+                        }
                     }
+                    progressHandler.ReportProgress(0.8f, "Creating object");
+                    VolumeRenderedObject obj = await VolumeObjectFactory.CreateObjectAsync(dataset);
                 }
-                progressHandler.ReportProgress(0.8f, "Creating object");
-                VolumeRenderedObject obj = await VolumeObjectFactory.CreateObjectAsync(dataset);
-            }
-            else
-            {
-                Debug.LogError("Failed to import datset");
-            }
+                else
+                {
+                    Debug.LogError("Failed to import datset");
+                }
 
-            progressHandler.Finish();
+                progressHandler.Finish();
 
-            this.Close();
+                this.Close();
+            }
         }
 
         private async void StartImport()
