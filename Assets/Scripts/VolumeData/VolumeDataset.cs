@@ -176,45 +176,6 @@ namespace UnityVolumeRendering
             }
         }
 
-        private Texture3D CreateTextureInternal()
-        {
-            TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RHalf) ? TextureFormat.RHalf : TextureFormat.RFloat;
-            Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
-            texture.wrapMode = TextureWrapMode.Clamp;
-
-            float minValue = GetMinDataValue();
-            float maxValue = GetMaxDataValue();
-            float maxRange = maxValue - minValue;
-
-            bool isHalfFloat = texformat == TextureFormat.RHalf;
-            try
-            {
-                if (isHalfFloat)
-                {
-                    NativeArray<ushort> pixelBytes = new NativeArray<ushort>(data.Length, Allocator.Temp);
-                    for (int iData = 0; iData < data.Length; iData++)
-                        pixelBytes[iData] = Mathf.FloatToHalf((float)(data[iData] - minValue) / maxRange);
-                    texture.SetPixelData(pixelBytes, 0);
-                }
-                else
-                {
-                    NativeArray<float> pixelBytes = new NativeArray<float>(data.Length, Allocator.Temp);
-                    for (int iData = 0; iData < data.Length; iData++)
-                        pixelBytes[iData] = (float)(data[iData] - minValue) / maxRange;
-                    texture.SetPixelData(pixelBytes, 0);
-                }
-            }
-            catch (OutOfMemoryException)
-            {
-                Debug.LogWarning("Out of memory when creating texture. Using fallback method.");
-                for (int x = 0; x < dimX; x++)
-                    for (int y = 0; y < dimY; y++)
-                        for (int z = 0; z < dimZ; z++)
-                            texture.SetPixel(x, y, z, new Color((float)(data[x + y * dimX + z * (dimX * dimY)] - minValue) / maxRange, 0.0f, 0.0f, 0.0f));
-            }
-            texture.Apply();
-            return texture;
-        }
         private async Task<Texture3D> CreateTextureInternalAsync()                                        
         {
             Debug.Log("Async texture generation. Hold on.");
@@ -288,50 +249,6 @@ namespace UnityVolumeRendering
             return texture;
         }
 
-        private Texture3D CreateGradientTextureInternal() 
-        {
-            TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RGBAHalf) ? TextureFormat.RGBAHalf : TextureFormat.RGBAFloat;
-            Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
-            texture.wrapMode = TextureWrapMode.Clamp;
-
-            float minValue = GetMinDataValue();
-            float maxValue = GetMaxDataValue();
-            float maxRange = maxValue - minValue;
-
-            Color[] cols;
-            try
-            {
-                cols = new Color[data.Length];
-            }
-            catch (OutOfMemoryException)
-            {
-                cols = null;
-            }
-            for (int x = 0; x < dimX; x++)
-            {
-                for (int y = 0; y < dimY; y++)
-                {
-                    for (int z = 0; z < dimZ; z++)
-                    {
-                        int iData = x + y * dimX + z * (dimX * dimY);
-
-                        Vector3 grad = GetGrad(x, y, z, minValue, maxRange);
-                        
-                        if (cols == null)
-                        {
-                            texture.SetPixel(x, y, z, new Color(grad.x, grad.y, grad.z, (float)(data[iData] - minValue) / maxRange));
-                        }
-                        else
-                        {
-                            cols[iData] = new Color(grad.x, grad.y, grad.z, (float)(data[iData] - minValue) / maxRange);
-                        }
-                    }
-                }
-            }
-            if (cols != null) texture.SetPixels(cols);
-            texture.Apply();
-            return texture;
-        }
         private async Task<Texture3D> CreateGradientTextureInternalAsync()
         {
             Debug.Log("Async gradient generation. Hold on.");
