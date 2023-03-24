@@ -51,7 +51,7 @@ namespace UnityVolumeRendering
 
         private int iFallbackLoc = 0;
 
-        public IEnumerable<IImageSequenceSeries> LoadSeries(IEnumerable<string> fileCandidates)
+        public IEnumerable<IImageSequenceSeries> LoadSeries(IEnumerable<string> fileCandidates, ImageSequenceImportSettings settings)
         {
             DataElementDictionary dataElementDictionary = new DataElementDictionary();
             UidDictionary uidDictionary = new UidDictionary();
@@ -62,13 +62,13 @@ namespace UnityVolumeRendering
             LoadSeriesFromResourcesInternal(dataElementDictionary, uidDictionary);
 
             // Load all DICOM files
-            LoadSeriesInternal(fileCandidates, seriesByUID);
+            LoadSeriesInternal(fileCandidates, seriesByUID, settings.progressHandler);
 
             Debug.Log($"Loaded {seriesByUID.Count} DICOM series");
 
             return new List<DICOMSeries>(seriesByUID.Values);
         }
-        public async Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> fileCandidates)
+        public async Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> fileCandidates, ImageSequenceImportSettings settings)
         {
             DataElementDictionary dataElementDictionary = new DataElementDictionary();
             UidDictionary uidDictionary = new UidDictionary();
@@ -78,22 +78,24 @@ namespace UnityVolumeRendering
 
             LoadSeriesFromResourcesInternal(dataElementDictionary, uidDictionary);
 
-            await Task.Run(()=> LoadSeriesInternal(fileCandidates, seriesByUID));
+            await Task.Run(()=> LoadSeriesInternal(fileCandidates, seriesByUID, settings.progressHandler));
 
             Debug.Log($"Loaded {seriesByUID.Count} DICOM series");
 
 
             return new List<DICOMSeries>(seriesByUID.Values);
         }
-        private void LoadSeriesInternal(IEnumerable<string> fileCandidates, Dictionary<string, DICOMSeries> seriesByUID)
+        private void LoadSeriesInternal(IEnumerable<string> fileCandidates, Dictionary<string, DICOMSeries> seriesByUID, IProgressHandler progress)
         {
             // Load all DICOM files
             List<DICOMSliceFile> files = new List<DICOMSliceFile>();
 
             IEnumerable<string> sortedFiles = fileCandidates.OrderBy(s => s);
 
+            int fileIndex = 0, numFiles = sortedFiles.Count();
             foreach (string filePath in sortedFiles)
             {
+                progress.ReportProgress(fileIndex, numFiles, $"Loading DICOM file {fileIndex} of {numFiles}");
                 DICOMSliceFile sliceFile = ReadDICOMFile(filePath);
                 if (sliceFile != null)
                 {
@@ -102,6 +104,7 @@ namespace UnityVolumeRendering
                     else
                         files.Add(sliceFile);
                 }
+                fileIndex++;
             }
 
             foreach (DICOMSliceFile file in files)
@@ -132,7 +135,7 @@ namespace UnityVolumeRendering
             }
         }
 
-        public VolumeDataset ImportSeries(IImageSequenceSeries series)
+        public VolumeDataset ImportSeries(IImageSequenceSeries series, ImageSequenceImportSettings settings)
         {
             DICOMSeries dicomSeries = (DICOMSeries)series;
             List<DICOMSliceFile> files = dicomSeries.dicomFiles;
@@ -146,11 +149,11 @@ namespace UnityVolumeRendering
             // Create dataset
             VolumeDataset dataset = new VolumeDataset();
 
-            ImportSeriesInternal(files, dataset);
+            ImportSeriesInternal(files, dataset, settings.progressHandler);
 
             return dataset;
         }
-        public async Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series)
+        public async Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series, ImageSequenceImportSettings settings)
         {
             DICOMSeries dicomSeries = (DICOMSeries)series;
             List<DICOMSliceFile> files = dicomSeries.dicomFiles;
@@ -164,11 +167,11 @@ namespace UnityVolumeRendering
             // Create dataset
             VolumeDataset dataset = new VolumeDataset();
 
-            await Task.Run(() => ImportSeriesInternal(files,dataset));
+            await Task.Run(() => ImportSeriesInternal(files,dataset, settings.progressHandler));
 
             return dataset;
         }
-        private void ImportSeriesInternal(List<DICOMSliceFile> files,VolumeDataset dataset)
+        private void ImportSeriesInternal(List<DICOMSliceFile> files,VolumeDataset dataset, IProgressHandler progress)
         {
             // Check if the series is missing the slice location tag
             bool needsCalcLoc = false;
@@ -195,6 +198,7 @@ namespace UnityVolumeRendering
 
             for (int iSlice = 0; iSlice < files.Count; iSlice++)
             {
+                progress.ReportProgress(iSlice, files.Count, $"Importing slice {iSlice} of {files.Count}");
                 DICOMSliceFile slice = files[iSlice];
                 PixelData pixelData = slice.file.PixelData;
                 int[] pixelArr = ToPixelArray(pixelData);

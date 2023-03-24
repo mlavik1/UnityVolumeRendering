@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
@@ -38,6 +39,8 @@ namespace UnityVolumeRendering
         private bool cubicInterpolationEnabled = false;
 
         private CrossSectionManager crossSectionManager;
+
+        private SemaphoreSlim updateMatLock = new SemaphoreSlim(1, 1);
 
         public SlicingPlane CreateSlicingPlane()
         {
@@ -192,28 +195,26 @@ namespace UnityVolumeRendering
 
         private void UpdateMaterialProperties()
         {
-#if USE_ASYNC_LOADING
             UpdateMatAsync();
-#else
-            UpdateMat();
-#endif
         }
-        private void UpdateMat()
-        {
-            bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
 
-            meshRenderer.sharedMaterial.SetTexture("_GradientTex", useGradientTexture ? dataset.GetGradientTexture() : null);
-
-            UpdateMatInternal();
-        }
         private async void UpdateMatAsync()
         {
-            bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
+            await updateMatLock.WaitAsync();
 
-            meshRenderer.sharedMaterial.SetTexture("_GradientTex", useGradientTexture ? await dataset.GetGradientTextureAsync() : null);
-
-            UpdateMatInternal();
+            try
+            {
+                bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
+                Texture3D texture = useGradientTexture ? await dataset.GetGradientTextureAsync() : null;
+                meshRenderer.sharedMaterial.SetTexture("_GradientTex", texture);
+                UpdateMatInternal();
+            }
+            finally
+            {
+                updateMatLock.Release();
+            }
         }
+
         private void UpdateMatInternal()
         {
             if (tfRenderMode == TFRenderMode.TF2D)

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Unity.Collections;
 using UnityEditor;
@@ -40,20 +41,34 @@ namespace UnityVolumeRendering
         private Texture3D dataTexture = null;
         private Texture3D gradientTexture = null;
 
-        bool currentlyCreatingGradient = false;                  //Simple lock, otherwise in RuntimeGui script, the create gradient async would be called many times resulting in possible crash
-        
-        
+        private SemaphoreSlim createDataTextureLock = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim createGradientTextureLock = new SemaphoreSlim(1, 1);
+
         public Texture3D GetDataTexture()
         {
             if (dataTexture == null)
-                dataTexture = CreateTextureInternal();
-            return dataTexture;
+            {
+                dataTexture = AsyncHelper.RunSync<Texture3D>(() => CreateTextureInternalAsync());
+                return dataTexture;
+            }
+            else
+            {
+                return dataTexture;
+            }
         }
         public async Task<Texture3D> GetDataTextureAsync()
         {
             if (dataTexture == null)
             {
-                await CreateTextureInternalAsync();
+                await createDataTextureLock.WaitAsync();
+                try
+                {
+                    dataTexture = await CreateTextureInternalAsync();
+                }
+                finally
+                {
+                    createDataTextureLock.Release();
+                }
             }
             return dataTexture;
         }
@@ -61,14 +76,28 @@ namespace UnityVolumeRendering
         public Texture3D GetGradientTexture()
         {
             if (gradientTexture == null)
-                gradientTexture = CreateGradientTextureInternal();
-            return gradientTexture;
+            {
+                gradientTexture = AsyncHelper.RunSync<Texture3D>(() => CreateGradientTextureInternalAsync());
+                return gradientTexture;
+            }
+            else
+            {
+                return gradientTexture;
+            }
         }
         public async Task<Texture3D> GetGradientTextureAsync()
         {
             if (gradientTexture == null)
             {
-                await CreateGradientTextureInternalAsync();
+                await createGradientTextureLock.WaitAsync();
+                try
+                {
+                    gradientTexture = await CreateGradientTextureInternalAsync();
+                }
+                finally
+                {
+                    createGradientTextureLock.Release();
+                }
             }
             return gradientTexture;
         }
@@ -147,46 +176,7 @@ namespace UnityVolumeRendering
             }
         }
 
-        private Texture3D CreateTextureInternal()
-        {
-            TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RHalf) ? TextureFormat.RHalf : TextureFormat.RFloat;
-            Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
-            texture.wrapMode = TextureWrapMode.Clamp;
-
-            float minValue = GetMinDataValue();
-            float maxValue = GetMaxDataValue();
-            float maxRange = maxValue - minValue;
-
-            bool isHalfFloat = texformat == TextureFormat.RHalf;
-            try
-            {
-                if (isHalfFloat)
-                {
-                    NativeArray<ushort> pixelBytes = new NativeArray<ushort>(data.Length, Allocator.Temp);
-                    for (int iData = 0; iData < data.Length; iData++)
-                        pixelBytes[iData] = Mathf.FloatToHalf((float)(data[iData] - minValue) / maxRange);
-                    texture.SetPixelData(pixelBytes, 0);
-                }
-                else
-                {
-                    NativeArray<float> pixelBytes = new NativeArray<float>(data.Length, Allocator.Temp);
-                    for (int iData = 0; iData < data.Length; iData++)
-                        pixelBytes[iData] = (float)(data[iData] - minValue) / maxRange;
-                    texture.SetPixelData(pixelBytes, 0);
-                }
-            }
-            catch (OutOfMemoryException)
-            {
-                Debug.LogWarning("Out of memory when creating texture. Using fallback method.");
-                for (int x = 0; x < dimX; x++)
-                    for (int y = 0; y < dimY; y++)
-                        for (int z = 0; z < dimZ; z++)
-                            texture.SetPixel(x, y, z, new Color((float)(data[x + y * dimX + z * (dimX * dimY)] - minValue) / maxRange, 0.0f, 0.0f, 0.0f));
-            }
-            texture.Apply();
-            return texture;
-        }
-        private async Task CreateTextureInternalAsync()                                        
+        private async Task<Texture3D> CreateTextureInternalAsync()                                        
         {
             Debug.Log("Async texture generation. Hold on.");
 
@@ -204,48 +194,46 @@ namespace UnityVolumeRendering
                 maxRange = maxValue - minValue;
             });
 
+            Texture3D texture = null;
             bool isHalfFloat = texformat == TextureFormat.RHalf;
 
             try
             {
                 if (isHalfFloat)
                 {
-                    NativeArray<ushort> pixelBytes = new NativeArray<ushort>(data.Length, Allocator.TempJob);           //TempJob instead of temp, otherwise it crashes in runtime gui
+                    NativeArray<ushort> pixelBytes = new NativeArray<ushort>(data.Length, Allocator.Persistent);
 
                     await Task.Run(() => {
                         for (int iData = 0; iData < data.Length; iData++)
                             pixelBytes[iData] = Mathf.FloatToHalf((float)(data[iData] - minValue) / maxRange);
                     });
 
-                    Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);                  //Grouped texture stuff so it doesnt freezes twice, but only once
+                    texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
                     texture.wrapMode = TextureWrapMode.Clamp;
                     texture.SetPixelData(pixelBytes, 0);
                     texture.Apply();
                     dataTexture = texture;
-
                     pixelBytes.Dispose();
                 }
                 else
                 {
-                    NativeArray<float> pixelBytes = new NativeArray<float>(data.Length, Allocator.TempJob);         //TempJob instead of temp, otherwise it crashes in runtime gui
+                    NativeArray<float> pixelBytes = new NativeArray<float>(data.Length, Allocator.Persistent);
 
                     await Task.Run(() => {
                         for (int iData = 0; iData < data.Length; iData++)
                             pixelBytes[iData] = (float)(data[iData] - minValue) / maxRange;
                     });
 
-                    Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);                  //Grouped texture stuff so it doesnt freezes twice, but only once
+                    texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
                     texture.wrapMode = TextureWrapMode.Clamp;
                     texture.SetPixelData(pixelBytes, 0);
                     texture.Apply();
-                    dataTexture = texture;
-
                     pixelBytes.Dispose();
                 }
             }
             catch (OutOfMemoryException)
             {
-                Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);               
+                texture = new Texture3D(dimX, dimY, dimZ, texformat, false);               
                 texture.wrapMode = TextureWrapMode.Clamp;
 
 
@@ -256,61 +244,13 @@ namespace UnityVolumeRendering
                             texture.SetPixel(x, y, z, new Color((float)(data[x + y * dimX + z * (dimX * dimY)] - minValue) / maxRange, 0.0f, 0.0f, 0.0f));
 
                 texture.Apply();
-                dataTexture = texture;
             }
             Debug.Log("Texture generation done.");
-        }
-
-        private Texture3D CreateGradientTextureInternal() 
-        {
-            TextureFormat texformat = SystemInfo.SupportsTextureFormat(TextureFormat.RGBAHalf) ? TextureFormat.RGBAHalf : TextureFormat.RGBAFloat;
-            Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
-            texture.wrapMode = TextureWrapMode.Clamp;
-
-            float minValue = GetMinDataValue();
-            float maxValue = GetMaxDataValue();
-            float maxRange = maxValue - minValue;
-
-            Color[] cols;
-            try
-            {
-                cols = new Color[data.Length];
-            }
-            catch (OutOfMemoryException)
-            {
-                cols = null;
-            }
-            for (int x = 0; x < dimX; x++)
-            {
-                for (int y = 0; y < dimY; y++)
-                {
-                    for (int z = 0; z < dimZ; z++)
-                    {
-                        int iData = x + y * dimX + z * (dimX * dimY);
-
-                        Vector3 grad = GetGrad(x, y, z, minValue, maxRange);
-                        
-                        if (cols == null)
-                        {
-                            texture.SetPixel(x, y, z, new Color(grad.x, grad.y, grad.z, (float)(data[iData] - minValue) / maxRange));
-                        }
-                        else
-                        {
-                            cols[iData] = new Color(grad.x, grad.y, grad.z, (float)(data[iData] - minValue) / maxRange);
-                        }
-                    }
-                }
-            }
-            if (cols != null) texture.SetPixels(cols);
-            texture.Apply();
             return texture;
         }
-        private async Task CreateGradientTextureInternalAsync()
+
+        private async Task<Texture3D> CreateGradientTextureInternalAsync()
         {
-            if (currentlyCreatingGradient) return;
-
-            currentlyCreatingGradient = true;
-
             Debug.Log("Async gradient generation. Hold on.");
 
             Texture3D.allowThreadedTextureCreation = true;
@@ -351,11 +291,10 @@ namespace UnityVolumeRendering
                     }
                 }
                 textureTmp.Apply();
-                gradientTexture = textureTmp;
 
                 Debug.Log("Gradient gereneration done.");
 
-                return;
+                return textureTmp;
             }
 
             await Task.Run(() => {
@@ -378,10 +317,9 @@ namespace UnityVolumeRendering
             texture.wrapMode = TextureWrapMode.Clamp;
             texture.SetPixels(cols);
             texture.Apply();
-            gradientTexture = texture;
 
             Debug.Log("Gradient gereneration done.");
-            currentlyCreatingGradient = false;
+            return texture;
 
         }
         public Vector3 GetGrad(int x, int y, int z, float minValue, float maxRange)

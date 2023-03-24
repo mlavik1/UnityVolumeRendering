@@ -37,19 +37,21 @@ namespace UnityVolumeRendering
             }
         }
 
-        public IEnumerable<IImageSequenceSeries> LoadSeries(IEnumerable<string> files)
+        public IEnumerable<IImageSequenceSeries> LoadSeries(IEnumerable<string> files, ImageSequenceImportSettings settings)
         {
             List<ImageSequenceSeries> seriesList= LoadSeriesInternal(files);
 
             return seriesList;
         }
-        public async Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> files)
+
+        public async Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> files, ImageSequenceImportSettings settings)
         {
             List<ImageSequenceSeries> seriesList = null;
             await Task.Run(() => seriesList=LoadSeriesInternal(files));
 
             return seriesList;
         }
+
         private List<ImageSequenceSeries> LoadSeriesInternal(IEnumerable<string> files)
         {
             HashSet<string> directories = new HashSet<string>();
@@ -88,7 +90,7 @@ namespace UnityVolumeRendering
             return seriesList;
         }
 
-        public VolumeDataset ImportSeries(IImageSequenceSeries series)
+        public VolumeDataset ImportSeries(IImageSequenceSeries series, ImageSequenceImportSettings settings)
         {
             Image image = null;
             float[] pixelData = null;
@@ -109,7 +111,8 @@ namespace UnityVolumeRendering
 
             return volumeDataset;
         }
-        public async Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series)
+
+        public async Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series, ImageSequenceImportSettings settings)
         {
             Image image = null;
             float[] pixelData = null;
@@ -130,6 +133,7 @@ namespace UnityVolumeRendering
 
             return volumeDataset;
         }
+
         private void ImportSeriesInternal(VectorString dicomNames, ImageSequenceSeries sequenceSeries, Image image, VectorUInt32 size, float[] pixelData,VolumeDataset volumeDataset)
         {
             ImageSeriesReader reader = new ImageSeriesReader();
