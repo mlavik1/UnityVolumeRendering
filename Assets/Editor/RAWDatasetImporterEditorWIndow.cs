@@ -91,6 +91,7 @@ namespace UnityVolumeRendering
                 importing = false;
                 Debug.LogException(ex);
             }
+            importing = false;
         }
 
         private void OnGUI()
