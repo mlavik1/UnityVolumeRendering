@@ -97,5 +97,17 @@ namespace UnityVolumeRendering
             UnityEditor.Selection.objects = new UnityEngine.Object[] { obj };
 #endif
         }
+        public static void SpawnCutoutSphere(VolumeRenderedObject volobj)
+        {
+            GameObject obj = GameObject.Instantiate((GameObject)Resources.Load("CutoutSphere"));
+            obj.transform.rotation = Quaternion.Euler(270.0f, 0.0f, 0.0f);
+            CutoutSphere cSphere = obj.gameObject.GetComponent<CutoutSphere>();
+            cSphere.SetTargetObject(volobj);
+            obj.transform.position = volobj.transform.position;
+
+#if UNITY_EDITOR
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { obj };
+#endif
+        }
     }
 }
