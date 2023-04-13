@@ -7,7 +7,9 @@ namespace UnityVolumeRendering
     {
         Plane = 1,
         BoxInclusive = 2,
-        BoxExclusive = 3
+        BoxExclusive = 3,
+        SphereInclusive = 4,
+        SphereExclusive = 5
     }
 
     public struct CrossSectionData

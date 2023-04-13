@@ -305,6 +305,13 @@ namespace UnityVolumeRendering
             if (objects.Length == 1)
                 VolumeObjectFactory.SpawnCutoutBox(objects[0]);
         }
+        [MenuItem("Volume Rendering/Cross section/Sphere cutout")]
+        static void SpawnCutoutSphere()
+        {
+            VolumeRenderedObject[] objects = GameObject.FindObjectsOfType<VolumeRenderedObject>();
+            if (objects.Length == 1)
+                VolumeObjectFactory.SpawnCutoutSphere(objects[0]);
+        }
 
         [MenuItem("Volume Rendering/1D Transfer Function")]
         public static void Show1DTFWindow()
