@@ -54,7 +54,7 @@ namespace UnityVolumeRendering
             Image firstSlice = SimpleItkUtils.ExtractSlice(image, 0);
             Image lastSlice = SimpleItkUtils.ExtractSlice(image, slicesNumber);
 
-            bool isDatasetReversed = SimpleItkUtils.IsHeadFeetDataset(firstSlice, lastSlice);
+            bool isDatasetReversed = !SimpleItkUtils.IsHeadFeetDataset(firstSlice, lastSlice);
 
             // Cast to 32-bit float
             image = SimpleITK.Cast(image, PixelIDValueEnum.sitkFloat32);
