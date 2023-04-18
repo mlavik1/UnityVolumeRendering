@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading.Tasks;
 using openDicom.Image;
 using System.Drawing;
+using System.Linq;
 
 namespace UnityVolumeRendering
 {
@@ -49,6 +50,12 @@ namespace UnityVolumeRendering
 
             Image image = reader.Execute();
 
+            int slicesNumber = (int)(image.GetDepth() - 1);
+            Image firstSlice = SimpleItkUtils.ExtractSlice(image, 0);
+            Image lastSlice = SimpleItkUtils.ExtractSlice(image, slicesNumber);
+
+            bool isDatasetReversed = SimpleItkUtils.IsHeadFeetDataset(firstSlice, lastSlice);
+
             // Cast to 32-bit float
             image = SimpleITK.Cast(image, PixelIDValueEnum.sitkFloat32);
 
@@ -64,8 +71,7 @@ namespace UnityVolumeRendering
             Marshal.Copy(imgBuffer, pixelData, 0, numPixels);
             spacing = image.GetSpacing();
 
-
-            volumeDataset.data = pixelData;
+            volumeDataset.data = isDatasetReversed? pixelData.Reverse().ToArray():pixelData;
             volumeDataset.dimX = (int)size[0];
             volumeDataset.dimY = (int)size[1];
             volumeDataset.dimZ = (int)size[2];

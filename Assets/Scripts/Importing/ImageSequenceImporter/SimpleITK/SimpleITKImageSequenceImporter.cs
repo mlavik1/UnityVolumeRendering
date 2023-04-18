@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading.Tasks;
 using openDicom.Image;
 using System.Drawing;
+using System.Linq;
 
 namespace UnityVolumeRendering
 {
@@ -138,6 +139,14 @@ namespace UnityVolumeRendering
         {
             ImageSeriesReader reader = new ImageSeriesReader();
 
+            string first = sequenceSeries.files.First().filePath;
+            string last = sequenceSeries.files.Last().filePath;
+
+            Image firstImage = SimpleITK.ReadImage(first);
+            Image lastImage = SimpleITK.ReadImage(last);
+
+            bool isDatasetReversed = !SimpleItkUtils.IsHeadFeetDataset(firstImage, lastImage);
+
             dicomNames = new VectorString();
 
             foreach (var dicomFile in sequenceSeries.files)
@@ -145,6 +154,9 @@ namespace UnityVolumeRendering
             reader.SetFileNames(dicomNames);
 
             image = reader.Execute();
+            //isDatasetReversed = false; // TODO: REMOVE ME
+            //image = SimpleITK.DICOMOrient(image, "RAS"); // TODO: REMOVE ME
+            image = SimpleITK.DICOMOrient(image, "LPS"); // TODO: REMOVE ME
 
             // Cast to 32-bit float
             image = SimpleITK.Cast(image, PixelIDValueEnum.sitkFloat32);
@@ -164,7 +176,7 @@ namespace UnityVolumeRendering
                 pixelData[i] = Mathf.Clamp(pixelData[i], -1024, 3071);
             VectorDouble spacing = image.GetSpacing();
 
-            volumeDataset.data = pixelData;
+            volumeDataset.data = isDatasetReversed ? pixelData.Reverse().ToArray() : pixelData;
             volumeDataset.dimX = (int)size[0];
             volumeDataset.dimY = (int)size[1];
             volumeDataset.dimZ = (int)size[2];
