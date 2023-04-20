@@ -49,6 +49,9 @@ namespace UnityVolumeRendering
 
             Image image = reader.Execute();
 
+            // Convert to LPS coordinate system (may be needed for NRRD and other datasets)
+            SimpleITK.DICOMOrient(image, "LPS");
+
             // Cast to 32-bit float
             image = SimpleITK.Cast(image, PixelIDValueEnum.sitkFloat32);
 
@@ -62,8 +65,13 @@ namespace UnityVolumeRendering
             pixelData = new float[numPixels];
             IntPtr imgBuffer = image.GetBufferAsFloat();
             Marshal.Copy(imgBuffer, pixelData, 0, numPixels);
-            spacing = image.GetSpacing();
 
+            // Reverse pixel array.
+            // TODO: Don't do this. Instead, keep the array is it is
+            //  and convert to unity coordinate space by changing the GameObject's scale and rotation.
+            Array.Reverse(pixelData);
+
+            spacing = image.GetSpacing();
 
             volumeDataset.data = pixelData;
             volumeDataset.dimX = (int)size[0];

@@ -134,7 +134,7 @@ namespace UnityVolumeRendering
             return volumeDataset;
         }
 
-        private void ImportSeriesInternal(VectorString dicomNames, ImageSequenceSeries sequenceSeries, Image image, VectorUInt32 size, float[] pixelData,VolumeDataset volumeDataset)
+        private void ImportSeriesInternal(VectorString dicomNames, ImageSequenceSeries sequenceSeries, Image image, VectorUInt32 size, float[] pixelData, VolumeDataset volumeDataset)
         {
             ImageSeriesReader reader = new ImageSeriesReader();
 
@@ -162,6 +162,12 @@ namespace UnityVolumeRendering
 
             for (int i = 0; i < pixelData.Length; i++)
                 pixelData[i] = Mathf.Clamp(pixelData[i], -1024, 3071);
+
+            // Reverse pixel array, since DICOM uses LPS space.
+            // TODO: Don't do this. Instead, keep the array is it is
+            //  and convert to unity coordinate space by changing the GameObject's scale and rotation.
+            Array.Reverse(pixelData);
+
             VectorDouble spacing = image.GetSpacing();
 
             volumeDataset.data = pixelData;
