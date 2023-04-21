@@ -177,12 +177,8 @@ namespace UnityVolumeRendering
                 (float)(spacing[2] * size[2])
             );
 
-            volumeDataset.scale = new Vector3(
-                -volumeDataset.scale.x,
-                volumeDataset.scale.y,
-                volumeDataset.scale.z
-            );
-            volumeDataset.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
+            // Convert from LPS to Unity's coordinate system
+            ImporterUtilsInternal.ConvertLPSToUnityCoordinateSpace(volumeDataset);
 
             volumeDataset.FixDimensions();
         }

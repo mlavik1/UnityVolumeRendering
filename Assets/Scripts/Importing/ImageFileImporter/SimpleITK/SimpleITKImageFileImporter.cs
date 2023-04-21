@@ -66,11 +66,6 @@ namespace UnityVolumeRendering
             IntPtr imgBuffer = image.GetBufferAsFloat();
             Marshal.Copy(imgBuffer, pixelData, 0, numPixels);
 
-            // Reverse pixel array.
-            // TODO: Don't do this. Instead, keep the array is it is
-            //  and convert to unity coordinate space by changing the GameObject's scale and rotation.
-            Array.Reverse(pixelData);
-
             spacing = image.GetSpacing();
 
             volumeDataset.data = pixelData;
@@ -84,6 +79,9 @@ namespace UnityVolumeRendering
                 (float)(spacing[1] * size[1]),
                 (float)(spacing[2] * size[2])
             );
+
+            // Convert from LPS to Unity's coordinate system
+            ImporterUtilsInternal.ConvertLPSToUnityCoordinateSpace(volumeDataset);
 
             volumeDataset.FixDimensions();
         }
