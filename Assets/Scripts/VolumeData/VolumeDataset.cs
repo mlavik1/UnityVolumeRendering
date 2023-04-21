@@ -24,11 +24,10 @@ namespace UnityVolumeRendering
         public int dimX, dimY, dimZ;
 
         [SerializeField]
-        public float scaleX = 1.0f;
+        public Vector3 scale = Vector3.one;
+
         [SerializeField]
-        public float scaleY = 1.0f;
-        [SerializeField]
-        public float scaleZ = 1.0f;
+        public Quaternion rotation;
         
         public float volumeScale;
 

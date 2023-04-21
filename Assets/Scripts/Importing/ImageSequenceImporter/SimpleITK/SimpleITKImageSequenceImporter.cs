@@ -163,11 +163,6 @@ namespace UnityVolumeRendering
             for (int i = 0; i < pixelData.Length; i++)
                 pixelData[i] = Mathf.Clamp(pixelData[i], -1024, 3071);
 
-            // Reverse pixel array, since DICOM uses LPS space.
-            // TODO: Don't do this. Instead, keep the array is it is
-            //  and convert to unity coordinate space by changing the GameObject's scale and rotation.
-            Array.Reverse(pixelData);
-
             VectorDouble spacing = image.GetSpacing();
 
             volumeDataset.data = pixelData;
@@ -176,9 +171,18 @@ namespace UnityVolumeRendering
             volumeDataset.dimZ = (int)size[2];
             volumeDataset.datasetName = "test";
             volumeDataset.filePath = dicomNames[0];
-            volumeDataset.scaleX = (float)(spacing[0] * size[0]);
-            volumeDataset.scaleY = (float)(spacing[1] * size[1]);
-            volumeDataset.scaleZ = (float)(spacing[2] * size[2]);
+            volumeDataset.scale = new Vector3(
+                (float)(spacing[0] * size[0]),
+                (float)(spacing[1] * size[1]),
+                (float)(spacing[2] * size[2])
+            );
+
+            volumeDataset.scale = new Vector3(
+                -volumeDataset.scale.x,
+                volumeDataset.scale.y,
+                volumeDataset.scale.z
+            );
+            volumeDataset.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
 
             volumeDataset.FixDimensions();
         }

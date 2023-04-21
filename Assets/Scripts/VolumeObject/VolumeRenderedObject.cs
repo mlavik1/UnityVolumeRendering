@@ -21,6 +21,9 @@ namespace UnityVolumeRendering
         public MeshRenderer meshRenderer;
 
         [SerializeField, HideInInspector]
+        public GameObject volumeContainerObject;
+
+        [SerializeField, HideInInspector]
         private RenderMode renderMode;
         [SerializeField, HideInInspector]
         private TFRenderMode tfRenderMode;

@@ -102,7 +102,7 @@ namespace UnityVolumeRendering
                 {
                     Vector2 mouseOffset = relMousePosNormalised - prevMousePos;
                     if (Mathf.Abs(mouseOffset.y) > 0.00001f)
-                        planeObj.transform.Translate(Vector3.up * mouseOffset.y);
+                        planeObj.transform.Translate(Vector3.up * mouseOffset.y, Space.World);
                 }
                 // Show value at mouse position.
                 else if (inputMode == InputMode.Inspect)
@@ -218,7 +218,7 @@ namespace UnityVolumeRendering
             Vector3 objSpacePoint = slicingPlane.targetObject.transform.InverseTransformPoint(worldSpacePosition);
             Vector3 uvw = objSpacePoint + Vector3.one * 0.5f;
             VolumeDataset dataset = slicingPlane.targetObject.dataset;
-            return new Vector3(uvw.x * dataset.scaleX, uvw.y * dataset.scaleY,uvw.z * dataset.scaleZ);
+            return new Vector3(uvw.x * dataset.scale.x, uvw.y * dataset.scale.y, uvw.z * dataset.scale.z);
         }
 
         private float GetValueAtPosition(Vector2 relativeMousePosition, SlicingPlane slicingPlane)
