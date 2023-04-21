@@ -77,7 +77,7 @@ namespace UnityVolumeRendering
                 SlicingPlane planeObj = spawnedPlanes[System.Math.Min(selectedPlaneIndex, spawnedPlanes.Length - 1)];
                 Vector3 planeScale = planeObj.transform.lossyScale;
                 
-                float heightWidthRatio = planeScale.z / planeScale.x;
+                float heightWidthRatio = Mathf.Abs(planeScale.z / planeScale.x);
                 float bgWidth = Mathf.Min(this.position.width - 20.0f, (this.position.height - 50.0f) * 2.0f);
                 float bgHeight = Mathf.Min(bgWidth, this.position.height - 150.0f);
                 bgWidth = bgHeight / heightWidthRatio;
@@ -102,7 +102,7 @@ namespace UnityVolumeRendering
                 {
                     Vector2 mouseOffset = relMousePosNormalised - prevMousePos;
                     if (Mathf.Abs(mouseOffset.y) > 0.00001f)
-                        planeObj.transform.Translate(Vector3.up * mouseOffset.y, Space.World);
+                        planeObj.transform.Translate(planeObj.transform.up * mouseOffset.y, Space.World);
                 }
                 // Show value at mouse position.
                 else if (inputMode == InputMode.Inspect)
@@ -152,7 +152,7 @@ namespace UnityVolumeRendering
                 
                 if (GUI.Button(new Rect(0.0f, bgRect.y + bgRect.height + 40.0f, 70.0f, 20.0f), "<"))
                 {
-                    selectedPlaneIndex = (selectedPlaneIndex - 1) % spawnedPlanes.Length;
+                    selectedPlaneIndex = selectedPlaneIndex == 0 ? spawnedPlanes.Length - 1 : selectedPlaneIndex - 1;
                     Selection.activeGameObject = spawnedPlanes[selectedPlaneIndex].gameObject;
                 }
                 if (GUI.Button(new Rect(90.0f, bgRect.y + bgRect.height + 40.0f, 70.0f, 20.0f), ">"))
