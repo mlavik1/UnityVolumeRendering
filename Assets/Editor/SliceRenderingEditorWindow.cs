@@ -169,19 +169,22 @@ namespace UnityVolumeRendering
                 if (GUI.Button(new Rect(200.0f, bgRect.y + bgRect.height + 0.0f, 120.0f, 20.0f), "Create XY plane"))
                 {
                     selectedPlaneIndex = spawnedPlanes.Length;
-                    volRend.CreateSlicingPlane();
+                    SlicingPlane plane = volRend.CreateSlicingPlane();
+                    UnityEditor.Selection.objects = new UnityEngine.Object[] { plane.gameObject };
                 }
                 else if (GUI.Button(new Rect(200.0f, bgRect.y + bgRect.height + 20.0f, 120.0f, 20.0f), "Create XZ plane"))
                 {
                     selectedPlaneIndex = spawnedPlanes.Length;
                     SlicingPlane plane = volRend.CreateSlicingPlane();
                     plane.transform.localRotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
+                    UnityEditor.Selection.objects = new UnityEngine.Object[] { plane.gameObject };
                 }
                 else if (GUI.Button(new Rect(200.0f, bgRect.y + bgRect.height + 40.0f, 120.0f, 20.0f), "Create ZY plane"))
                 {
                     selectedPlaneIndex = spawnedPlanes.Length;
                     SlicingPlane plane = volRend.CreateSlicingPlane();
                     plane.transform.localRotation = Quaternion.Euler(0.0f, 0.0f, 90.0f);
+                    UnityEditor.Selection.objects = new UnityEngine.Object[] { plane.gameObject };
                 }
             }
 
