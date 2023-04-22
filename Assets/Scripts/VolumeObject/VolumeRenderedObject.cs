@@ -286,9 +286,33 @@ namespace UnityVolumeRendering
                 meshRenderer.sharedMaterial.DisableKeyword("CUBIC_INTERPOLATION_ON");
         }
 
+        private void Awake()
+        {
+            // TODO: Remove this after some time. This is to avoid breaking old serialised objects from before volumeContainerObject was added.
+            EnsureVolumeContainerRef();
+        }
+
         private void Start()
         {
             UpdateMaterialProperties();
+        }
+
+        public void OnValidate()
+        {
+            // TODO: Remove this after some time. This is to avoid breaking old serialised objects from before volumeContainerObject was added.
+            EnsureVolumeContainerRef();
+        }
+
+        private void EnsureVolumeContainerRef()
+        {
+            if (volumeContainerObject == null)
+            {
+                Transform trans = this.transform.Find("VolumeContainer");
+                if (trans == null)
+                    trans = this.transform.GetComponentInChildren<MeshRenderer>(true)?.transform;
+                if (trans)
+                    volumeContainerObject = trans.gameObject;
+            }
         }
     }
 }
