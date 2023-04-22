@@ -218,7 +218,7 @@ namespace UnityVolumeRendering
         private Vector3 GetDataPosition(Vector2 relativeMousePosition, SlicingPlane slicingPlane)
         {
             Vector3 worldSpacePosition = GetWorldPosition(relativeMousePosition, slicingPlane);
-            Vector3 objSpacePoint = slicingPlane.targetObject.transform.InverseTransformPoint(worldSpacePosition);
+            Vector3 objSpacePoint = slicingPlane.targetObject.volumeContainerObject.transform.InverseTransformPoint(worldSpacePosition);
             Vector3 uvw = objSpacePoint + Vector3.one * 0.5f;
             VolumeDataset dataset = slicingPlane.targetObject.dataset;
             return new Vector3(uvw.x * dataset.scale.x, uvw.y * dataset.scale.y, uvw.z * dataset.scale.z);
@@ -227,7 +227,7 @@ namespace UnityVolumeRendering
         private float GetValueAtPosition(Vector2 relativeMousePosition, SlicingPlane slicingPlane)
         {
             Vector3 worldSpacePosition = GetWorldPosition(relativeMousePosition, slicingPlane);
-            Vector3 objSpacePoint = slicingPlane.targetObject.transform.InverseTransformPoint(worldSpacePosition);
+            Vector3 objSpacePoint = slicingPlane.targetObject.volumeContainerObject.transform.InverseTransformPoint(worldSpacePosition);
             VolumeDataset dataset = slicingPlane.targetObject.dataset;
             // Convert to texture coordinates.
             Vector3 uvw = objSpacePoint + Vector3.one * 0.5f;
