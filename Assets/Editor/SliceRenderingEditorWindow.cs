@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 namespace UnityVolumeRendering
 {
@@ -62,6 +63,13 @@ namespace UnityVolumeRendering
 
             if (spawnedPlanes.Length > 0)
                 selectedPlaneIndex = selectedPlaneIndex % spawnedPlanes.Length;
+            
+            if (Selection.activeGameObject != null)
+            {
+                int index = System.Array.FindIndex(spawnedPlanes, plane => plane.gameObject == Selection.activeGameObject);
+                if (index != -1)
+                    selectedPlaneIndex = index;
+            }
 
             if (GUI.Toggle(new Rect(0.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Move, new GUIContent(moveIconTexture, "Move slice"), GUI.skin.button))
                 inputMode = InputMode.Move;
