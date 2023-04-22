@@ -30,7 +30,7 @@ public class CutoutSphere : MonoBehaviour, CrossSectionObject
 
     public Matrix4x4 GetMatrix()
     {
-        return transform.worldToLocalMatrix * targetObject.transform.localToWorldMatrix;
+        return transform.worldToLocalMatrix * targetObject.volumeContainerObject.transform.localToWorldMatrix;
     }
 
     private void OnEnable()
