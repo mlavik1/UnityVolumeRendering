@@ -92,6 +92,7 @@ namespace UnityVolumeRendering
             VolumeDataset dataset = FillVolumeDataset(data, dimensions);
 
             dataset.FixDimensions();
+            dataset.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
 
             return dataset;
         }

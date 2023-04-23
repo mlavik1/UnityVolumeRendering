@@ -75,9 +75,9 @@ namespace UnityVolumeRendering
             volumeDataset.datasetName = "test";
             volumeDataset.filePath = filePath;
             volumeDataset.scale = new Vector3(
-                (float)(spacing[0] * size[0]),
-                (float)(spacing[1] * size[1]),
-                (float)(spacing[2] * size[2])
+                (float)(spacing[0] * size[0]) / 1000.0f, // mm to m
+                (float)(spacing[1] * size[1]) / 1000.0f, // mm to m
+                (float)(spacing[2] * size[2]) / 1000.0f // mm to m
             );
 
             // Convert from LPS to Unity's coordinate system

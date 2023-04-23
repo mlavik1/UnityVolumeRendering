@@ -79,6 +79,7 @@ namespace UnityVolumeRendering
             volumeDataset.scale = size;
 
             volumeDataset.FixDimensions();
+            volumeDataset.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
         }
     }
 }
