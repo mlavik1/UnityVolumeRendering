@@ -8,9 +8,7 @@ using openDicom.DataStructure;
 using System.Collections.Generic;
 using openDicom.Image;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using System.Collections;
 using System.Data;
 
 namespace UnityVolumeRendering
@@ -30,8 +28,8 @@ namespace UnityVolumeRendering
             public float intercept = 0.0f;
             public float slope = 1.0f;
             public float pixelSpacing = 0.0f;
+            public float[] imageOrientation = null;
             public string seriesUID = "";
-            public bool missingLocation = false;
 
             public string GetFilePath()
             {
@@ -173,16 +171,8 @@ namespace UnityVolumeRendering
         }
         private void ImportSeriesInternal(List<DICOMSliceFile> files,VolumeDataset dataset, IProgressHandler progress)
         {
-            // Check if the series is missing the slice location tag
-            bool needsCalcLoc = false;
-            foreach (DICOMSliceFile file in files)
-            {
-                needsCalcLoc |= file.missingLocation;
-            }
-
             // Calculate slice location from "Image Position" (0020,0032)
-            if (needsCalcLoc)
-                CalcSliceLocFromPos(files);
+            CalculateSliceLocations(files);
 
             // Sort files by slice location
             files.Sort((DICOMSliceFile a, DICOMSliceFile b) => { return a.location.CompareTo(b.location); });
@@ -226,11 +216,13 @@ namespace UnityVolumeRendering
                     files[0].pixelSpacing * dataset.dimX,
                     files[0].pixelSpacing * dataset.dimY,
                     Mathf.Abs(files[files.Count - 1].location - files[0].location)
-                );
+                ) / 1000.0f;
             }
 
             dataset.FixDimensions();
-            dataset.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
+            
+            // Convert from LPS to Unity's coordinate system
+            ImporterUtilsInternal.ConvertLPSToUnityCoordinateSpace(dataset);
         }
 
         private DICOMSliceFile ReadDICOMFile(string filePath)
@@ -243,35 +235,44 @@ namespace UnityVolumeRendering
                 slice.file = file;
                 slice.filePath = filePath;
 
-                Tag locTag = new Tag("(0020,1041)");
-                Tag posTag = new Tag("(0020,0032)");
+                Tag imagePositionTag = new Tag("(0020,0032)");
+                Tag imageOrientationTag = new Tag("(0020,0037)");
+                Tag locationTag = new Tag("(0020,1041)");
                 Tag interceptTag = new Tag("(0028,1052)");
                 Tag slopeTag = new Tag("(0028,1053)");
                 Tag pixelSpacingTag = new Tag("(0028,0030)");
                 Tag seriesUIDTag = new Tag("(0020,000E)");
 
-                // Read location (optional)
-                if (file.DataSet.Contains(locTag))
+                // Read position tag
+                if (file.DataSet.Contains(imagePositionTag))
                 {
-                    DataElement elemLoc = file.DataSet[locTag];
-                    slice.location = (float)Convert.ToDouble(elemLoc.Value[0]);
-                }
-                // If no location tag, read position tag (will need to calculate location afterwards)
-                else if (file.DataSet.Contains(posTag))
-                {
-                    DataElement elemLoc = file.DataSet[posTag];
+                    DataElement elemLoc = file.DataSet[imagePositionTag];
                     Vector3 pos = Vector3.zero;
                     pos.x = (float)Convert.ToDouble(elemLoc.Value[0]);
                     pos.y = (float)Convert.ToDouble(elemLoc.Value[1]);
                     pos.z = (float)Convert.ToDouble(elemLoc.Value[2]);
                     slice.position = pos;
-                    slice.missingLocation = true;
+                }
+                // Read location (fallback - should never happen)
+                else if (file.DataSet.Contains(locationTag))
+                {
+                    DataElement elemLoc = file.DataSet[locationTag];
+                    slice.location = (float)Convert.ToDouble(elemLoc.Value[0]);
                 }
                 else
                 {
-                    Debug.LogError($"Missing location/position tag in file: {filePath}.\n The file will not be imported correctly.");
+                    Debug.LogError($"Missing position tag in file: {filePath}.\n The file will not be imported correctly.");
                     // Fallback: use counter as location
-                    slice.location = (float)iFallbackLoc++;
+                    slice.location = iFallbackLoc++ / 256.0f;
+                }
+
+                // Read image orientation
+                if (file.DataSet.Contains(imageOrientationTag))
+                {
+                    DataElement elemImageOrientation = file.DataSet[imageOrientationTag];
+                    slice.imageOrientation = new float[6];
+                    for (int i = 0; i < 6; i++)
+                        slice.imageOrientation[i] = (float)Convert.ToDouble(elemImageOrientation.Value[i]);
                 }
                 
                 // Read intercept
@@ -391,20 +392,24 @@ namespace UnityVolumeRendering
             }
         }
 
-        private void CalcSliceLocFromPos(List<DICOMSliceFile> slices)
+        private void CalculateSliceLocations(List<DICOMSliceFile> slices)
         {
-            // We use the first slice as a starting point (a), andthe normalised vector (v) between the first and second slice as a direction.
-            Vector3 v = (slices[1].position - slices[0].position).normalized;
-            Vector3 a = slices[0].position;
-            slices[0].location = 0.0f;
+            if (slices.Count == 0 || slices[0].imageOrientation == null)
+                return;
+
+            // Get the direction cosines
+            float[] cosines = slices[0].imageOrientation;
+            // Construct the basis vectors
+            Vector3 xBase = new Vector3(cosines[0], cosines[1], cosines[2]);
+            Vector3 yBase = new Vector3(cosines[3], cosines[4], cosines[5]);
+            Vector3 normal = Vector3.Cross(xBase, yBase);
 
             for(int i = 1; i < slices.Count; i++)
             {
-                // Calculate the vector between a and p (ap) and dot it with v to get the distance along the v vector (distance when projected onto v)
-                Vector3 p = slices[i].position;
-                Vector3 ap = p - a;
-                float dot = Vector3.Dot(ap, v);
-                slices[i].location = dot;
+                Vector3 position = slices[i].position;
+                // Project p onto n. d = dot(p,n) / |n| = dot(p,n)
+                float distance = Vector3.Dot(position, normal);
+                slices[i].location = distance;
             }
         }  
     }
