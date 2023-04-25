@@ -45,7 +45,7 @@ namespace UnityVolumeRendering
 
         public Matrix4x4 GetMatrix()
         {
-            return transform.worldToLocalMatrix * targetObject.transform.localToWorldMatrix;
+            return transform.worldToLocalMatrix * targetObject.volumeContainerObject.transform.localToWorldMatrix;
         }
     }
 }

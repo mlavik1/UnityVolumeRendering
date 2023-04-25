@@ -95,8 +95,7 @@ namespace UnityVolumeRendering
             }
             VolumeDataset dataset = new VolumeDataset();
 
-
-            await Task.Run(() => ImportInternal(dataset,reader,fs));
+            await Task.Run(() => ImportInternal(dataset, reader, fs));
 
             return dataset;
         }
@@ -126,6 +125,7 @@ namespace UnityVolumeRendering
             fs.Close();
 
             dataset.FixDimensions();
+            dataset.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
         }
         private int ReadDataValue(BinaryReader reader)
         {

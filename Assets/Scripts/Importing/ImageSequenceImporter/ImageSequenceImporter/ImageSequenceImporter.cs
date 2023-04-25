@@ -92,6 +92,7 @@ namespace UnityVolumeRendering
             VolumeDataset dataset = FillVolumeDataset(data, dimensions);
 
             dataset.FixDimensions();
+            dataset.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
 
             return dataset;
         }
@@ -211,9 +212,11 @@ namespace UnityVolumeRendering
             dataset.dimX = dimensions.x;
             dataset.dimY = dimensions.y;
             dataset.dimZ = dimensions.z;
-            dataset.scaleX = 1f; // Scale arbitrarily normalised around the x-axis 
-            dataset.scaleY = (float)dimensions.y / (float)dimensions.x;
-            dataset.scaleZ = (float)dimensions.z / (float)dimensions.x;
+            dataset.scale = new Vector3(
+                1f, // Scale arbitrarily normalised around the x-axis 
+                (float)dimensions.y / (float)dimensions.x,
+                (float)dimensions.z / (float)dimensions.x
+            );
         }
 
         

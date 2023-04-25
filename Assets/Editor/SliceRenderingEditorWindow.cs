@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 namespace UnityVolumeRendering
 {
@@ -62,6 +63,13 @@ namespace UnityVolumeRendering
 
             if (spawnedPlanes.Length > 0)
                 selectedPlaneIndex = selectedPlaneIndex % spawnedPlanes.Length;
+            
+            if (Selection.activeGameObject != null)
+            {
+                int index = System.Array.FindIndex(spawnedPlanes, plane => plane.gameObject == Selection.activeGameObject);
+                if (index != -1)
+                    selectedPlaneIndex = index;
+            }
 
             if (GUI.Toggle(new Rect(0.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Move, new GUIContent(moveIconTexture, "Move slice"), GUI.skin.button))
                 inputMode = InputMode.Move;
@@ -77,7 +85,7 @@ namespace UnityVolumeRendering
                 SlicingPlane planeObj = spawnedPlanes[System.Math.Min(selectedPlaneIndex, spawnedPlanes.Length - 1)];
                 Vector3 planeScale = planeObj.transform.lossyScale;
                 
-                float heightWidthRatio = planeScale.z / planeScale.x;
+                float heightWidthRatio = Mathf.Abs(planeScale.z / planeScale.x);
                 float bgWidth = Mathf.Min(this.position.width - 20.0f, (this.position.height - 50.0f) * 2.0f);
                 float bgHeight = Mathf.Min(bgWidth, this.position.height - 150.0f);
                 bgWidth = bgHeight / heightWidthRatio;
@@ -102,7 +110,7 @@ namespace UnityVolumeRendering
                 {
                     Vector2 mouseOffset = relMousePosNormalised - prevMousePos;
                     if (Mathf.Abs(mouseOffset.y) > 0.00001f)
-                        planeObj.transform.Translate(Vector3.up * mouseOffset.y);
+                        planeObj.transform.Translate(planeObj.transform.up * mouseOffset.y, Space.World);
                 }
                 // Show value at mouse position.
                 else if (inputMode == InputMode.Inspect)
@@ -152,7 +160,7 @@ namespace UnityVolumeRendering
                 
                 if (GUI.Button(new Rect(0.0f, bgRect.y + bgRect.height + 40.0f, 70.0f, 20.0f), "<"))
                 {
-                    selectedPlaneIndex = (selectedPlaneIndex - 1) % spawnedPlanes.Length;
+                    selectedPlaneIndex = selectedPlaneIndex == 0 ? spawnedPlanes.Length - 1 : selectedPlaneIndex - 1;
                     Selection.activeGameObject = spawnedPlanes[selectedPlaneIndex].gameObject;
                 }
                 if (GUI.Button(new Rect(90.0f, bgRect.y + bgRect.height + 40.0f, 70.0f, 20.0f), ">"))
@@ -169,19 +177,22 @@ namespace UnityVolumeRendering
                 if (GUI.Button(new Rect(200.0f, bgRect.y + bgRect.height + 0.0f, 120.0f, 20.0f), "Create XY plane"))
                 {
                     selectedPlaneIndex = spawnedPlanes.Length;
-                    volRend.CreateSlicingPlane();
+                    SlicingPlane plane = volRend.CreateSlicingPlane();
+                    UnityEditor.Selection.objects = new UnityEngine.Object[] { plane.gameObject };
                 }
                 else if (GUI.Button(new Rect(200.0f, bgRect.y + bgRect.height + 20.0f, 120.0f, 20.0f), "Create XZ plane"))
                 {
                     selectedPlaneIndex = spawnedPlanes.Length;
                     SlicingPlane plane = volRend.CreateSlicingPlane();
                     plane.transform.localRotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
+                    UnityEditor.Selection.objects = new UnityEngine.Object[] { plane.gameObject };
                 }
                 else if (GUI.Button(new Rect(200.0f, bgRect.y + bgRect.height + 40.0f, 120.0f, 20.0f), "Create ZY plane"))
                 {
                     selectedPlaneIndex = spawnedPlanes.Length;
                     SlicingPlane plane = volRend.CreateSlicingPlane();
                     plane.transform.localRotation = Quaternion.Euler(0.0f, 0.0f, 90.0f);
+                    UnityEditor.Selection.objects = new UnityEngine.Object[] { plane.gameObject };
                 }
             }
 
@@ -215,16 +226,16 @@ namespace UnityVolumeRendering
         private Vector3 GetDataPosition(Vector2 relativeMousePosition, SlicingPlane slicingPlane)
         {
             Vector3 worldSpacePosition = GetWorldPosition(relativeMousePosition, slicingPlane);
-            Vector3 objSpacePoint = slicingPlane.targetObject.transform.InverseTransformPoint(worldSpacePosition);
+            Vector3 objSpacePoint = slicingPlane.targetObject.volumeContainerObject.transform.InverseTransformPoint(worldSpacePosition);
             Vector3 uvw = objSpacePoint + Vector3.one * 0.5f;
             VolumeDataset dataset = slicingPlane.targetObject.dataset;
-            return new Vector3(uvw.x * dataset.scaleX, uvw.y * dataset.scaleY,uvw.z * dataset.scaleZ);
+            return new Vector3(uvw.x * dataset.scale.x, uvw.y * dataset.scale.y, uvw.z * dataset.scale.z);
         }
 
         private float GetValueAtPosition(Vector2 relativeMousePosition, SlicingPlane slicingPlane)
         {
             Vector3 worldSpacePosition = GetWorldPosition(relativeMousePosition, slicingPlane);
-            Vector3 objSpacePoint = slicingPlane.targetObject.transform.InverseTransformPoint(worldSpacePosition);
+            Vector3 objSpacePoint = slicingPlane.targetObject.volumeContainerObject.transform.InverseTransformPoint(worldSpacePosition);
             VolumeDataset dataset = slicingPlane.targetObject.dataset;
             // Convert to texture coordinates.
             Vector3 uvw = objSpacePoint + Vector3.one * 0.5f;

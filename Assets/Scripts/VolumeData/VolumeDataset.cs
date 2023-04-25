@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace UnityVolumeRendering
 {
@@ -12,7 +13,7 @@ namespace UnityVolumeRendering
     /// An imported dataset. Has a dimension and a 3D pixel array.
     /// </summary>
     [Serializable]
-    public class VolumeDataset : ScriptableObject
+    public class VolumeDataset : ScriptableObject, ISerializationCallbackReceiver
     {
         public string filePath;
         
@@ -24,11 +25,10 @@ namespace UnityVolumeRendering
         public int dimX, dimY, dimZ;
 
         [SerializeField]
-        public float scaleX = 1.0f;
+        public Vector3 scale = Vector3.one;
+
         [SerializeField]
-        public float scaleY = 1.0f;
-        [SerializeField]
-        public float scaleZ = 1.0f;
+        public Quaternion rotation;
         
         public float volumeScale;
 
@@ -43,6 +43,13 @@ namespace UnityVolumeRendering
 
         private SemaphoreSlim createDataTextureLock = new SemaphoreSlim(1, 1);
         private SemaphoreSlim createGradientTextureLock = new SemaphoreSlim(1, 1);
+
+        [SerializeField, System.Obsolete("Use scale instead")]
+        private float scaleX = 1.0f;
+        [SerializeField, System.Obsolete("Use scale instead")]
+        private float scaleY = 1.0f;
+        [SerializeField, System.Obsolete("Use scale instead")]
+        private float scaleZ = 1.0f;
 
         public Texture3D GetDataTexture()
         {
@@ -359,6 +366,19 @@ namespace UnityVolumeRendering
         public float GetData(int x, int y, int z)
         {
             return data[x + y * dimX + z * (dimX * dimY)];
+        }
+
+        public void OnBeforeSerialize()
+        {
+            scaleX = scale.x;
+            scaleY = scale.y;
+            scaleZ = scale.z;
+        }
+
+        public void OnAfterDeserialize()
+        {
+            scale = new Vector3(scaleX, scaleY, scaleZ);
+            Debug.Log(scale);
         }
     }
 }

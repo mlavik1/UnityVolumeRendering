@@ -21,6 +21,9 @@ namespace UnityVolumeRendering
         public MeshRenderer meshRenderer;
 
         [SerializeField, HideInInspector]
+        public GameObject volumeContainerObject;
+
+        [SerializeField, HideInInspector]
         private RenderMode renderMode;
         [SerializeField, HideInInspector]
         private TFRenderMode tfRenderMode;
@@ -45,7 +48,7 @@ namespace UnityVolumeRendering
         public SlicingPlane CreateSlicingPlane()
         {
             GameObject sliceRenderingPlane = GameObject.Instantiate(Resources.Load<GameObject>("SlicingPlane"));
-            sliceRenderingPlane.transform.parent = transform;
+            sliceRenderingPlane.transform.parent = this.volumeContainerObject.transform;
             sliceRenderingPlane.transform.localPosition = Vector3.zero;
             sliceRenderingPlane.transform.localRotation = Quaternion.identity;
             sliceRenderingPlane.transform.localScale = Vector3.one * 0.1f; // TODO: Change the plane mesh instead and use Vector3.one
@@ -283,9 +286,33 @@ namespace UnityVolumeRendering
                 meshRenderer.sharedMaterial.DisableKeyword("CUBIC_INTERPOLATION_ON");
         }
 
+        private void Awake()
+        {
+            // TODO: Remove this after some time. This is to avoid breaking old serialised objects from before volumeContainerObject was added.
+            EnsureVolumeContainerRef();
+        }
+
         private void Start()
         {
             UpdateMaterialProperties();
+        }
+
+        public void OnValidate()
+        {
+            // TODO: Remove this after some time. This is to avoid breaking old serialised objects from before volumeContainerObject was added.
+            EnsureVolumeContainerRef();
+        }
+
+        private void EnsureVolumeContainerRef()
+        {
+            if (volumeContainerObject == null)
+            {
+                Transform trans = this.transform.Find("VolumeContainer");
+                if (trans == null)
+                    trans = this.transform.GetComponentInChildren<MeshRenderer>(true)?.transform;
+                if (trans)
+                    volumeContainerObject = trans.gameObject;
+            }
         }
     }
 }

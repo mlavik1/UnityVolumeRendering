@@ -12,6 +12,7 @@ namespace UnityVolumeRendering
             VolumeRenderedObject volObj = outerObject.AddComponent<VolumeRenderedObject>();
 
             GameObject meshContainer = GameObject.Instantiate((GameObject)Resources.Load("VolumeContainer"));
+            volObj.volumeContainerObject = meshContainer;
             MeshRenderer meshRenderer = meshContainer.GetComponent<MeshRenderer>();
 
             CreateObjectInternal(dataset,meshContainer, meshRenderer, volObj, outerObject);
@@ -26,6 +27,7 @@ namespace UnityVolumeRendering
             VolumeRenderedObject volObj = outerObject.AddComponent<VolumeRenderedObject>();
 
             GameObject meshContainer = GameObject.Instantiate((GameObject)Resources.Load("VolumeContainer"));
+            volObj.volumeContainerObject = meshContainer;
             MeshRenderer meshRenderer = meshContainer.GetComponent<MeshRenderer>();
 
             CreateObjectInternal(dataset,meshContainer, meshRenderer,volObj,outerObject) ;
@@ -40,7 +42,7 @@ namespace UnityVolumeRendering
             meshContainer.transform.localScale = Vector3.one;
             meshContainer.transform.localPosition = Vector3.zero;
             meshContainer.transform.parent = outerObject.transform;
-            outerObject.transform.localRotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
+            outerObject.transform.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
 
             meshRenderer.sharedMaterial = new Material(meshRenderer.sharedMaterial);
             volObj.meshRenderer = meshRenderer;
@@ -65,11 +67,12 @@ namespace UnityVolumeRendering
             meshRenderer.sharedMaterial.DisableKeyword("MODE_MIP");
             meshRenderer.sharedMaterial.DisableKeyword("MODE_SURF");
 
-            if (dataset.scaleX != 0.0f && dataset.scaleY != 0.0f && dataset.scaleZ != 0.0f)
-            {
-                float maxScale = Mathf.Max(dataset.scaleX, dataset.scaleY, dataset.scaleZ);
-                volObj.transform.localScale = new Vector3(dataset.scaleX / maxScale, dataset.scaleY / maxScale, dataset.scaleZ / maxScale);
-            }
+            meshContainer.transform.localScale = dataset.scale;
+            meshContainer.transform.localRotation = dataset.rotation;
+
+            // Normalise size (TODO: Add setting for diabling this?)
+            float maxScale = Mathf.Max(dataset.scale.x, dataset.scale.y, dataset.scale.z);
+            volObj.transform.localScale = Vector3.one / maxScale;
         }
 
         public static void SpawnCrossSectionPlane(VolumeRenderedObject volobj)

@@ -222,12 +222,15 @@ namespace UnityVolumeRendering
 
             if (files[0].pixelSpacing > 0.0f)
             {
-                dataset.scaleX = files[0].pixelSpacing * dataset.dimX;
-                dataset.scaleY = files[0].pixelSpacing * dataset.dimY;
-                dataset.scaleZ = Mathf.Abs(files[files.Count - 1].location - files[0].location);
+                dataset.scale = new Vector3(
+                    files[0].pixelSpacing * dataset.dimX,
+                    files[0].pixelSpacing * dataset.dimY,
+                    Mathf.Abs(files[files.Count - 1].location - files[0].location)
+                );
             }
 
             dataset.FixDimensions();
+            dataset.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
         }
 
         private DICOMSliceFile ReadDICOMFile(string filePath)
