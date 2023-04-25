@@ -15,6 +15,8 @@ namespace UnityVolumeRendering
         private Texture moveIconTexture;
         private Texture inspectIconTexture;
         private Texture measureIconTexture;
+        private Texture lRotateIconTexture;
+        private Texture rRotateIconTexture;
 
         private InputMode inputMode;
 
@@ -45,6 +47,8 @@ namespace UnityVolumeRendering
             moveIconTexture = Resources.Load<Texture>("Icons/MoveIcon");
             inspectIconTexture = Resources.Load<Texture>("Icons/InspectIcon");
             measureIconTexture = Resources.Load<Texture>("Icons/MeasureIcon");
+            lRotateIconTexture = Resources.Load<Texture>("Icons/RotateLeft");
+            rRotateIconTexture = Resources.Load<Texture>("Icons/RotateRight");
         }
 
         private void OnFocus()
@@ -71,25 +75,32 @@ namespace UnityVolumeRendering
                     selectedPlaneIndex = index;
             }
 
-            if (GUI.Toggle(new Rect(0.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Move, new GUIContent(moveIconTexture, "Move slice"), GUI.skin.button))
-                inputMode = InputMode.Move;
-            if (GUI.Toggle(new Rect(40.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Inspect, new GUIContent(inspectIconTexture, "Inspect values"), GUI.skin.button))
-                inputMode = InputMode.Inspect;
-            if (GUI.Toggle(new Rect(80.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Measure, new GUIContent(measureIconTexture, "Inspect values"), GUI.skin.button))
-                inputMode = InputMode.Measure;
-
             Rect bgRect = new Rect(0.0f, 40.0f, 0.0f, 0.0f);
             
             if (selectedPlaneIndex != -1 && spawnedPlanes.Length > 0)
             {
                 SlicingPlane planeObj = spawnedPlanes[System.Math.Min(selectedPlaneIndex, spawnedPlanes.Length - 1)];
                 Vector3 planeScale = planeObj.transform.lossyScale;
+                Vector3 planeNormal = -planeObj.transform.up;
                 
                 float heightWidthRatio = Mathf.Abs(planeScale.z / planeScale.x);
                 float bgWidth = Mathf.Min(this.position.width - 20.0f, (this.position.height - 50.0f) * 2.0f);
                 float bgHeight = Mathf.Min(bgWidth, this.position.height - 150.0f);
                 bgWidth = bgHeight / heightWidthRatio;
                 bgRect = new Rect(0.0f, 40.0f, bgWidth, bgHeight);
+
+                if (GUI.Toggle(new Rect(0.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Move, new GUIContent(moveIconTexture, "Move slice"), GUI.skin.button))
+                    inputMode = InputMode.Move;
+                if (GUI.Toggle(new Rect(40.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Inspect, new GUIContent(inspectIconTexture, "Inspect values"), GUI.skin.button))
+                    inputMode = InputMode.Inspect;
+                if (GUI.Toggle(new Rect(80.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Measure, new GUIContent(measureIconTexture, "Inspect values"), GUI.skin.button))
+                    inputMode = InputMode.Measure;
+
+                if (GUI.Toggle(new Rect(bgWidth - 80.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Measure, new GUIContent(lRotateIconTexture, "Rotate plane to the right"), GUI.skin.button))
+                    planeObj.transform.Rotate(planeNormal * -90.0f, Space.World);
+                if (GUI.Toggle(new Rect(bgWidth - 40.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Measure, new GUIContent(rRotateIconTexture, "Rotate plane to the left"), GUI.skin.button))
+                    planeObj.transform.Rotate(planeNormal * 90.0f, Space.World);
+
                 
                 // Draw the slice view
                 Material mat = planeObj.GetComponent<MeshRenderer>().sharedMaterial;
