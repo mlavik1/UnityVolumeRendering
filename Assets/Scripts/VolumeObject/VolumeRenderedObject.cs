@@ -37,8 +37,6 @@ namespace UnityVolumeRendering
         [SerializeField, HideInInspector]
         private bool rayTerminationEnabled = true;
         [SerializeField, HideInInspector]
-        private bool dvrBackward = false;
-        [SerializeField, HideInInspector]
         private bool cubicInterpolationEnabled = false;
 
         private CrossSectionManager crossSectionManager;
@@ -162,18 +160,16 @@ namespace UnityVolumeRendering
             }
         }
 
+        [System.Obsolete("Back-to-front rendering no longer supported")]
         public bool GetDVRBackwardEnabled()
         {
-            return dvrBackward;
+            return false;
         }
 
+        [System.Obsolete("Back-to-front rendering no longer supported")]
         public void SetDVRBackwardEnabled(bool enable)
         {
-            if (enable != dvrBackward)
-            {
-                dvrBackward = enable;
-                UpdateMaterialProperties();
-            }
+            Debug.LogWarning("Back-to-front rendering no longer supported");
         }
 
         public bool GetCubicInterpolationEnabled()
@@ -274,11 +270,6 @@ namespace UnityVolumeRendering
                 meshRenderer.sharedMaterial.EnableKeyword("RAY_TERMINATE_ON");
             else
                 meshRenderer.sharedMaterial.DisableKeyword("RAY_TERMINATE_ON");
-
-            if (dvrBackward)
-                meshRenderer.sharedMaterial.EnableKeyword("DVR_BACKWARD_ON");
-            else
-                meshRenderer.sharedMaterial.DisableKeyword("DVR_BACKWARD_ON");
 
             if (cubicInterpolationEnabled)
                 meshRenderer.sharedMaterial.EnableKeyword("CUBIC_INTERPOLATION_ON");

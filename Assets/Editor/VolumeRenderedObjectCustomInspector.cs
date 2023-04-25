@@ -71,14 +71,8 @@ namespace UnityVolumeRendering
             {
                 if (volrendObj.GetRenderMode() == RenderMode.DirectVolumeRendering)
                 {
-                    // Back-to-front rendering option
-                    volrendObj.SetDVRBackwardEnabled(GUILayout.Toggle(volrendObj.GetDVRBackwardEnabled(), "Enable Back-to-Front Direct Volume Rendering"));
-
-                    // Early ray termination for Front-to-back DVR
-                    if (!volrendObj.GetDVRBackwardEnabled())
-                    {
-                        volrendObj.SetRayTerminationEnabled(GUILayout.Toggle(volrendObj.GetRayTerminationEnabled(), "Enable early ray termination"));
-                    }
+                    // Early ray termination
+                    volrendObj.SetRayTerminationEnabled(GUILayout.Toggle(volrendObj.GetRayTerminationEnabled(), "Enable early ray termination"));
                 }
 
                 volrendObj.SetCubicInterpolationEnabled(GUILayout.Toggle(volrendObj.GetCubicInterpolationEnabled(), "Enable cubic interpolation (better quality)"));
