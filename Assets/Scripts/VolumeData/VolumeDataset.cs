@@ -44,12 +44,19 @@ namespace UnityVolumeRendering
         private SemaphoreSlim createDataTextureLock = new SemaphoreSlim(1, 1);
         private SemaphoreSlim createGradientTextureLock = new SemaphoreSlim(1, 1);
 
-        [SerializeField, System.Obsolete("Use scale instead")]
-        private float scaleX = 1.0f;
-        [SerializeField, System.Obsolete("Use scale instead")]
-        private float scaleY = 1.0f;
-        [SerializeField, System.Obsolete("Use scale instead")]
-        private float scaleZ = 1.0f;
+        [SerializeField, FormerlySerializedAs("scaleX")]
+        private float scaleX_deprecated = 1.0f;
+        [SerializeField, FormerlySerializedAs("scaleY")]
+        private float scaleY_deprecated = 1.0f;
+        [SerializeField, FormerlySerializedAs("scaleZ")]
+        private float scaleZ_deprecated = 1.0f;
+
+        [System.Obsolete("Use scale instead")]
+        public float scaleX { get { return scale.x; } set { scale.x = value; } }
+        [System.Obsolete("Use scale instead")]
+        public float scaleY { get { return scale.y; } set { scale.y = value; } }
+        [System.Obsolete("Use scale instead")]
+        public float scaleZ { get { return scale.z; } set { scale.z = value; } }
 
         public Texture3D GetDataTexture()
         {
@@ -370,14 +377,14 @@ namespace UnityVolumeRendering
 
         public void OnBeforeSerialize()
         {
-            scaleX = scale.x;
-            scaleY = scale.y;
-            scaleZ = scale.z;
+            scaleX_deprecated = scale.x;
+            scaleY_deprecated = scale.y;
+            scaleZ_deprecated = scale.z;
         }
 
         public void OnAfterDeserialize()
         {
-            scale = new Vector3(scaleX, scaleY, scaleZ);
+            scale = new Vector3(scaleX_deprecated, scaleY_deprecated, scaleZ_deprecated);
             Debug.Log(scale);
         }
     }
