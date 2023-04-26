@@ -22,13 +22,15 @@ namespace UnityVolumeRendering
         }
 
         private string description = "";
-        private float currentProgress = 0.0f;
+        private float currentStageProgress = 0.0f;
+        private float totalProgress = 0.0f;
         private Stack<ProgressStage> stageStack = new Stack<ProgressStage>(3);
         private IProgressView progressView;
 
         public ProgressHandler(IProgressView progressView)
         {
             this.progressView = progressView;
+            stageStack.Push(new ProgressStage{ start = 0.0f, end = 1.0f });
         }
 
         /// <summary>
@@ -38,7 +40,8 @@ namespace UnityVolumeRendering
         {
             this.progressView.StartProgress(title, description);
             this.description = description;
-            currentProgress = 0.0f;
+            currentStageProgress = 0.0f;
+            totalProgress = 0.0f;
             stageStack.Clear();
             stageStack.Push(new ProgressStage{ start = 0.0f, end = 1.0f });
         }
@@ -68,9 +71,9 @@ namespace UnityVolumeRendering
         {
             if (description != "")
                 this.description = description;
-
+            
             ProgressStage stage = stageStack.Peek();
-            stageStack.Push(new ProgressStage{ start = currentProgress, end = currentProgress + (stage.end - stage.start) * weight });
+            stageStack.Push(new ProgressStage{ start = totalProgress, end = totalProgress + (stage.end - stage.start) * weight });
             UpdateProgressView();
         }
 
@@ -79,8 +82,9 @@ namespace UnityVolumeRendering
         /// </summary>
         public void EndStage()
         {
+            ReportProgress(1.0f);
             ProgressStage childStage = stageStack.Pop();
-            currentProgress = childStage.end;
+            totalProgress = childStage.end;
         }
 
         /// <summary>
@@ -92,7 +96,8 @@ namespace UnityVolumeRendering
         {
             if (description != "")
                 this.description = description;
-            currentProgress = GetAbsoluteProgress(progress);
+            currentStageProgress = progress;
+            totalProgress = GetAbsoluteProgress(progress);
 
             UpdateProgressView();
         }
@@ -107,7 +112,8 @@ namespace UnityVolumeRendering
         {
             if (description != "")
                 this.description = description;
-            currentProgress = GetAbsoluteProgress(currentStep / (float)totalSteps);
+            currentStageProgress = currentStep / (float)totalSteps;
+            totalProgress = GetAbsoluteProgress(currentStageProgress);
 
             UpdateProgressView();
         }
@@ -125,7 +131,7 @@ namespace UnityVolumeRendering
 
         private void UpdateProgressView()
         {
-            this.progressView.UpdateProgress(currentProgress, description);
+            this.progressView.UpdateProgress(totalProgress, currentStageProgress, description);
         }
     }
 }

@@ -26,11 +26,11 @@ namespace UnityVolumeRendering
             EditorApplication.update -= EditorUpdate;
         }
 
-        public void UpdateProgress(float progress, string description)
+        public void UpdateProgress(float totalProgress, float currentStageProgress, string description)
         {
-            this.cachedProgress = progress;
+            this.cachedProgress = totalProgress;
             this.cachedDescription = description;
-            ShowProgress(progress, description);
+            ShowProgress(totalProgress, description);
         }
 
         private void EditorUpdate()

@@ -112,12 +112,12 @@ namespace UnityVolumeRendering
             return crossSectionManager;
         }
 
-        public void SetLightingEnabled(bool enable)
+        public void SetLightingEnabled(bool enable, IProgressHandler progressHandler = null)
         {
             if (enable != lightingEnabled)
             {
                 lightingEnabled = enable;
-                UpdateMaterialProperties();
+                UpdateMaterialProperties(progressHandler);
             }
         }
 
@@ -192,19 +192,19 @@ namespace UnityVolumeRendering
             UpdateMaterialProperties();
         }
 
-        private void UpdateMaterialProperties()
+        private void UpdateMaterialProperties(IProgressHandler progressHandler = null)
         {
-            UpdateMatAsync();
+            UpdateMatAsync(progressHandler);
         }
 
-        private async void UpdateMatAsync()
+        private async void UpdateMatAsync(IProgressHandler progressHandler = null)
         {
             await updateMatLock.WaitAsync();
 
             try
             {
                 bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
-                Texture3D texture = useGradientTexture ? await dataset.GetGradientTextureAsync() : null;
+                Texture3D texture = useGradientTexture ? await dataset.GetGradientTextureAsync(progressHandler) : null;
                 meshRenderer.sharedMaterial.SetTexture("_GradientTex", texture);
                 UpdateMatInternal();
             }

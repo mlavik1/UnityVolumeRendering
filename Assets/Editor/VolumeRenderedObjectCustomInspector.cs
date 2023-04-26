@@ -1,18 +1,44 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
 
 namespace UnityVolumeRendering
 {
     [CustomEditor(typeof(VolumeRenderedObject))]
-    public class VolumeRenderedObjectCustomInspector : Editor
+    public class VolumeRenderedObjectCustomInspector : Editor, IProgressView
     {
         private bool tfSettings = true;
         private bool lightSettings = true;
         private bool otherSettings = true;
+        private float currentProgress = 1.0f;
+        private string currentProgressDescrition = "";
+
+        public void StartProgress(string title, string description)
+        {
+        }
+
+        public void FinishProgress(ProgressStatus status = ProgressStatus.Succeeded)
+        {
+            currentProgress = 1.0f;
+        }
+
+        public void UpdateProgress(float totalProgress, float currentStageProgress, string description)
+        {
+            currentProgressDescrition = description;
+            currentProgress = totalProgress;
+        }
 
         public override void OnInspectorGUI()
         {
             VolumeRenderedObject volrendObj = (VolumeRenderedObject)target;
+
+            if (currentProgress < 1.0f)
+            {
+                Rect rect = EditorGUILayout.BeginVertical();
+                EditorGUI.ProgressBar(rect, currentProgress, currentProgressDescrition);
+                GUILayout.Space(18);
+                EditorGUILayout.EndVertical();
+            }
 
             // Render mode
             RenderMode oldRenderMode = volrendObj.GetRenderMode();
@@ -51,7 +77,7 @@ namespace UnityVolumeRendering
             if (lightSettings)
             {
                 if (volrendObj.GetRenderMode() == RenderMode.DirectVolumeRendering)
-                    volrendObj.SetLightingEnabled(GUILayout.Toggle(volrendObj.GetLightingEnabled(), "Enable lighting"));
+                    volrendObj.SetLightingEnabled(GUILayout.Toggle(volrendObj.GetLightingEnabled(), "Enable lighting"), new ProgressHandler(this));
                 else
                     volrendObj.SetLightingEnabled(false);
 

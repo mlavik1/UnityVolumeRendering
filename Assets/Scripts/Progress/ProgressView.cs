@@ -9,6 +9,6 @@ namespace UnityVolumeRendering
     {
         void StartProgress(string title, string description);
         void FinishProgress(ProgressStatus status = ProgressStatus.Succeeded);
-        void UpdateProgress(float progress, string description);
+        void UpdateProgress(float totalProgress, float currentStageProgress, string description);
     }
 }
