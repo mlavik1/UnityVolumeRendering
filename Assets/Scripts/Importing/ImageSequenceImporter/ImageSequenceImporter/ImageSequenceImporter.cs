@@ -199,7 +199,6 @@ namespace UnityVolumeRendering
         {
             VolumeDataset dataset = new VolumeDataset();
             string name = Path.GetFileName(directoryPath);
-            dataset.name = name;
 
             await Task.Run(() => FillVolumeInternal(dataset, name, data, dimensions));
           

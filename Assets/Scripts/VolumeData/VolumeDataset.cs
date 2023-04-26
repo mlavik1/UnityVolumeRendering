@@ -13,7 +13,7 @@ namespace UnityVolumeRendering
     /// An imported dataset. Has a dimension and a 3D pixel array.
     /// </summary>
     [Serializable]
-    public class VolumeDataset : ScriptableObject, ISerializationCallbackReceiver
+    public class VolumeDataset : ISerializationCallbackReceiver
     {
         public string filePath;
         
