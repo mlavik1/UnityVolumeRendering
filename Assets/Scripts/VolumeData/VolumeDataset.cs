@@ -385,7 +385,6 @@ namespace UnityVolumeRendering
         public void OnAfterDeserialize()
         {
             scale = new Vector3(scaleX_deprecated, scaleY_deprecated, scaleZ_deprecated);
-            Debug.Log(scale);
         }
     }
 }
