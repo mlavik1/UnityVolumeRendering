@@ -1,4 +1,3 @@
-using UnityEngine;
 using UnityEditor;
 using UnityEditor.AssetImporters;
 
@@ -21,12 +20,6 @@ namespace UnityVolumeRendering
             EditorGUILayout.PropertyField(dataFormat);
             EditorGUILayout.PropertyField(endianness);
             EditorGUILayout.PropertyField(bytesToSkip);
-
-            if (GUILayout.Button("Spawn in scene"))
-            {
-                VolumeDataset datasetAsset = AssetDatabase.LoadAssetAtPath<VolumeDataset>(importer.assetPath);
-                VolumeObjectFactory.CreateObject(datasetAsset);
-            }
 
             serializedObject.ApplyModifiedProperties();
 
