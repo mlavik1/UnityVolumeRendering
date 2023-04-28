@@ -1,3 +1,4 @@
+#if UNITY_2021_2_OR_NEWER
 using UnityEditor;
 using UnityEngine;
 
@@ -39,3 +40,4 @@ namespace UnityVolumeRendering
         }
     }
 }
+#endif
