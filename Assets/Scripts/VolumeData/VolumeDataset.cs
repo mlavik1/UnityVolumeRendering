@@ -55,7 +55,7 @@ namespace UnityVolumeRendering
         {
             if (dataTexture == null)
             {
-                dataTexture = AsyncHelper.RunSync<Texture3D>(() => CreateTextureInternalAsync());
+                dataTexture = AsyncHelper.RunSync<Texture3D>(() => CreateTextureInternalAsync(NullProgressHandler.instance));
                 return dataTexture;
             }
             else
@@ -63,14 +63,16 @@ namespace UnityVolumeRendering
                 return dataTexture;
             }
         }
-        public async Task<Texture3D> GetDataTextureAsync()
+        public async Task<Texture3D> GetDataTextureAsync(IProgressHandler progressHandler = null)
         {
             if (dataTexture == null)
             {
                 await createDataTextureLock.WaitAsync();
                 try
                 {
-                    dataTexture = await CreateTextureInternalAsync();
+                    if (progressHandler == null)
+                        progressHandler = NullProgressHandler.instance;
+                    dataTexture = await CreateTextureInternalAsync(progressHandler);
                 }
                 finally
                 {
@@ -84,7 +86,7 @@ namespace UnityVolumeRendering
         {
             if (gradientTexture == null)
             {
-                gradientTexture = AsyncHelper.RunSync<Texture3D>(() => CreateGradientTextureInternalAsync(new NullProgressHandler()));
+                gradientTexture = AsyncHelper.RunSync<Texture3D>(() => CreateGradientTextureInternalAsync(NullProgressHandler.instance));
                 return gradientTexture;
             }
             else
@@ -99,7 +101,9 @@ namespace UnityVolumeRendering
                 await createGradientTextureLock.WaitAsync();
                 try
                 {
-                    gradientTexture = await CreateGradientTextureInternalAsync(progressHandler != null ? progressHandler : new NullProgressHandler());
+                    if (progressHandler == null)
+                        progressHandler = new NullProgressHandler();
+                    gradientTexture = await CreateGradientTextureInternalAsync(progressHandler != null ? progressHandler : NullProgressHandler.instance);
                 }
                 finally
                 {
@@ -195,7 +199,7 @@ namespace UnityVolumeRendering
             Debug.Log("TIME: " + stopwatchElapsed.TotalMilliseconds);
         }
 
-        private async Task<Texture3D> CreateTextureInternalAsync()                                        
+        private async Task<Texture3D> CreateTextureInternalAsync(IProgressHandler progressHandler)                                        
         {
             Debug.Log("Async texture generation. Hold on.");
 
@@ -206,26 +210,31 @@ namespace UnityVolumeRendering
             float maxValue = 0;
             float maxRange = 0;
 
+            progressHandler.StartStage(0.2f, "Calculating value bounds");
             await Task.Run(() =>
             {
                 minValue = GetMinDataValue();
                 maxValue = GetMaxDataValue();
                 maxRange = maxValue - minValue;
             });
+            progressHandler.EndStage();
 
             Texture3D texture = null;
             bool isHalfFloat = texformat == TextureFormat.RHalf;
 
+            progressHandler.StartStage(0.8f, "Creating texture");
             try
             {
                 if (isHalfFloat)
                 {
+                    progressHandler.ReportProgress(0.0f, "Allocating pixel data");
                     NativeArray<ushort> pixelBytes = new NativeArray<ushort>(data.Length, Allocator.Persistent);
 
                     await Task.Run(() => {
                         for (int iData = 0; iData < data.Length; iData++)
                             pixelBytes[iData] = Mathf.FloatToHalf((float)(data[iData] - minValue) / maxRange);
                     });
+                    progressHandler.ReportProgress(0.8f, "Applying texture");
 
                     texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
                     texture.wrapMode = TextureWrapMode.Clamp;
@@ -236,12 +245,14 @@ namespace UnityVolumeRendering
                 }
                 else
                 {
+                    progressHandler.ReportProgress(0.0f, "Allocating pixel data");
                     NativeArray<float> pixelBytes = new NativeArray<float>(data.Length, Allocator.Persistent);
 
                     await Task.Run(() => {
                         for (int iData = 0; iData < data.Length; iData++)
                             pixelBytes[iData] = (float)(data[iData] - minValue) / maxRange;
                     });
+                    progressHandler.ReportProgress(0.8f, "Applying texture");
 
                     texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
                     texture.wrapMode = TextureWrapMode.Clamp;
@@ -264,6 +275,7 @@ namespace UnityVolumeRendering
 
                 texture.Apply();
             }
+            progressHandler.EndStage();
             Debug.Log("Texture generation done.");
             return texture;
         }

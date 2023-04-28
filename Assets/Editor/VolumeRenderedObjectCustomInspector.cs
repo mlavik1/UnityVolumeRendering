@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace UnityVolumeRendering
 {
@@ -44,7 +45,9 @@ namespace UnityVolumeRendering
             RenderMode oldRenderMode = volrendObj.GetRenderMode();
             RenderMode newRenderMode = (RenderMode)EditorGUILayout.EnumPopup("Render mode", oldRenderMode);
             if (newRenderMode != oldRenderMode)
-                volrendObj.SetRenderMode(newRenderMode);
+            {
+                Task task = volrendObj.SetRenderModeAsync(newRenderMode, new ProgressHandler(this));
+            }
 
             // Visibility window
             Vector2 visibilityWindow = volrendObj.GetVisibilityWindow();
@@ -59,7 +62,9 @@ namespace UnityVolumeRendering
                 // Transfer function type
                 TFRenderMode tfMode = (TFRenderMode)EditorGUILayout.EnumPopup("Transfer function type", volrendObj.GetTransferFunctionMode());
                 if (tfMode != volrendObj.GetTransferFunctionMode())
-                    volrendObj.SetTransferFunctionMode(tfMode);
+                {
+                    Task task = volrendObj.SetTransferFunctionModeAsync(tfMode, new ProgressHandler(this));
+                }
 
                 // Show TF button
                 if (GUILayout.Button("Edit transfer function"))
@@ -77,7 +82,9 @@ namespace UnityVolumeRendering
             if (lightSettings)
             {
                 if (volrendObj.GetRenderMode() == RenderMode.DirectVolumeRendering)
-                    volrendObj.SetLightingEnabled(GUILayout.Toggle(volrendObj.GetLightingEnabled(), "Enable lighting"), new ProgressHandler(this));
+                {
+                    Task task = volrendObj.SetLightingEnabledAsync(GUILayout.Toggle(volrendObj.GetLightingEnabled(), "Enable lighting"), new ProgressHandler(this));
+                }
                 else
                     volrendObj.SetLightingEnabled(false);
 
