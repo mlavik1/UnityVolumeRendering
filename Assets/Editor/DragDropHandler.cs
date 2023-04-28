@@ -15,7 +15,7 @@ namespace UnityVolumeRendering
 
         private static DragAndDropVisualMode OnSceneDrop(Object dropUpon, Vector3 worldPosition, Vector2 viewportPosition, Transform parentForDraggedObjects, bool perform)
         {
-            if (perform)
+            if (perform && DragAndDrop.objectReferences[0] is VolumeDataset)
             {
                 VolumeDataset datasetAsset = (VolumeDataset)DragAndDrop.objectReferences[0];
                 VolumeObjectFactory.CreateObject(datasetAsset);
@@ -25,7 +25,7 @@ namespace UnityVolumeRendering
 
         private static DragAndDropVisualMode OnHierarchyDrop(int dropTargetInstanceID, HierarchyDropFlags dropMode, Transform parentForDraggedObjects, bool perform)
         {
-            if (perform)
+            if (perform && DragAndDrop.objectReferences[0] is VolumeDataset)
             {
                 VolumeDataset datasetAsset = (VolumeDataset)DragAndDrop.objectReferences[0];
                 VolumeRenderedObject spawnedObject = VolumeObjectFactory.CreateObject(datasetAsset);
