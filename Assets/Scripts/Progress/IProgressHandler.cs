@@ -6,5 +6,6 @@ namespace UnityVolumeRendering
         void EndStage();
         void ReportProgress(float progress, string description = "");
         void ReportProgress(int currentStep, int totalSteps, string description = "");
+        void Fail();
     }
 }

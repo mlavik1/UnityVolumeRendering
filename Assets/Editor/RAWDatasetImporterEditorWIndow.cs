@@ -45,9 +45,8 @@ namespace UnityVolumeRendering
 
         private async Task ImportDatasetAsync()
         {
-            using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
+            using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView(), "RAW import"))
             {
-                progressHandler.Start("RAW import", "Importing RAW...");
                 progressHandler.ReportProgress(0.0f, "Importing RAW dataset");
 
                 RawDatasetImporter importer = new RawDatasetImporter(fileToImport, dimX, dimY, dimZ, dataFormat, endianness, bytesToSkip);
@@ -72,8 +71,6 @@ namespace UnityVolumeRendering
                 {
                     Debug.LogError("Failed to import datset");
                 }
-
-                progressHandler.Finish();
 
                 this.Close();
             }

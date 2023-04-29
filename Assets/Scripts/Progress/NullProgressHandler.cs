@@ -19,5 +19,9 @@ namespace UnityVolumeRendering
         public void ReportProgress(int currentStep, int totalSteps, string description = "")
         {
         }
+
+        public void Fail()
+        {
+        }
     }
 }
