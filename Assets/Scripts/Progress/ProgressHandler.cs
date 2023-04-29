@@ -71,8 +71,11 @@ namespace UnityVolumeRendering
                 return;
 
             ReportProgress(1.0f);
-            ProgressStage childStage = stageStack.Pop();
-            totalProgress = childStage.end;
+            if (!finished)
+            {
+                ProgressStage childStage = stageStack.Pop();
+                totalProgress = childStage.end;
+            }
         }
 
         /// <summary>
