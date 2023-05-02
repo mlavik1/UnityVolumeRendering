@@ -15,13 +15,13 @@ namespace UnityVolumeRendering
             volObj.volumeContainerObject = meshContainer;
             MeshRenderer meshRenderer = meshContainer.GetComponent<MeshRenderer>();
 
-            CreateObjectInternal(dataset,meshContainer, meshRenderer, volObj, outerObject);
+            CreateObjectInternal(dataset, meshContainer, meshRenderer, volObj, outerObject);
 
             meshRenderer.sharedMaterial.SetTexture("_DataTex", dataset.GetDataTexture());
 
             return volObj;
         }
-        public static async Task<VolumeRenderedObject> CreateObjectAsync(VolumeDataset dataset)
+        public static async Task<VolumeRenderedObject> CreateObjectAsync(VolumeDataset dataset, IProgressHandler progressHandler = null)
         {
             GameObject outerObject = new GameObject("VolumeRenderedObject_" + dataset.datasetName);
             VolumeRenderedObject volObj = outerObject.AddComponent<VolumeRenderedObject>();
@@ -32,11 +32,12 @@ namespace UnityVolumeRendering
 
             CreateObjectInternal(dataset,meshContainer, meshRenderer,volObj,outerObject) ;
 
-            meshRenderer.sharedMaterial.SetTexture("_DataTex", await dataset.GetDataTextureAsync());
+            meshRenderer.sharedMaterial.SetTexture("_DataTex", await dataset.GetDataTextureAsync(progressHandler));
 
             return volObj;
         }
-        private static void CreateObjectInternal(VolumeDataset dataset, GameObject meshContainer, MeshRenderer meshRenderer, VolumeRenderedObject volObj, GameObject outerObject)
+
+        private static void CreateObjectInternal(VolumeDataset dataset, GameObject meshContainer, MeshRenderer meshRenderer, VolumeRenderedObject volObj, GameObject outerObject, IProgressHandler progressHandler = null)
         {            
             meshContainer.transform.parent = outerObject.transform;
             meshContainer.transform.localScale = Vector3.one;

@@ -126,10 +126,11 @@ namespace UnityVolumeRendering
             if (sequenceSeries.files.Count == 0)
             {
                 Debug.LogError("Empty series. No files to load.");
+                settings.progressHandler.Fail();
                 return null;
             }
 
-            await Task.Run(() => ImportSeriesInternal(dicomNames,sequenceSeries,image,size,pixelData,volumeDataset));
+            await Task.Run(() => ImportSeriesInternal(dicomNames, sequenceSeries, image, size, pixelData, volumeDataset));
 
             return volumeDataset;
         }

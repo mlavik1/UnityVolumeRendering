@@ -49,12 +49,11 @@ namespace UnityVolumeRendering
                 Debug.Log("Async dataset load. Hold on.");
                 using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
                 {
-                    progressHandler.Start("DICOM import", "Importing DICOM...");
-                    progressHandler.StartStage(0.8f, "Importing dataset");
+                    progressHandler.StartStage(0.7f, "Importing dataset");
                     Task<VolumeDataset[]> importTask = DicomImportDirectoryAsync(dir, progressHandler);
                     await importTask;
                     progressHandler.EndStage();
-                    progressHandler.StartStage(0.2f, "Spawning dataset");
+                    progressHandler.StartStage(0.3f, "Spawning dataset");
                     for (int i = 0; i < importTask.Result.Length; i++)
                     {
                         if (spawnInScene)
@@ -71,7 +70,6 @@ namespace UnityVolumeRendering
                         }
                     }
                     progressHandler.EndStage();
-                    progressHandler.Finish();
                 }
             }
             else
@@ -102,18 +100,18 @@ namespace UnityVolumeRendering
 
             if (fileCandidates.Any())
             {
-                progressHandler.StartStage(0.6f, "Loading DICOM series");
+                progressHandler.StartStage(0.2f, "Loading DICOM series");
 
                 IImageSequenceImporter importer = ImporterFactory.CreateImageSequenceImporter(ImageSequenceFormat.DICOM);
                 IEnumerable<IImageSequenceSeries> seriesList = await importer.LoadSeriesAsync(fileCandidates, new ImageSequenceImportSettings { progressHandler = progressHandler });
 
                 progressHandler.EndStage();
-                progressHandler.StartStage(0.4f);
+                progressHandler.StartStage(0.8f);
 
                 int seriesIndex = 0, numSeries = seriesList.Count();
                 foreach (IImageSequenceSeries series in seriesList)
                 {
-                    progressHandler.ReportProgress(seriesIndex, numSeries, $"Importing series {seriesIndex} of {numSeries}");
+                    progressHandler.StartStage(1.0f / numSeries, $"Importing series {seriesIndex + 1} of {numSeries}");
                     VolumeDataset dataset = await importer.ImportSeriesAsync(series, new ImageSequenceImportSettings { progressHandler = progressHandler });
                     if (dataset != null)
                     {
@@ -129,6 +127,7 @@ namespace UnityVolumeRendering
                         importedDatasets.Add(dataset);
                     }
                     seriesIndex++;
+                    progressHandler.EndStage();
                 }
 
                 progressHandler.EndStage();
@@ -167,9 +166,8 @@ namespace UnityVolumeRendering
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
-                using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
+                using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView(), "NRRD import"))
                 {
-                    progressHandler.Start("NRRD import", "Importing NRRD...");
                     progressHandler.ReportProgress(0.0f, "Importing NRRD dataset");
 
                     IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.NRRD);
@@ -192,7 +190,6 @@ namespace UnityVolumeRendering
                     {
                         Debug.LogError("Failed to import datset");
                     }
-                    progressHandler.Finish();
                 }
             }
             else
@@ -219,9 +216,8 @@ namespace UnityVolumeRendering
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
-                using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
+                using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView(), "NIFTI import"))
                 {
-                    progressHandler.Start("NIfTI import", "Importing NIfTI...");
                     progressHandler.ReportProgress(0.0f, "Importing NIfTI dataset");
 
                     IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.NIFTI);
@@ -245,7 +241,6 @@ namespace UnityVolumeRendering
                     {
                         Debug.LogError("Failed to import datset");
                     }
-                    progressHandler.Finish();
                 }
             }
             else
@@ -272,9 +267,8 @@ namespace UnityVolumeRendering
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
-                using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
+                using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView(), "AVSP import"))
                 {
-                    progressHandler.Start("VASP import", "Importing VASP...");
                     progressHandler.ReportProgress(0.0f, "Importing VASP dataset");
 
                     IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.VASP);
@@ -298,7 +292,6 @@ namespace UnityVolumeRendering
                     {
                         Debug.LogError("Failed to import datset");
                     }
-                    progressHandler.Finish();
                 }
             }
             else

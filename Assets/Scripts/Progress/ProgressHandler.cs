@@ -22,35 +22,17 @@ namespace UnityVolumeRendering
         }
 
         private string description = "";
-        private float currentProgress = 0.0f;
+        private float currentStageProgress = 0.0f;
+        private float totalProgress = 0.0f;
         private Stack<ProgressStage> stageStack = new Stack<ProgressStage>(3);
         private IProgressView progressView;
+        private bool finished = false;
 
-        public ProgressHandler(IProgressView progressView)
+        public ProgressHandler(IProgressView progressView, string title = "", string description = "")
         {
             this.progressView = progressView;
-        }
-
-        /// <summary>
-        /// Start the processing.
-        /// </summary>
-        public void Start(string title, string description)
-        {
-            this.progressView.StartProgress(title, description);
-            this.description = description;
-            currentProgress = 0.0f;
-            stageStack.Clear();
             stageStack.Push(new ProgressStage{ start = 0.0f, end = 1.0f });
-        }
-
-        /// <summary>
-        /// Finish the processing.
-        /// <param name="status">Completion status (succeeded or failed)</param>
-        /// </summary>
-        public void Finish(ProgressStatus status = ProgressStatus.Succeeded)
-        {
-            this.progressView.FinishProgress(status);
-            stageStack.Clear();
+            this.progressView.StartProgress(title, description);
         }
 
         /// <summary>
@@ -66,11 +48,17 @@ namespace UnityVolumeRendering
         /// </summary>
         public void StartStage(float weight, string description = "")
         {
+            if (finished)
+            {
+                Debug.LogWarning("Can't start new stage. Import has already finished");
+                return;
+            }
+
             if (description != "")
                 this.description = description;
-
+            
             ProgressStage stage = stageStack.Peek();
-            stageStack.Push(new ProgressStage{ start = currentProgress, end = currentProgress + (stage.end - stage.start) * weight });
+            stageStack.Push(new ProgressStage{ start = totalProgress, end = totalProgress + (stage.end - stage.start) * weight });
             UpdateProgressView();
         }
 
@@ -79,8 +67,15 @@ namespace UnityVolumeRendering
         /// </summary>
         public void EndStage()
         {
-            ProgressStage childStage = stageStack.Pop();
-            currentProgress = childStage.end;
+            if (finished)
+                return;
+
+            ReportProgress(1.0f);
+            if (!finished)
+            {
+                ProgressStage childStage = stageStack.Pop();
+                totalProgress = childStage.end;
+            }
         }
 
         /// <summary>
@@ -90,9 +85,16 @@ namespace UnityVolumeRendering
         /// </summary>
         public void ReportProgress(float progress, string description = "")
         {
+            if (finished)
+                return;
+
             if (description != "")
                 this.description = description;
-            currentProgress = GetAbsoluteProgress(progress);
+            currentStageProgress = progress;
+            totalProgress = GetAbsoluteProgress(progress);
+
+            if (totalProgress >= 1.0f)
+                Finish(ProgressStatus.Succeeded);
 
             UpdateProgressView();
         }
@@ -105,16 +107,40 @@ namespace UnityVolumeRendering
         /// </summary>
         public void ReportProgress(int currentStep, int totalSteps, string description = "")
         {
+            if (finished)
+                return;
+
             if (description != "")
                 this.description = description;
-            currentProgress = GetAbsoluteProgress(currentStep / (float)totalSteps);
+            currentStageProgress = currentStep / (float)totalSteps;
+            totalProgress = GetAbsoluteProgress(currentStageProgress);
+
+            if (totalProgress >= 1.0f)
+                Finish(ProgressStatus.Succeeded);
 
             UpdateProgressView();
         }
 
-        public void Dispose()
+        public void Fail()
         {
             Finish(ProgressStatus.Failed);
+        }
+
+        public void Dispose()
+        {
+            if (!finished)
+                Finish(ProgressStatus.Succeeded);
+        }
+
+        /// <summary>
+        /// Finish the processing.
+        /// <param name="status">Completion status (succeeded or failed)</param>
+        /// </summary>
+        private void Finish(ProgressStatus status = ProgressStatus.Succeeded)
+        {
+            this.progressView.FinishProgress(status);
+            stageStack.Clear();
+            finished = true;
         }
 
         private float GetAbsoluteProgress(float progress)
@@ -125,7 +151,7 @@ namespace UnityVolumeRendering
 
         private void UpdateProgressView()
         {
-            this.progressView.UpdateProgress(currentProgress, description);
+            this.progressView.UpdateProgress(totalProgress, currentStageProgress, description);
         }
     }
 }

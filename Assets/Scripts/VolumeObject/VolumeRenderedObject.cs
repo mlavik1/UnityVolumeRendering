@@ -65,22 +65,40 @@ namespace UnityVolumeRendering
 
         public void SetRenderMode(RenderMode mode)
         {
+            Task task = SetRenderModeAsync(mode);
+        }
+
+        public async Task SetRenderModeAsync(RenderMode mode, IProgressHandler progressHandler = null)
+        {
             if (renderMode != mode)
             {
                 renderMode = mode;
                 SetVisibilityWindow(0.0f, 1.0f); // reset visibility window
             }
-            UpdateMaterialProperties();
+            await UpdateMaterialPropertiesAsync(progressHandler);
         }
 
         public void SetTransferFunctionMode(TFRenderMode mode)
         {
+            Task task = SetTransferFunctionModeAsync(mode);
+        }
+
+        public async Task SetTransferFunctionModeAsync(TFRenderMode mode, IProgressHandler progressHandler = null)
+        {
+            if (progressHandler == null)
+                progressHandler = NullProgressHandler.instance;
+
+            progressHandler.StartStage(0.3f, "Generating transfer function texture");
             tfRenderMode = mode;
             if (tfRenderMode == TFRenderMode.TF1D && transferFunction != null)
                 transferFunction.GenerateTexture();
             else if (transferFunction2D != null)
                 transferFunction2D.GenerateTexture();
-            UpdateMaterialProperties();
+            progressHandler.EndStage();
+            
+            progressHandler.StartStage(0.7f, "Updating material properties");
+            await UpdateMaterialPropertiesAsync(progressHandler);
+            progressHandler.EndStage();
         }
 
         public TFRenderMode GetTransferFunctionMode()
@@ -118,6 +136,15 @@ namespace UnityVolumeRendering
             {
                 lightingEnabled = enable;
                 UpdateMaterialProperties();
+            }
+        }
+
+        public async Task SetLightingEnabledAsync(bool enable, IProgressHandler progressHandler = null)
+        {
+            if (enable != lightingEnabled)
+            {
+                lightingEnabled = enable;
+                await UpdateMaterialPropertiesAsync(progressHandler);
             }
         }
 
@@ -192,7 +219,7 @@ namespace UnityVolumeRendering
             UpdateMaterialProperties();
         }
 
-        private void UpdateMaterialProperties()
+        public async Task SetTransferFunctionAsync(TransferFunction tf, IProgressHandler progressHandler = null)
         {
             if (meshRenderer.sharedMaterial == null)
             {
@@ -204,17 +231,23 @@ namespace UnityVolumeRendering
                 transferFunction = TransferFunctionDatabase.CreateTransferFunction();
             }
 
-            UpdateMatAsync();
+            this.transferFunction = tf;
+            await UpdateMaterialPropertiesAsync(progressHandler);
         }
 
-        private async void UpdateMatAsync()
+        private void UpdateMaterialProperties(IProgressHandler progressHandler = null)
+        {
+            Task task = UpdateMaterialPropertiesAsync(progressHandler);
+        }
+
+        private async Task UpdateMaterialPropertiesAsync(IProgressHandler progressHandler = null)
         {
             await updateMatLock.WaitAsync();
 
             try
             {
                 bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
-                Texture3D texture = useGradientTexture ? await dataset.GetGradientTextureAsync() : null;
+                Texture3D texture = useGradientTexture ? await dataset.GetGradientTextureAsync(progressHandler) : null;
                 meshRenderer.sharedMaterial.SetTexture("_GradientTex", texture);
                 UpdateMatInternal();
             }

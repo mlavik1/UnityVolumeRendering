@@ -2,6 +2,8 @@ namespace UnityVolumeRendering
 {
     public class NullProgressHandler : IProgressHandler
     {
+        public static readonly IProgressHandler instance = new NullProgressHandler();
+
         public void StartStage(float weight, string description = "")
         {
         }
@@ -15,6 +17,10 @@ namespace UnityVolumeRendering
         }
 
         public void ReportProgress(int currentStep, int totalSteps, string description = "")
+        {
+        }
+
+        public void Fail()
         {
         }
     }
