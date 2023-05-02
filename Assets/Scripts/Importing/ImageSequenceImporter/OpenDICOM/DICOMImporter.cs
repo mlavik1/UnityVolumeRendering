@@ -404,7 +404,7 @@ namespace UnityVolumeRendering
             Vector3 yBase = new Vector3(cosines[3], cosines[4], cosines[5]);
             Vector3 normal = Vector3.Cross(xBase, yBase);
 
-            for(int i = 1; i < slices.Count; i++)
+            for(int i = 0; i < slices.Count; i++)
             {
                 Vector3 position = slices[i].position;
                 // Project p onto n. d = dot(p,n) / |n| = dot(p,n)

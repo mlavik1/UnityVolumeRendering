@@ -62,7 +62,7 @@ namespace UnityVolumeRendering
         {
             if (dataTexture == null)
             {
-                dataTexture = AsyncHelper.RunSync<Texture3D>(() => CreateTextureInternalAsync());
+                dataTexture = AsyncHelper.RunSync<Texture3D>(() => CreateTextureInternalAsync(NullProgressHandler.instance));
                 return dataTexture;
             }
             else
@@ -70,14 +70,16 @@ namespace UnityVolumeRendering
                 return dataTexture;
             }
         }
-        public async Task<Texture3D> GetDataTextureAsync()
+        public async Task<Texture3D> GetDataTextureAsync(IProgressHandler progressHandler = null)
         {
             if (dataTexture == null)
             {
                 await createDataTextureLock.WaitAsync();
                 try
                 {
-                    dataTexture = await CreateTextureInternalAsync();
+                    if (progressHandler == null)
+                        progressHandler = NullProgressHandler.instance;
+                    dataTexture = await CreateTextureInternalAsync(progressHandler);
                 }
                 finally
                 {
@@ -91,7 +93,7 @@ namespace UnityVolumeRendering
         {
             if (gradientTexture == null)
             {
-                gradientTexture = AsyncHelper.RunSync<Texture3D>(() => CreateGradientTextureInternalAsync());
+                gradientTexture = AsyncHelper.RunSync<Texture3D>(() => CreateGradientTextureInternalAsync(NullProgressHandler.instance));
                 return gradientTexture;
             }
             else
@@ -99,14 +101,16 @@ namespace UnityVolumeRendering
                 return gradientTexture;
             }
         }
-        public async Task<Texture3D> GetGradientTextureAsync()
+        public async Task<Texture3D> GetGradientTextureAsync(IProgressHandler progressHandler = null)
         {
             if (gradientTexture == null)
             {
                 await createGradientTextureLock.WaitAsync();
                 try
                 {
-                    gradientTexture = await CreateGradientTextureInternalAsync();
+                    if (progressHandler == null)
+                        progressHandler = new NullProgressHandler();
+                    gradientTexture = await CreateGradientTextureInternalAsync(progressHandler != null ? progressHandler : NullProgressHandler.instance);
                 }
                 finally
                 {
@@ -119,14 +123,14 @@ namespace UnityVolumeRendering
         public float GetMinDataValue()
         {
             if (minDataValue == float.MaxValue)
-                CalculateValueBounds();
+                CalculateValueBounds(new NullProgressHandler());
             return minDataValue;
         }
 
         public float GetMaxDataValue()
         {
             if (maxDataValue == float.MinValue)
-                CalculateValueBounds();
+                CalculateValueBounds(new NullProgressHandler());
             return maxDataValue;
         }
 
@@ -174,23 +178,29 @@ namespace UnityVolumeRendering
             dimZ = halfDimZ;
         }
 
-        private void CalculateValueBounds()
+        private void CalculateValueBounds(IProgressHandler progressHandler)
         {
             minDataValue = float.MaxValue;
             maxDataValue = float.MinValue;
 
             if (data != null)
             {
-                for (int i = 0; i < dimX * dimY * dimZ; i++)
+                int dimension = dimX * dimY * dimZ;
+                int sliceDimension = dimX * dimY;
+                for (int i = 0; i < dimension;)
                 {
-                    float val = data[i];
-                    minDataValue = Mathf.Min(minDataValue, val);
-                    maxDataValue = Mathf.Max(maxDataValue, val);
+                    progressHandler.ReportProgress(i, dimension, "Calculating value bounds");
+                    for (int j = 0; j < sliceDimension; j++, i++)
+                    {
+                        float val = data[i];
+                        minDataValue = Mathf.Min(minDataValue, val);
+                        maxDataValue = Mathf.Max(maxDataValue, val);
+                    }
                 }
             }
         }
 
-        private async Task<Texture3D> CreateTextureInternalAsync()                                        
+        private async Task<Texture3D> CreateTextureInternalAsync(IProgressHandler progressHandler)                                        
         {
             Debug.Log("Async texture generation. Hold on.");
 
@@ -201,26 +211,41 @@ namespace UnityVolumeRendering
             float maxValue = 0;
             float maxRange = 0;
 
+            progressHandler.StartStage(0.2f, "Calculating value bounds");
             await Task.Run(() =>
             {
                 minValue = GetMinDataValue();
                 maxValue = GetMaxDataValue();
                 maxRange = maxValue - minValue;
             });
+            progressHandler.EndStage();
 
             Texture3D texture = null;
             bool isHalfFloat = texformat == TextureFormat.RHalf;
 
+            progressHandler.StartStage(0.8f, "Creating texture");
             try
             {
+                int dimension = dimX * dimY * dimZ;
+                int sliceDimension = dimX * dimY;
+
                 if (isHalfFloat)
                 {
+                    progressHandler.StartStage(0.8f, "Allocating pixel data");
                     NativeArray<ushort> pixelBytes = new NativeArray<ushort>(data.Length, Allocator.Persistent);
 
                     await Task.Run(() => {
-                        for (int iData = 0; iData < data.Length; iData++)
-                            pixelBytes[iData] = Mathf.FloatToHalf((float)(data[iData] - minValue) / maxRange);
+                        for (int i = 0; i < dimension;)
+                        {
+                            progressHandler.ReportProgress(i, dimension, "Copying slice data.");
+                            for (int j = 0; j < sliceDimension; j++, i++)
+                            {
+                                pixelBytes[i] = Mathf.FloatToHalf((float)(data[i] - minValue) / maxRange);
+                            }
+                        }
                     });
+                    progressHandler.EndStage();
+                    progressHandler.ReportProgress(0.8f, "Applying texture");
 
                     texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
                     texture.wrapMode = TextureWrapMode.Clamp;
@@ -231,12 +256,21 @@ namespace UnityVolumeRendering
                 }
                 else
                 {
+                    progressHandler.StartStage(0.8f, "Allocating pixel data");
                     NativeArray<float> pixelBytes = new NativeArray<float>(data.Length, Allocator.Persistent);
 
                     await Task.Run(() => {
-                        for (int iData = 0; iData < data.Length; iData++)
-                            pixelBytes[iData] = (float)(data[iData] - minValue) / maxRange;
+                        for (int i = 0; i < dimension;)
+                        {
+                            progressHandler.ReportProgress(i, dimension, "Copying slice data.");
+                            for (int j = 0; j < sliceDimension; j++, i++)
+                            {
+                                pixelBytes[i] = (float)(data[i] - minValue) / maxRange;
+                            }
+                        }
                     });
+                    progressHandler.EndStage();
+                    progressHandler.ReportProgress(0.8f, "Applying texture");
 
                     texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
                     texture.wrapMode = TextureWrapMode.Clamp;
@@ -259,11 +293,12 @@ namespace UnityVolumeRendering
 
                 texture.Apply();
             }
+            progressHandler.EndStage();
             Debug.Log("Texture generation done.");
             return texture;
         }
 
-        private async Task<Texture3D> CreateGradientTextureInternalAsync()
+        private async Task<Texture3D> CreateGradientTextureInternalAsync(IProgressHandler progressHandler)
         {
             Debug.Log("Async gradient generation. Hold on.");
 
@@ -275,12 +310,15 @@ namespace UnityVolumeRendering
             float maxRange = 0;
             Color[] cols = null;
 
+            progressHandler.StartStage(0.2f, "Calculating value bounds");
             await Task.Run(() => {
-
+                if (minDataValue == float.MaxValue || maxDataValue == float.MinValue)
+                    CalculateValueBounds(progressHandler);
                 minValue = GetMinDataValue();
                 maxValue = GetMaxDataValue();
                 maxRange = maxValue - minValue;
             });
+            progressHandler.EndStage();
 
             try
             {
@@ -288,11 +326,13 @@ namespace UnityVolumeRendering
             }
             catch (OutOfMemoryException)
             {
+                progressHandler.StartStage(0.6f, "Creating gradient texture");
                 Texture3D textureTmp = new Texture3D(dimX, dimY, dimZ, texformat, false);
                 textureTmp.wrapMode = TextureWrapMode.Clamp;
 
                 for (int x = 0; x < dimX; x++)
                 {
+                    progressHandler.ReportProgress(x, dimX, "Calculating gradients for slice");
                     for (int y = 0; y < dimY; y++)
                     {
                         for (int z = 0; z < dimZ; z++)
@@ -304,19 +344,24 @@ namespace UnityVolumeRendering
                         }
                     }
                 }
+                progressHandler.EndStage();
+                progressHandler.StartStage(0.2f, "Uploading gradient texture");
                 textureTmp.Apply();
 
+                progressHandler.EndStage();
                 Debug.Log("Gradient gereneration done.");
 
                 return textureTmp;
             }
 
             await Task.Run(() => {
-                for (int x = 0; x < dimX; x++)
+                progressHandler.StartStage(0.6f, "Creating gradient texture");
+                for (int z = 0; z < dimZ; z++)
                 {
+                    progressHandler.ReportProgress(z, dimZ, "Calculating gradients for slice");
                     for (int y = 0; y < dimY; y++)
                     {
-                        for (int z = 0; z < dimZ; z++)
+                        for (int x = 0; x < dimX; x++)
                         {
                             int iData = x + y * dimX + z * (dimX * dimY);
                             Vector3 grad = GetGrad(x, y, z, minValue, maxRange);
@@ -325,12 +370,15 @@ namespace UnityVolumeRendering
                         }
                     }
                 }
+                progressHandler.EndStage();
             });
 
+            progressHandler.StartStage(0.2f, "Uploading gradient texture");
             Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
             texture.wrapMode = TextureWrapMode.Clamp;
             texture.SetPixels(cols);
             texture.Apply();
+            progressHandler.EndStage();
 
             Debug.Log("Gradient gereneration done.");
             return texture;
