@@ -173,8 +173,6 @@ namespace UnityVolumeRendering
 
         private void CalculateValueBounds(IProgressHandler progressHandler)
         {
-            System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-            stopwatch.Start();
             minDataValue = float.MaxValue;
             maxDataValue = float.MinValue;
 
@@ -184,19 +182,15 @@ namespace UnityVolumeRendering
                 int sliceDimension = dimX * dimY;
                 for (int i = 0; i < dimension;)
                 {
+                    progressHandler.ReportProgress(i, dimension, "Calculating value bounds");
                     for (int j = 0; j < sliceDimension; j++, i++)
                     {
                         float val = data[i];
                         minDataValue = Mathf.Min(minDataValue, val);
                         maxDataValue = Mathf.Max(maxDataValue, val);
                     }
-                    progressHandler.ReportProgress(i, dimension, "Calculating value bounds");
                 }
             }
-
-            stopwatch.Stop();
-            TimeSpan stopwatchElapsed = stopwatch.Elapsed;
-            Debug.Log("TIME: " + stopwatchElapsed.TotalMilliseconds);
         }
 
         private async Task<Texture3D> CreateTextureInternalAsync(IProgressHandler progressHandler)                                        
@@ -225,15 +219,25 @@ namespace UnityVolumeRendering
             progressHandler.StartStage(0.8f, "Creating texture");
             try
             {
+                int dimension = dimX * dimY * dimZ;
+                int sliceDimension = dimX * dimY;
+
                 if (isHalfFloat)
                 {
-                    progressHandler.ReportProgress(0.0f, "Allocating pixel data");
+                    progressHandler.StartStage(0.8f, "Allocating pixel data");
                     NativeArray<ushort> pixelBytes = new NativeArray<ushort>(data.Length, Allocator.Persistent);
 
                     await Task.Run(() => {
-                        for (int iData = 0; iData < data.Length; iData++)
-                            pixelBytes[iData] = Mathf.FloatToHalf((float)(data[iData] - minValue) / maxRange);
+                        for (int i = 0; i < dimension;)
+                        {
+                            progressHandler.ReportProgress(i, dimension, "Copying slice data.");
+                            for (int j = 0; j < sliceDimension; j++, i++)
+                            {
+                                pixelBytes[i] = Mathf.FloatToHalf((float)(data[i] - minValue) / maxRange);
+                            }
+                        }
                     });
+                    progressHandler.EndStage();
                     progressHandler.ReportProgress(0.8f, "Applying texture");
 
                     texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
@@ -245,13 +249,20 @@ namespace UnityVolumeRendering
                 }
                 else
                 {
-                    progressHandler.ReportProgress(0.0f, "Allocating pixel data");
+                    progressHandler.StartStage(0.8f, "Allocating pixel data");
                     NativeArray<float> pixelBytes = new NativeArray<float>(data.Length, Allocator.Persistent);
 
                     await Task.Run(() => {
-                        for (int iData = 0; iData < data.Length; iData++)
-                            pixelBytes[iData] = (float)(data[iData] - minValue) / maxRange;
+                        for (int i = 0; i < dimension;)
+                        {
+                            progressHandler.ReportProgress(i, dimension, "Copying slice data.");
+                            for (int j = 0; j < sliceDimension; j++, i++)
+                            {
+                                pixelBytes[i] = (float)(data[i] - minValue) / maxRange;
+                            }
+                        }
                     });
+                    progressHandler.EndStage();
                     progressHandler.ReportProgress(0.8f, "Applying texture");
 
                     texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
@@ -338,12 +349,12 @@ namespace UnityVolumeRendering
 
             await Task.Run(() => {
                 progressHandler.StartStage(0.6f, "Creating gradient texture");
-                for (int x = 0; x < dimX; x++)
+                for (int z = 0; z < dimZ; z++)
                 {
-                    progressHandler.ReportProgress(x, dimX, "Calculating gradients for slice");
+                    progressHandler.ReportProgress(z, dimZ, "Calculating gradients for slice");
                     for (int y = 0; y < dimY; y++)
                     {
-                        for (int z = 0; z < dimZ; z++)
+                        for (int x = 0; x < dimX; x++)
                         {
                             int iData = x + y * dimX + z * (dimX * dimY);
                             Vector3 grad = GetGrad(x, y, z, minValue, maxRange);

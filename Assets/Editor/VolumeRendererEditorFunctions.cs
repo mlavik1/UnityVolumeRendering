@@ -73,22 +73,23 @@ namespace UnityVolumeRendering
 
             if (fileCandidates.Any())
             {
-                progressHandler.StartStage(0.6f, "Loading DICOM series");
+                progressHandler.StartStage(0.2f, "Loading DICOM series");
 
                 IImageSequenceImporter importer = ImporterFactory.CreateImageSequenceImporter(ImageSequenceFormat.DICOM);
                 IEnumerable<IImageSequenceSeries> seriesList = await importer.LoadSeriesAsync(fileCandidates, new ImageSequenceImportSettings { progressHandler = progressHandler });
                 float numVolumesCreated = 0;
 
                 progressHandler.EndStage();
-                progressHandler.StartStage(0.4f);
+                progressHandler.StartStage(0.8f);
 
                 int seriesIndex = 0, numSeries = seriesList.Count();
                 foreach (IImageSequenceSeries series in seriesList)
                 {
-                    progressHandler.ReportProgress(seriesIndex, numSeries, $"Importing series {seriesIndex} of {numSeries}");
-                    progressHandler.StartStage(0.8f);
+                    progressHandler.StartStage((seriesIndex + 1) / numSeries, $"Importing series {seriesIndex} of {numSeries}");
+                    progressHandler.StartStage(0.7f, $"Importing series {seriesIndex} of {numSeries}");
                     VolumeDataset dataset = await importer.ImportSeriesAsync(series, new ImageSequenceImportSettings { progressHandler = progressHandler });
                     progressHandler.EndStage();
+                    progressHandler.StartStage(0.3f, "Creating object");
                     if (dataset != null)
                     {
                         if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
@@ -101,10 +102,12 @@ namespace UnityVolumeRendering
                             }
                         }
 
-                        VolumeRenderedObject obj = await VolumeObjectFactory.CreateObjectAsync(dataset);
+                        VolumeRenderedObject obj = await VolumeObjectFactory.CreateObjectAsync(dataset, progressHandler);
                         obj.transform.position = new Vector3(numVolumesCreated, 0, 0);
                         numVolumesCreated++;
                     }
+                    progressHandler.EndStage();
+                    progressHandler.EndStage();
                     seriesIndex++;
                 }
 

@@ -130,7 +130,7 @@ namespace UnityVolumeRendering
                 return null;
             }
 
-            await Task.Run(() => ImportSeriesInternal(dicomNames,sequenceSeries,image,size,pixelData,volumeDataset));
+            await Task.Run(() => ImportSeriesInternal(dicomNames, sequenceSeries, image, size, pixelData, volumeDataset));
 
             return volumeDataset;
         }
@@ -170,7 +170,7 @@ namespace UnityVolumeRendering
             volumeDataset.dimX = (int)size[0];
             volumeDataset.dimY = (int)size[1];
             volumeDataset.dimZ = (int)size[2];
-            volumeDataset.datasetName = "test";
+            volumeDataset.datasetName = System.IO.Path.GetFileName(dicomNames[0]);
             volumeDataset.filePath = dicomNames[0];
             volumeDataset.scale = new Vector3(
                 (float)(spacing[0] * size[0]) / 1000.0f, // mm to m

@@ -42,7 +42,7 @@ namespace UnityVolumeRendering
         {
             if (progressId != -1)
             {
-                Progress.Report(progressId, progress, description);
+                Progress.Report(progressId, progress, progress == 1.0f ? "Done" : description);
             }
         }
     }
