@@ -354,8 +354,8 @@ namespace UnityVolumeRendering
                 return textureTmp;
             }
 
+            progressHandler.StartStage(0.6f, "Creating gradient texture");
             await Task.Run(() => {
-                progressHandler.StartStage(0.6f, "Creating gradient texture");
                 for (int z = 0; z < dimZ; z++)
                 {
                     progressHandler.ReportProgress(z, dimZ, "Calculating gradients for slice");
@@ -370,8 +370,8 @@ namespace UnityVolumeRendering
                         }
                     }
                 }
-                progressHandler.EndStage();
             });
+            progressHandler.EndStage();
 
             progressHandler.StartStage(0.2f, "Uploading gradient texture");
             Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
