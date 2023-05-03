@@ -13,6 +13,7 @@ namespace UnityVolumeRendering
         private bool otherSettings = true;
         private float currentProgress = 1.0f;
         private string currentProgressDescrition = "";
+        private bool progressDirty = false;
 
         public void StartProgress(string title, string description)
         {
@@ -27,6 +28,11 @@ namespace UnityVolumeRendering
         {
             currentProgressDescrition = description;
             currentProgress = totalProgress;
+            progressDirty = true;
+        }
+        public override bool RequiresConstantRepaint()
+        {
+            return progressDirty;
         }
 
         public override void OnInspectorGUI()
@@ -40,6 +46,7 @@ namespace UnityVolumeRendering
                 GUILayout.Space(18);
                 EditorGUILayout.EndVertical();
             }
+            progressDirty = false;
 
             // Render mode
             RenderMode oldRenderMode = volrendObj.GetRenderMode();

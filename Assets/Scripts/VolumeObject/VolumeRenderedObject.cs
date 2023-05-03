@@ -221,6 +221,16 @@ namespace UnityVolumeRendering
 
         public async Task SetTransferFunctionAsync(TransferFunction tf, IProgressHandler progressHandler = null)
         {
+            if (meshRenderer.sharedMaterial == null)
+            {
+                meshRenderer.sharedMaterial = new Material(Shader.Find("VolumeRendering/DirectVolumeRenderingShader"));
+                meshRenderer.sharedMaterial.SetTexture("_DataTex", dataset.GetDataTexture());
+            }
+            if (transferFunction == null)
+            {
+                transferFunction = TransferFunctionDatabase.CreateTransferFunction();
+            }
+
             this.transferFunction = tf;
             await UpdateMaterialPropertiesAsync(progressHandler);
         }

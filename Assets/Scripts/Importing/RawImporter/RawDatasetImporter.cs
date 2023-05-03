@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace UnityVolumeRendering
 {
+    [Serializable]
     public enum DataContentFormat
     {
         Int8,
@@ -15,6 +16,7 @@ namespace UnityVolumeRendering
         Uint32
     }
 
+    [Serializable]
     public enum Endianness
     {
         LittleEndian,
@@ -63,7 +65,7 @@ namespace UnityVolumeRendering
                 return null;
             }
 
-            VolumeDataset dataset = new VolumeDataset();
+            VolumeDataset dataset = ScriptableObject.CreateInstance<VolumeDataset>();
             ImportInternal(dataset, reader, fs);
 
             return dataset;
