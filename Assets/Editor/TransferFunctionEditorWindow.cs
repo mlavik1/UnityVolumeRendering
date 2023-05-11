@@ -89,7 +89,7 @@ namespace UnityVolumeRendering
              // Clear TF
             if(GUI.Button(new Rect(tfEditorRect.x + 150.0f, tfEditorRect.y + tfEditorRect.height + 20.0f, 70.0f, 30.0f), "Clear"))
             {
-                tf = new TransferFunction();
+                tf = ScriptableObject.CreateInstance<TransferFunction>();
                 tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.2f, 0.0f));
                 tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.8f, 1.0f));
                 tf.colourControlPoints.Add(new TFColourControlPoint(0.5f, new Color(0.469f, 0.354f, 0.223f, 1.0f)));

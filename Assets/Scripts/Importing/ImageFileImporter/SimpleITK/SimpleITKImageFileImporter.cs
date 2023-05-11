@@ -22,7 +22,7 @@ namespace UnityVolumeRendering
             VectorUInt32 size = null;
             VectorDouble spacing = null;
 
-            VolumeDataset volumeDataset = new VolumeDataset();
+            VolumeDataset volumeDataset = ScriptableObject.CreateInstance<VolumeDataset>();
 
             ImportInternal(volumeDataset, pixelData, size, spacing, filePath);
 
@@ -35,7 +35,7 @@ namespace UnityVolumeRendering
             VectorDouble spacing = null;
 
             // Create dataset
-            VolumeDataset volumeDataset = new VolumeDataset();
+            VolumeDataset volumeDataset = ScriptableObject.CreateInstance<VolumeDataset>();
 
             await Task.Run(() => ImportInternal(volumeDataset,pixelData,size,spacing,filePath));
 

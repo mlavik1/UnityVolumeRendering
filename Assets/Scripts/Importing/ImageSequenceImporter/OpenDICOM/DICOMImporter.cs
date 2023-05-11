@@ -145,7 +145,7 @@ namespace UnityVolumeRendering
             }
 
             // Create dataset
-            VolumeDataset dataset = new VolumeDataset();
+            VolumeDataset dataset = ScriptableObject.CreateInstance<VolumeDataset>();
 
             ImportSeriesInternal(files, dataset, settings.progressHandler);
 
@@ -163,7 +163,7 @@ namespace UnityVolumeRendering
             }
 
             // Create dataset
-            VolumeDataset dataset = new VolumeDataset();
+            VolumeDataset dataset = ScriptableObject.CreateInstance<VolumeDataset>();
 
             await Task.Run(() => ImportSeriesInternal(files,dataset, settings.progressHandler));
 

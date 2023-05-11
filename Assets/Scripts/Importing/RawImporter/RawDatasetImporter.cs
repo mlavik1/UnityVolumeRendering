@@ -95,7 +95,7 @@ namespace UnityVolumeRendering
                 fs.Close();
                 return null;
             }
-            VolumeDataset dataset = new VolumeDataset();
+            VolumeDataset dataset = ScriptableObject.CreateInstance<VolumeDataset>();
 
             await Task.Run(() => ImportInternal(dataset, reader, fs));
 

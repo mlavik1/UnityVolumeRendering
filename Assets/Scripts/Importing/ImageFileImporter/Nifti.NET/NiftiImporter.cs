@@ -29,7 +29,7 @@ namespace UnityVolumeRendering
             }
            
             // Create dataset
-            VolumeDataset volumeDataset = new VolumeDataset();
+            VolumeDataset volumeDataset = ScriptableObject.CreateInstance<VolumeDataset>();
             ImportInternal(volumeDataset, niftiFile, filePath);
 
             return volumeDataset;
@@ -38,7 +38,7 @@ namespace UnityVolumeRendering
         public async Task<VolumeDataset> ImportAsync(string filePath)
         {
             Nifti.NET.Nifti niftiFile = null;
-            VolumeDataset volumeDataset = new VolumeDataset();
+            VolumeDataset volumeDataset = ScriptableObject.CreateInstance<VolumeDataset>();
 
             await Task.Run(() =>niftiFile = NiftiFile.Read(filePath));
 

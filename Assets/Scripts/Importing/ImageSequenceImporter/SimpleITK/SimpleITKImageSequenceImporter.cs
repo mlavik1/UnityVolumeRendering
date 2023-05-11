@@ -98,7 +98,7 @@ namespace UnityVolumeRendering
             VectorString dicomNames = null;
 
             // Create dataset
-            VolumeDataset volumeDataset = new VolumeDataset();
+            VolumeDataset volumeDataset = ScriptableObject.CreateInstance<VolumeDataset>();
 
             ImageSequenceSeries sequenceSeries = (ImageSequenceSeries)series;
             if (sequenceSeries.files.Count == 0)
@@ -120,7 +120,7 @@ namespace UnityVolumeRendering
             VectorString dicomNames = null;
 
             // Create dataset
-            VolumeDataset volumeDataset = new VolumeDataset();
+            VolumeDataset volumeDataset = ScriptableObject.CreateInstance<VolumeDataset>();
 
             ImageSequenceSeries sequenceSeries = (ImageSequenceSeries)series;
             if (sequenceSeries.files.Count == 0)

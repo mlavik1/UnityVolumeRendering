@@ -190,14 +190,14 @@ namespace UnityVolumeRendering
         {
             string name = Path.GetFileName(directoryPath);
 
-            VolumeDataset dataset = new VolumeDataset();
+            VolumeDataset dataset = ScriptableObject.CreateInstance<VolumeDataset>();
             FillVolumeInternal(dataset, name, data, dimensions);
 
             return dataset;
         }
         private async Task<VolumeDataset> FillVolumeDatasetAsync(int[] data, Vector3Int dimensions)
         {
-            VolumeDataset dataset = new VolumeDataset();
+            VolumeDataset dataset = ScriptableObject.CreateInstance<VolumeDataset>();
             string name = Path.GetFileName(directoryPath);
             dataset.name = name;
 
