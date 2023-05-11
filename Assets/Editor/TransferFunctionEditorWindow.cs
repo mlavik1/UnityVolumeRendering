@@ -40,6 +40,8 @@ namespace UnityVolumeRendering
 
         private void OnGUI()
         {
+            wantsMouseEnterLeaveWindow = true;
+
             // Update selected object
             if (volRendObject == null)
                 volRendObject = SelectionHelper.GetSelectedVolumeObject();
@@ -97,12 +99,16 @@ namespace UnityVolumeRendering
                 tfEditor.ClearSelection();
             }
 
-            // Colour picker
             Color? selectedColour = tfEditor.GetSelectedColour();
             if (selectedColour != null)
             {
-                Color newColour = EditorGUI.ColorField(new Rect(tfEditorRect.x + 225, tfEditorRect.y + tfEditorRect.height + 30, 100.0f, 40.0f), selectedColour.Value);
+                // Colour picker
+                Color newColour = EditorGUI.ColorField(new Rect(tfEditorRect.x + 245, tfEditorRect.y + tfEditorRect.height + 20.0f, 100.0f, 40.0f), selectedColour.Value);
                 tfEditor.SetSelectedColour(newColour);
+
+                // Remove colour
+                if (GUI.Button(new Rect(tfEditorRect.x + 350.0f, tfEditorRect.y + tfEditorRect.height + 20.0f, 70.0f, 30.0f), "Remove"))
+                    tfEditor.RemoveSelectedColour();
             }
 
             GUI.skin.label.wordWrap = false;    
