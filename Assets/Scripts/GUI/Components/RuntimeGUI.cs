@@ -33,6 +33,16 @@ namespace UnityVolumeRendering
                 RuntimeFileBrowser.ShowOpenDirectoryDialog(OnOpenDICOMDatasetResultAsync);
             }
 
+            if (GUILayout.Button("Import NIFTI dataset"))
+            {
+                RuntimeFileBrowser.ShowOpenFileDialog(OnOpenNIFTIDatasetResultAsync);
+            }
+
+            if (GUILayout.Button("Import NRRD dataset"))
+            {
+                RuntimeFileBrowser.ShowOpenFileDialog(OnOpenNRRDDatasetResultAsync);
+            }
+
             // Show button for opening the dataset editor (for changing the visualisation)
             if (GameObject.FindObjectOfType<VolumeRenderedObject>() != null && GUILayout.Button("Edit imported dataset"))
             {
@@ -129,6 +139,42 @@ namespace UnityVolumeRendering
                         obj.transform.position = new Vector3(numVolumesCreated, 0, 0);
                         numVolumesCreated++;
                     }
+                }
+            }
+        }
+
+        private async void OnOpenNIFTIDatasetResultAsync(RuntimeFileBrowser.DialogResult result)
+        {
+            if (!result.cancelled)
+            {
+                IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.NIFTI);
+                VolumeDataset dataset = await importer.ImportAsync(result.path);
+
+                if (dataset != null)
+                {
+                    await VolumeObjectFactory.CreateObjectAsync(dataset);
+                }
+                else
+                {
+                    Debug.LogError("Failed to import datset");
+                }
+            }
+        }
+
+        private async void OnOpenNRRDDatasetResultAsync(RuntimeFileBrowser.DialogResult result)
+        {
+            if (!result.cancelled)
+            {
+                IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.NRRD);
+                VolumeDataset dataset = await importer.ImportAsync(result.path);
+
+                if (dataset != null)
+                {
+                    await VolumeObjectFactory.CreateObjectAsync(dataset);
+                }
+                else
+                {
+                    Debug.LogError("Failed to import datset");
                 }
             }
         }
