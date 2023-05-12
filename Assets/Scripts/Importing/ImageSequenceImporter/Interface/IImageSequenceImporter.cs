@@ -47,11 +47,22 @@ namespace UnityVolumeRendering
         /// Read a list of files, and return all image sequence series.
         /// Normally a directory will only contain a single series,
         ///  but if a folder contains multiple series/studies than this function will return all of them.
-        /// Each series should be imported separately, resulting in one dataset per series. (mostly relevant for DICOM)
+        /// Each series should be imported separately, resulting in one dataset per series. (mostly relevant for DICOM).
+        /// <br/>
+        /// Note: This will block the main thread until done. You may want to use <see cref="LoadSeriesAsync"/> instead.
         /// </summary>
         /// <param name="files">Files to load. Typically all the files stored in a specific (DICOM) directory.</param>
         /// <returns>List of image sequence series.</returns>
         IEnumerable<IImageSequenceSeries> LoadSeries(IEnumerable<string> files, ImageSequenceImportSettings settings = new ImageSequenceImportSettings());
+
+        /// <summary>
+        /// Asynchronously read a list of files, and return all image sequence series.
+        /// Normally a directory will only contain a single series,
+        ///  but if a folder contains multiple series/studies than this function will return all of them.
+        /// Each series should be imported separately, resulting in one dataset per series. (mostly relevant for DICOM).
+        /// </summary>
+        /// <param name="files">Files to load. Typically all the files stored in a specific (DICOM) directory.</param>
+        /// <returns>Async task, returning a list of image sequence series.</returns>
         Task<IEnumerable<IImageSequenceSeries>> LoadSeriesAsync(IEnumerable<string> files, ImageSequenceImportSettings settings = new ImageSequenceImportSettings());
 
         /// <summary>
@@ -60,6 +71,14 @@ namespace UnityVolumeRendering
         /// <param name="series">The series to import</param>
         /// <returns>Imported 3D volume dataset.</returns>
         VolumeDataset ImportSeries(IImageSequenceSeries series, ImageSequenceImportSettings settings = new ImageSequenceImportSettings());
+
+        /// <summary>
+        /// Asynchronousely import a single image sequence series.
+        /// <br/>
+        /// Note: This will block the main thread until done. You may want to use <see cref="ImportSeriesAsync"/> instead.
+        /// </summary>
+        /// <param name="series">The series to import</param>
+        /// <returns>Imported 3D volume dataset.</returns>
         Task<VolumeDataset> ImportSeriesAsync(IImageSequenceSeries series, ImageSequenceImportSettings settings = new ImageSequenceImportSettings());
     }
 }

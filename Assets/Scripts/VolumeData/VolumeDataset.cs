@@ -58,7 +58,7 @@ namespace UnityVolumeRendering
 
         /// <summary>
         /// Gets the 3D data texture, containing the density values of the dataset.
-        /// Will create the data texture if it does not exist. This may be slow (consider using <see cref="GetDataTextureAsync" />).
+        /// Will create the data texture if it does not exist. This may be slow (consider using <see cref="GetDataTextureAsync"/>).
         /// </summary>
         /// <returns>3D texture of dataset</returns>
         public Texture3D GetDataTexture()

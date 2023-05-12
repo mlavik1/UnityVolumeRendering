@@ -1,5 +1,8 @@
 namespace UnityVolumeRendering
 {
+    /// <summary>
+    /// Default progress handler, used when a progress handler is needed but none was provider by the user.
+    /// </summary>
     public class NullProgressHandler : IProgressHandler
     {
         public static readonly IProgressHandler instance = new NullProgressHandler();

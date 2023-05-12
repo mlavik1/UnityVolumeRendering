@@ -4,6 +4,11 @@ using UnityEditor.AssetImporters;
 
 namespace UnityVolumeRendering
 {
+    /// <summary>
+    /// ScriptedImporter for raw datasets.
+    /// Allows you to import datasets as assets by dragging them into the project view.
+    /// Imported dataset assets can be dragged-and-dropped into the scene view/hierarchy, or spawned from code.
+    /// </summary>
     [ScriptedImporter(1, "raw")]
     public class RawScriptedImporter : ScriptedImporter
     {
