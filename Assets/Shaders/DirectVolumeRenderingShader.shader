@@ -8,6 +8,7 @@
         _TFTex("Transfer Function Texture (Generated)", 2D) = "" {}
         _MinVal("Min val", Range(0.0, 1.0)) = 0.0
         _MaxVal("Max val", Range(0.0, 1.0)) = 1.0
+        [HideInInspector] _TextureSize("Dataset dimensions", Vector) = (1, 1, 1)
     }
     SubShader
     {
