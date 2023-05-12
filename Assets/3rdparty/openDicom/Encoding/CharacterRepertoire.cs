@@ -95,7 +95,8 @@ namespace openDicom.Encoding
                 .Replace("_", null);
             switch (characterSet)
             {
-                case "":                case "ISOIR6":
+                case "":
+                case "ISOIR6":
                 case "ASCII":
                     this.encoding = System.Text.Encoding.ASCII;
                     break;
@@ -151,7 +152,6 @@ namespace openDicom.Encoding
                 default:
                     throw new DicomException("Encoding is not supported.",
                         "characterSet", characterSet);
-                    break;
             }
         }
     }

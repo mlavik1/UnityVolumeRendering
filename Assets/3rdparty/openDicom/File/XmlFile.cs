@@ -126,7 +126,7 @@ namespace openDicom.File
                 return xml.IsStartElement("AcrNemaFile") || 
                     xml.IsStartElement("DicomFile");
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return false;
             }

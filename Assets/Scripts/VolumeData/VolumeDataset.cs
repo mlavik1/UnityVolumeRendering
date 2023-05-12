@@ -1,16 +1,14 @@
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Collections;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace UnityVolumeRendering
 {
     /// <summary>
-    /// An imported dataset. Has a dimension and a 3D pixel array.
+    /// An imported dataset. Contains a 3D pixel array of density values.
     /// </summary>
     [Serializable]
     public class VolumeDataset : ScriptableObject, ISerializationCallbackReceiver
@@ -58,6 +56,11 @@ namespace UnityVolumeRendering
         [System.Obsolete("Use scale instead")]
         public float scaleZ { get { return scale.z; } set { scale.z = value; } }
 
+        /// <summary>
+        /// Gets the 3D data texture, containing the density values of the dataset.
+        /// Will create the data texture if it does not exist. This may be slow (consider using <see cref="GetDataTextureAsync" />).
+        /// </summary>
+        /// <returns>3D texture of dataset</returns>
         public Texture3D GetDataTexture()
         {
             if (dataTexture == null)
@@ -70,6 +73,13 @@ namespace UnityVolumeRendering
                 return dataTexture;
             }
         }
+
+        /// <summary>
+        /// Gets the 3D data texture, containing the density values of the dataset.
+        /// Will create the data texture if it does not exist, without blocking the main thread.
+        /// </summary>
+        /// <param name="progressHandler">Progress handler for tracking the progress of the texture creation (optional).</param>
+        /// <returns>Async task returning a 3D texture of the dataset</returns>
         public async Task<Texture3D> GetDataTextureAsync(IProgressHandler progressHandler = null)
         {
             if (dataTexture == null)
@@ -89,6 +99,11 @@ namespace UnityVolumeRendering
             return dataTexture;
         }
 
+        /// <summary>
+        /// Gets the gradient texture, containing the gradient values (direction of change) of the dataset.
+        /// Will create the gradient texture if it does not exist. This may be slow (consider using <see cref="GetGradientTextureAsync" />).
+        /// </summary>
+        /// <returns>Gradient texture</returns>
         public Texture3D GetGradientTexture()
         {
             if (gradientTexture == null)
@@ -101,6 +116,13 @@ namespace UnityVolumeRendering
                 return gradientTexture;
             }
         }
+
+        /// <summary>
+        /// Gets the gradient texture, containing the gradient values (direction of change) of the dataset.
+        /// Will create the gradient texture if it does not exist, without blocking the main thread.
+        /// </summary>
+        /// <param name="progressHandler">Progress handler for tracking the progress of the texture creation (optional).</param>
+        /// <returns>Async task returning a 3D gradient texture of the dataset</returns>
         public async Task<Texture3D> GetGradientTextureAsync(IProgressHandler progressHandler = null)
         {
             if (gradientTexture == null)
@@ -136,6 +158,8 @@ namespace UnityVolumeRendering
 
         /// <summary>
         /// Ensures that the dataset is not too large.
+        /// This is automatically called during import,
+        ///  so you should not need to call it yourself unless you're making your own importer of modify the dimensions.
         /// </summary>
         public void FixDimensions()
         {

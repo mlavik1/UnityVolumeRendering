@@ -221,39 +221,38 @@ namespace openDicom.DataStructure
         {
             switch (name)
             {
-                case "AE": return new ApplicationEntity(tag); break;
-                case "AS": return new AgeString(tag); break;
-                case "AT": return new AttributeTag(tag); break;
-                case "CS": return new CodeString(tag); break;
-                case "DA": return new Date(tag); break;
-                case "DS": return new DecimalString(tag); break;
-                case "DT": return new DateTime(tag); break;
-                case "FL": return new FloatingPointSingle(tag); break;
-                case "FD": return new FloatingPointDouble(tag); break;
-                case "IS": return new IntegerString(tag); break;
-                case "LO": return new LongString(tag); break;
-                case "LT": return new LongText(tag); break;
-                case "OB": return new OtherByteString(tag); break;
-                case "OF": return new OtherFloatString(tag); break;
-                case "OW": return new OtherWordString(tag); break;
-                case "PN": return new PersonName(tag); break;
-                case "SH": return new ShortName(tag); break;
-                case "SL": return new SignedLong(tag); break;
-                case "SQ": return new SequenceOfItems(tag); break;
-                case "SS": return new SignedShort(tag); break;
-                case "ST": return new ShortText(tag); break;
-                case "TM": return new Time(tag); break;
-                case "UI": return new UniqueIdentifier(tag); break;
-                case "UL": return new UnsignedLong(tag); break;
-                case "UN": return new Unknown(tag); break;
-                case "US": return new UnsignedShort(tag); break;
-                case "UT": return new UnlimitedText(tag); break;
+                case "AE": return new ApplicationEntity(tag);
+                case "AS": return new AgeString(tag);
+                case "AT": return new AttributeTag(tag);
+                case "CS": return new CodeString(tag);
+                case "DA": return new Date(tag);
+                case "DS": return new DecimalString(tag);
+                case "DT": return new DateTime(tag);
+                case "FL": return new FloatingPointSingle(tag);
+                case "FD": return new FloatingPointDouble(tag);
+                case "IS": return new IntegerString(tag);
+                case "LO": return new LongString(tag);
+                case "LT": return new LongText(tag);
+                case "OB": return new OtherByteString(tag);
+                case "OF": return new OtherFloatString(tag);
+                case "OW": return new OtherWordString(tag);
+                case "PN": return new PersonName(tag);
+                case "SH": return new ShortName(tag);
+                case "SL": return new SignedLong(tag);
+                case "SQ": return new SequenceOfItems(tag);
+                case "SS": return new SignedShort(tag);
+                case "ST": return new ShortText(tag);
+                case "TM": return new Time(tag);
+                case "UI": return new UniqueIdentifier(tag);
+                case "UL": return new UnsignedLong(tag);
+                case "UN": return new Unknown(tag);
+                case "US": return new UnsignedShort(tag);
+                case "UT": return new UnlimitedText(tag);
                 case null: 
-                case "": return new ValueRepresentation(tag); break;
+                case "": return new ValueRepresentation(tag);
                 default:
                     throw new DicomException(
                         "Value representation is not valid.", "name", name);
-                    break;
             }            
         }
 
@@ -336,7 +335,8 @@ namespace openDicom.DataStructure
                     CharacterRepertoire.Default);
                 return GetBy(name, tag);
             }
-            DicomContext.Reset();           
+            // TODO: This was unreachable..
+            //DicomContext.Reset();           
         }
 
         /// <summary>

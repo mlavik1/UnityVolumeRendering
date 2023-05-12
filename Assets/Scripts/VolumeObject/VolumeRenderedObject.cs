@@ -341,6 +341,7 @@ namespace UnityVolumeRendering
         {
             if (volumeContainerObject == null)
             {
+                Debug.LogWarning("VolumeContainer missing. This is expected if the object was saved with an old version of the plugin. Please re-save it.");
                 Transform trans = this.transform.Find("VolumeContainer");
                 if (trans == null)
                     trans = this.transform.GetComponentInChildren<MeshRenderer>(true)?.transform;

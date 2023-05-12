@@ -167,7 +167,6 @@ namespace openDicom.Encoding.Type
                     default:
                         throw new DicomException("Age context is invalid.",
                             "ageString", ageString);
-                        break;
                 }
             }
             else
@@ -201,7 +200,6 @@ namespace openDicom.Encoding.Type
                 default:
                     throw new DicomException("Age context is invalid.",
                         "context", context.ToString());
-                    break;
             }
             AgeValue = ageValue;
         }

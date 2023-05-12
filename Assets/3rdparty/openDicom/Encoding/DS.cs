@@ -59,7 +59,7 @@ namespace openDicom.Encoding
                             NumberStyles.Float, 
                             NumberFormatInfo.InvariantInfo);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     throw new EncodingException(
                         "Decimal string format is invalid.",
@@ -87,7 +87,7 @@ namespace openDicom.Encoding
                                 NumberStyles.Float, 
                                 NumberFormatInfo.InvariantInfo);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         throw new EncodingException(
                             "Decimal string format is invalid.",

@@ -144,7 +144,6 @@ namespace UnityVolumeRendering
             {
                 TFColourControlPoint colPoint = tf.colourControlPoints[movingColPointIndex];
                 colPoint.dataValue = Mathf.Clamp((currentEvent.mousePosition.x - paletteRect.x -  COLOUR_POINT_WIDTH / 2.0f) / paletteRect.width, 0.0f, 1.0f);
-                Debug.Log(colPoint.dataValue);
                 tf.colourControlPoints[movingColPointIndex] = colPoint;
             }
 

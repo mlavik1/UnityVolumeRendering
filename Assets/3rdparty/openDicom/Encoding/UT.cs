@@ -55,13 +55,7 @@ namespace openDicom.Encoding
             ValueMultiplicity vm = Tag.GetDictionaryEntry().VM;
             if (vm.Equals(1) || vm.IsUndefined)
             {
-                // 0xFFFFFFFF is reserved!
-                if (unlimitedText.Length <= 0xFFFFFFFE)
-                    unlimitedText = unlimitedText.TrimEnd(null);
-                else
-                    throw new EncodingException(
-                        "A value of max. 2^32 - 2 characters is only allowed.",
-                        Tag, Name + "/unlimitedText", unlimitedText);
+                unlimitedText = unlimitedText.TrimEnd(null);
             }
             else
                 throw new EncodingException(
@@ -70,5 +64,4 @@ namespace openDicom.Encoding
             return new string[] { unlimitedText };
         }
     }
-    
 }

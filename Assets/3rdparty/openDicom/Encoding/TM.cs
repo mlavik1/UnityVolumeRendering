@@ -71,7 +71,7 @@ namespace openDicom.Encoding
                                 int.Parse(minute), int.Parse(second),
                                 int.Parse(millisecond));
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
                             UnityEngine.Debug.LogWarning($"Date time format is invalid. tag: {Tag}, name: {Name}, item: {item}");
                             time[i] = TimeSpan.Zero;
@@ -116,7 +116,7 @@ namespace openDicom.Encoding
                                 int.Parse(minute), int.Parse(second),
                                 int.Parse(millisecond));
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
                             throw new EncodingException(
                                 "Time format is invalid.",

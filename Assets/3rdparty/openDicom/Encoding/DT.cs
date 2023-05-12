@@ -81,7 +81,7 @@ namespace openDicom.Encoding
                                 int.Parse(minute), int.Parse(second),
                                 int.Parse(millisecond));
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
                             UnityEngine.Debug.LogWarning($"Date time format is invalid. tag: {Tag}, name: {Name}");
                             dateTime[i] = System.DateTime.Now;
@@ -136,7 +136,7 @@ namespace openDicom.Encoding
                                 int.Parse(minute), int.Parse(second),
                                 int.Parse(millisecond));
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
                             UnityEngine.Debug.LogWarning($"Date time format is invalid. tag: {Tag}, name: {Name}");
                             dateTime[i] = System.DateTime.Now;

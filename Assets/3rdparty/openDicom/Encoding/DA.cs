@@ -61,7 +61,7 @@ namespace openDicom.Encoding
                         date[i] = new System.DateTime(int.Parse(year), 
                             int.Parse(month), int.Parse(day));
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         throw new EncodingException("Date format is invalid.",
                             Tag, Name + "/item", item);
@@ -92,7 +92,7 @@ namespace openDicom.Encoding
                             date[i] = new System.DateTime(int.Parse(year), 
                                 int.Parse(month), int.Parse(day));
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
                             throw new EncodingException("Date format is invalid.",
                                 Tag, Name + "/item", item);
