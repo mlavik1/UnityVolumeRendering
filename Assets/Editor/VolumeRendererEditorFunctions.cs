@@ -20,7 +20,8 @@ namespace UnityVolumeRendering
                 if (wnd != null)
                     wnd.Close();
 
-                wnd = new RAWDatasetImporterEditorWindow(file);
+                wnd = EditorWindow.CreateInstance<RAWDatasetImporterEditorWindow>();
+                wnd.Initialise(file);
                 wnd.Show();
             }
             else

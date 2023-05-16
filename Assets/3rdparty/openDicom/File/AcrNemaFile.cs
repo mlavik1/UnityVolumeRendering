@@ -192,7 +192,7 @@ namespace openDicom.File
                     return false;
                 return true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return false;
             }

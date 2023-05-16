@@ -59,7 +59,7 @@ namespace UnityVolumeRendering
         public VolumeDataset Import(string filePath)
         {
             this.filePath = filePath;
-            VolumeDataset dataFiller = new VolumeDataset(); //volume object then gets sent to VolumeObjectFactory
+            VolumeDataset dataFiller = ScriptableObject.CreateInstance<VolumeDataset>();
 
             var extension = Path.GetExtension(filePath);
             if (!File.Exists(filePath))
@@ -76,7 +76,7 @@ namespace UnityVolumeRendering
         public async Task<VolumeDataset> ImportAsync(string filePath)
         {
             this.filePath = filePath;
-            VolumeDataset dataFiller = new VolumeDataset(); //volume object then gets sent to VolumeObjectFactory
+            VolumeDataset dataFiller = ScriptableObject.CreateInstance<VolumeDataset>();
 
             var extension = Path.GetExtension(filePath);
             if (!File.Exists(filePath))

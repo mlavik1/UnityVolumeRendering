@@ -21,7 +21,7 @@ namespace UnityVolumeRendering
         private Endianness endianness = Endianness.LittleEndian;
         private bool importing = false;
 
-        public RAWDatasetImporterEditorWindow(string filePath)
+        public void Initialise(string filePath)
         {
             fileToImport = filePath;
 

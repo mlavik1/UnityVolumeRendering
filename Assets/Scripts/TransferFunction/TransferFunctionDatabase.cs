@@ -27,7 +27,7 @@ namespace UnityVolumeRendering
 
         public static TransferFunction CreateTransferFunction()
         {
-            TransferFunction tf = new TransferFunction();
+            TransferFunction tf = ScriptableObject.CreateInstance<TransferFunction>();
             tf.AddControlPoint(new TFColourControlPoint(0.0f, new Color(0.11f, 0.14f, 0.13f, 1.0f)));
             tf.AddControlPoint(new TFColourControlPoint(0.2415f, new Color(0.469f, 0.354f, 0.223f, 1.0f)));
             tf.AddControlPoint(new TFColourControlPoint(0.3253f, new Color(1.0f, 1.0f, 1.0f, 1.0f)));
@@ -45,7 +45,7 @@ namespace UnityVolumeRendering
 
         public static TransferFunction2D CreateTransferFunction2D()
         {
-            TransferFunction2D tf2D = new TransferFunction2D();
+            TransferFunction2D tf2D = ScriptableObject.CreateInstance<TransferFunction2D>();
             tf2D.AddBox(0.05f, 0.1f, 0.8f, 0.7f, Color.white, 0.4f);
             return tf2D;
         }
@@ -62,7 +62,7 @@ namespace UnityVolumeRendering
             Debug.Log(jsonstring);
             Debug.Log(data.colourPoints.ToString());
             Debug.Log(data.alphaPoints.ToString());
-            TransferFunction tf = new TransferFunction();
+            TransferFunction tf = ScriptableObject.CreateInstance<TransferFunction>();
             tf.colourControlPoints = data.colourPoints;
             tf.alphaControlPoints = data.alphaPoints;
             return tf;
@@ -77,7 +77,7 @@ namespace UnityVolumeRendering
             }
             string jsonstring = File.ReadAllText(filepath);
             TF2DSerialisationData data = JsonUtility.FromJson<TF2DSerialisationData>(jsonstring);
-            TransferFunction2D tf = new TransferFunction2D();
+            TransferFunction2D tf = ScriptableObject.CreateInstance<TransferFunction2D>();
             tf.boxes = data.boxes;
             return tf;
         }

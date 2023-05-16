@@ -60,7 +60,7 @@ namespace UnityVolumeRendering
         {
         }
 
-        public void UpdateProgress(float progress, string description)
+        public void UpdateProgress(float totalProgress, float currentStageProgress, string description)
         {
         }
     }

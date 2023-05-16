@@ -16,6 +16,9 @@ namespace UnityVolumeRendering
 
         private bool rightMouseBtnDown = false;
 
+        private const float COLOUR_PALETTE_HEIGHT = 20.0f;
+        private const float COLOUR_POINT_WIDTH = 10.0f;
+
         public void Initialise()
         {
             tfGUIMat = Resources.Load<Material>("TransferFunctionGUIMat");
@@ -48,7 +51,8 @@ namespace UnityVolumeRendering
             // Mouse interaction area
             Rect histMouseRect = new Rect(histRect.x - 20.0f, histRect.y - 20.0f, histRect.width + 40.0f, histRect.height + 40.0f);
             // Colour palette rect (colour control points)
-            Rect paletteRect = new Rect(histRect.x, histRect.y + histRect.height + 20, histRect.width, 20.0f);
+            Rect paletteRect = new Rect(histRect.x, histRect.y + histRect.height + 20, histRect.width, COLOUR_PALETTE_HEIGHT);
+            Rect paletteInteractionRect = new Rect(paletteRect.x - 10.0f, paletteRect.y, paletteRect.width + 30.0f, paletteRect.height);
 
             // TODO: Don't do this every frame
             tf.GenerateTexture();
@@ -75,11 +79,13 @@ namespace UnityVolumeRendering
             // Release selected colour/alpha points if mouse leaves window
             if (movingAlphaPointIndex != -1 && !histMouseRect.Contains(currentEvent.mousePosition))
                 movingAlphaPointIndex = -1;
-            if (movingColPointIndex != -1 && !(currentEvent.mousePosition.x >= paletteRect.x && currentEvent.mousePosition.x <= paletteRect.x + paletteRect.width))
+            if (movingColPointIndex != -1 && !(currentEvent.mousePosition.x >= paletteRect.x && currentEvent.mousePosition.x <= paletteRect.x + paletteRect.width + 20.0f))
+                movingColPointIndex = -1;
+            if (currentEvent.type == EventType.MouseLeaveWindow)
                 movingColPointIndex = -1;
 
             // Mouse down => Move or remove selected colour control point
-            if (currentEvent.type == EventType.MouseDown && paletteRect.Contains(currentEvent.mousePosition))
+            if (currentEvent.type == EventType.MouseDown && paletteInteractionRect.Contains(currentEvent.mousePosition))
             {
                 float mousePos = (currentEvent.mousePosition.x - paletteRect.x) / paletteRect.width;
                 int pointIndex = PickColourControlPoint(mousePos);
@@ -137,7 +143,7 @@ namespace UnityVolumeRendering
             if (movingColPointIndex != -1)
             {
                 TFColourControlPoint colPoint = tf.colourControlPoints[movingColPointIndex];
-                colPoint.dataValue = Mathf.Clamp((currentEvent.mousePosition.x - paletteRect.x) / paletteRect.width, 0.0f, 1.0f);
+                colPoint.dataValue = Mathf.Clamp((currentEvent.mousePosition.x - paletteRect.x -  COLOUR_POINT_WIDTH / 2.0f) / paletteRect.width, 0.0f, 1.0f);
                 tf.colourControlPoints[movingColPointIndex] = colPoint;
             }
 
@@ -145,7 +151,7 @@ namespace UnityVolumeRendering
             for (int iCol = 0; iCol < tf.colourControlPoints.Count; iCol++)
             {
                 TFColourControlPoint colPoint = tf.colourControlPoints[iCol];
-                Rect ctrlBox = new Rect(histRect.x + histRect.width * colPoint.dataValue, histRect.y + histRect.height + 20, 10, 20);
+                Rect ctrlBox = new Rect(histRect.x + histRect.width * colPoint.dataValue, histRect.y + histRect.height + 20, COLOUR_POINT_WIDTH, COLOUR_PALETTE_HEIGHT);
                 GUI.color = Color.red;
                 GUI.skin.box.fontSize = 6;
                 GUI.Box(ctrlBox, "*");
@@ -217,6 +223,15 @@ namespace UnityVolumeRendering
                 TFColourControlPoint colPoint = volRendObject.transferFunction.colourControlPoints[selectedColPointIndex];
                 colPoint.colourValue = colour;
                 volRendObject.transferFunction.colourControlPoints[selectedColPointIndex] = colPoint;
+            }
+        }
+
+        public void RemoveSelectedColour()
+        {
+            if (selectedColPointIndex != -1)
+            {
+                volRendObject.transferFunction.colourControlPoints.RemoveAt(selectedColPointIndex);
+                selectedColPointIndex = -1;
             }
         }
 

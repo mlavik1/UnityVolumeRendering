@@ -55,7 +55,7 @@ namespace openDicom.Encoding
                     if (item.Length > 0)
                         intValue[i] = long.Parse(item);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                    throw new EncodingException(
                       "Integer string format is invalid.", Tag,
@@ -81,7 +81,7 @@ namespace openDicom.Encoding
                         if (item.Length > 0)
                             intValue[i] = long.Parse(item);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         throw new EncodingException(
                             "Integer string format is invalid.", Tag,

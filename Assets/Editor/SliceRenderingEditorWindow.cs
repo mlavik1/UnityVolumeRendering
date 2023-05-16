@@ -29,7 +29,7 @@ namespace UnityVolumeRendering
         
         public static void ShowWindow()
         {
-            SliceRenderingEditorWindow wnd = new SliceRenderingEditorWindow();
+            SliceRenderingEditorWindow wnd = EditorWindow.CreateInstance<SliceRenderingEditorWindow>();
             wnd.Show();
             wnd.SetInitialPosition();
         }
