@@ -116,15 +116,7 @@ namespace UnityVolumeRendering
                     VolumeDataset dataset = await importer.ImportSeriesAsync(series, new ImageSequenceImportSettings { progressHandler = progressHandler });
                     if (dataset != null)
                     {
-                        if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
-                        {
-                            if (EditorUtility.DisplayDialog("Optional DownScaling",
-                                $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
-                            {
-                                Debug.Log("Async dataset downscale. Hold on.");
-                                await Task.Run(() => dataset.DownScaleData());
-                            }
-                        }
+                        await OptionallyDownscale(dataset);
                         importedDatasets.Add(dataset);
                     }
                     seriesIndex++;
@@ -177,6 +169,7 @@ namespace UnityVolumeRendering
                     progressHandler.ReportProgress(0.8f, "Creating object");
                     if (dataset != null)
                     {
+                        await OptionallyDownscale(dataset);
                         if (spawnInScene)
                         {
                             await VolumeObjectFactory.CreateObjectAsync(dataset);
@@ -228,6 +221,7 @@ namespace UnityVolumeRendering
 
                     if (dataset != null)
                     {
+                        await OptionallyDownscale(dataset);
                         if (spawnInScene)
                         {
                             await VolumeObjectFactory.CreateObjectAsync(dataset);
@@ -279,6 +273,7 @@ namespace UnityVolumeRendering
 
                     if (dataset != null)
                     {
+                        await OptionallyDownscale(dataset);
                         if (spawnInScene)
                         {
                             await VolumeObjectFactory.CreateObjectAsync(dataset);
@@ -325,15 +320,7 @@ namespace UnityVolumeRendering
                     VolumeDataset dataset = await importer.ImportSeriesAsync(series);
                     if (dataset != null)
                     {
-                        if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
-                        {
-                            if (EditorUtility.DisplayDialog("Optional DownScaling",
-                                $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
-                            {
-                                Debug.Log("Async dataset downscale. Hold on.");
-                                await Task.Run(()=>dataset.DownScaleData());
-                            }
-                        }
+                        await OptionallyDownscale(dataset);
                         await VolumeObjectFactory.CreateObjectAsync(dataset);
                     }
                 }
@@ -341,6 +328,19 @@ namespace UnityVolumeRendering
             else
             {
                 Debug.LogError("Directory doesn't exist: " + dir);
+            }
+        }
+
+        private static async Task OptionallyDownscale(VolumeDataset dataset)
+        {
+            if (EditorPrefs.GetBool("DownscaleDatasetPrompt"))
+            {
+                if (EditorUtility.DisplayDialog("Optional DownScaling",
+                    $"Do you want to downscale the dataset? The dataset's dimension is: {dataset.dimX} x {dataset.dimY} x {dataset.dimZ}", "Yes", "No"))
+                {
+                    Debug.Log("Async dataset downscale. Hold on.");
+                    await Task.Run(() => dataset.DownScaleData());
+                }
             }
         }
 
