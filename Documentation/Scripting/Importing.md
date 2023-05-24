@@ -1,4 +1,15 @@
-# Importing datasets
+# Importing datasets form code
+
+**Table of contents:**
+<!-- TOC -->
+
+- [Importing datasets form code](#importing-datasets-form-code)
+    - [Raw importer](#raw-importer)
+    - [Image file importer](#image-file-importer)
+    - [Image sequence importer](#image-sequence-importer)
+        - [Notes about DICOM support](#notes-about-dicom-support)
+
+<!-- /TOC -->
 
 There are 3 types of importers:
 - Raw importer
@@ -47,15 +58,15 @@ VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);
 ```
 
 Possible parameters to _ImporterFactory.CreateImageFileImporter_:
-- ImageFileFormat.NRRD (requires [SimpleITK](SimpleITK.md))
-- ImageFileFormat.NIFTI (requires [SimpleITK](SimpleITK.md))
+- ImageFileFormat.NRRD (requires [SimpleITK](../SimpleITK/SimpleITK.md))
+- ImageFileFormat.NIFTI (requires [SimpleITK](../SimpleITK/SimpleITK.md))
 - ImageFileFormat.VASP
 
 The available importer implementations are:
 - _ParDatasetImporter_: For VASP/PARCHG.
 - SimpleITKImageFileImporter: For NRRD and NIFTI. Works on Windows and Linux (and hopefully MacOS too).
 
-For more information about NRRD support, see the page about [SimpleITK](SimpleITK.md).
+For more information about NRRD support, see the page about [SimpleITK](../SimpleITK/SimpleITK.md).
 
 ## Image sequence importer
 
@@ -86,10 +97,10 @@ Supported formats:
 - ImageSequenceFormat.ImageSequence
 
 The available importer implementations are:
-- SimpleITKImageSequenceImporter: For DICOM (see [SimpleITK.md](SimpleITK.md) for more info.)
+- SimpleITKImageSequenceImporter: For DICOM (see [SimpleITK.md](../SimpleITK/SimpleITK.md) for more info.)
 - DICOMImporter: For DICOM. Uses OpenDICOM library, and works on all platforms. This is the default when SimpleITK is disabled.
 - ImageSequenceImporter: For image sequences (directory containing multiple image files, typically JPEG or PNG)
 
 ### Notes about DICOM support
 
-The SimpleITK-based importer is the recommended way to import DICOM datasets, as it supports JPEG compression. See the [SimpleITK documentation](SimpleITK.md) for information about how to enable it. Once enabled, _ImporterFactory.CreateImageSequenceImporter_ will automatically return an importer of type `SimpleITKImageSequenceImporter`.
+The SimpleITK-based importer is the recommended way to import DICOM datasets, as it supports JPEG compression. See the [SimpleITK documentation](../SimpleITK/SimpleITK.md) for information about how to enable it. Once enabled, _ImporterFactory.CreateImageSequenceImporter_ will automatically return an importer of type `SimpleITKImageSequenceImporter`.

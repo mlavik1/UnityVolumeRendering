@@ -36,7 +36,7 @@ In the menu bar, click "Volume Rendering" and "Load raw dataset"
 
 <img src="Screenshots/menubar2.png" width="200px">
 
-Then select the dataset you wish to import. Currently only raw datasets are supported (you can add your own importer for other datasets).
+Then select the dataset you wish to import..
 
 In the next menu you can optionally set the import setting for the raw dataset. For the sample files you don't need to change anything.
 
@@ -72,7 +72,6 @@ There are 3 render modes:
 
 There are also some other settings that you can adjust:
 - "Enable lighting": Enable lighting calculations during volume rendering.
-- Enable back-to-front direct volume rendering: Will raymarch the dataset back-to-front (towards camera). You normally *don't* want this.
 - Enable early ray termination: Optimisation (you usually want this on). Requires the above setting to be disabled.
 - Enable cubic interpolation: Use cubic interpolation of the 3D volume texture and gradient texture.
 
@@ -96,7 +95,7 @@ These can also be used with direct volume rendering mode.
 
 # Importing DICOM and NRRD
 
-If you're on Windows or Linux, I recommend [enabling the SimpleITK importer](Documentation/SimpleITK.md), which is a requirement for JPEG2000 compressed DICOM and NRRD.
+If you're on Windows or Linux, I recommend [enabling the SimpleITK importer](Documentation/SimpleITK/SimpleITK.md), which is a requirement for JPEG2000 compressed DICOM and NRRD.
 
 # How to use in your own project
 - Create an instance of an importer (Directly, or indirectly using the `ImporterFactory`):<br>
