@@ -14,6 +14,7 @@
         - [Image sequence datasets](#image-sequence-datasets)
     - [Importing datasets by drag and drop into the assets folder](#importing-datasets-by-drag-and-drop-into-the-assets-folder)
     - [Importing datasets by right clicking in the Assets folder](#importing-datasets-by-right-clicking-in-the-assets-folder)
+- [Coordinate system and real size](#coordinate-system-and-real-size)
 
 <!-- /TOC -->
 
@@ -107,3 +108,9 @@ All datasets (also DICOM) can be imported this way.
 <img src="import-context-menu.png" width="500px">
 
 Using the imported dataset assets works the same as for [datasets imported by drag and drop](#importing-datasets-by-drag-and-drop-into-the-assets-folder)
+
+# Coordinate system and real size
+
+Coordinate systems are handled for DICOM and NRRD, and we convert to Unity's coordinate system using metre units.
+
+By default import datasets will have their size normalised. If you wish to keep the original size (so multiple datasets will fit well together), you can select the outer GameObject (the ones that has a `VolumeRenderedObject` component), and set its scale to (1,1,1).
