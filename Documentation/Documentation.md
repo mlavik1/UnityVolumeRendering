@@ -2,7 +2,7 @@
 
 ## General documentation
 
-- [Importing datasets](General/ImportingDatasets.md)
+- [Importing datasets](General/Importing/ImportingDatasets.md)
 - [Using the imported datasets](General/VolumeRendering/GameObjectManipulation.md)
 - [Changing the appearance](General/VolumeRendering/VolumeRenderingSettings.md)
 - [Transfer Functions](General/TransferFunctions/TransferFunctions.md)
