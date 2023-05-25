@@ -7,6 +7,8 @@
 - [Changing the appearance](General/VolumeRendering/VolumeRenderingSettings.md)
 - [Transfer Functions](General/TransferFunctions/TransferFunctions.md)
 - [Cross section tools](General/CrossSectionTools/CrossSectionTools.md)
+- [Slice renderer](General/SliceRenderer/SliceRenderer.md)
+- [Editor import settings](General/Settings/Settings.md)
 
 ## Scripting documentation
 
