@@ -7,6 +7,14 @@ I also have [a tutorial video that shows how to use the project](https://www.you
 
 ![alt tag](Screenshots/front.jpg)
 
+**`Documentation`** |
+------------------- |
+[See full documentation here](Documentation/Documentation.md)|
+
+# Table of contents
+
+This Readme contains a quick introduction to the library. For more info, see the [complete documentation](Documentation/Documentation.md).
+
 - [Requirements](#requirements)
 - [How to use sample scene](#how-to-use-sample-scene)
 - [Step-by-step instructions](#step-by-step-instructions)
@@ -36,7 +44,7 @@ In the menu bar, click "Volume Rendering" and "Load raw dataset"
 
 <img src="Screenshots/menubar2.png" width="200px">
 
-Then select the dataset you wish to import. Currently only raw datasets are supported (you can add your own importer for other datasets).
+Then select the dataset you wish to import..
 
 In the next menu you can optionally set the import setting for the raw dataset. For the sample files you don't need to change anything.
 
@@ -72,7 +80,6 @@ There are 3 render modes:
 
 There are also some other settings that you can adjust:
 - "Enable lighting": Enable lighting calculations during volume rendering.
-- Enable back-to-front direct volume rendering: Will raymarch the dataset back-to-front (towards camera). You normally *don't* want this.
 - Enable early ray termination: Optimisation (you usually want this on). Requires the above setting to be disabled.
 - Enable cubic interpolation: Use cubic interpolation of the 3D volume texture and gradient texture.
 
@@ -96,7 +103,7 @@ These can also be used with direct volume rendering mode.
 
 # Importing DICOM and NRRD
 
-If you're on Windows or Linux, I recommend [enabling the SimpleITK importer](Documentation/SimpleITK.md), which is a requirement for JPEG2000 compressed DICOM and NRRD.
+If you're on Windows or Linux, I recommend [enabling the SimpleITK importer](Documentation/SimpleITK/SimpleITK.md), which is a requirement for JPEG2000 compressed DICOM and NRRD.
 
 # How to use in your own project
 - Create an instance of an importer (Directly, or indirectly using the `ImporterFactory`):<br>
@@ -109,6 +116,7 @@ If you're on Windows or Linux, I recommend [enabling the SimpleITK importer](Doc
 See the [importer documentation](Documentation/Scripting/Importing.md) for more detailed information.
 
 # FAQ (Frequently Asked Questions)
+- [How to preserve real world scale of my datasets?](#how-to-preserve-real-world-scale-of-my-datasets)
 - [Does this work in VR?](#does-this-work-in-vr)
   - [What about VR performance?](#what-about-vr-performance)
 - [Can I use WebGL?](#can-i-use-webgl)
@@ -116,6 +124,10 @@ See the [importer documentation](Documentation/Scripting/Importing.md) for more 
 - [How can I make it look better?](#how-can-i-make-it-look-better)
 - [How can I raycast the scene to find an intersection?](#how-can-i-raycast-the-scene-to-find-an-intersection)
 - [I'm stuck! How can I get help?](#im-stuck-how-can-i-get-help)
+
+# How to preserve real world scale of my datasets?
+Imported datasets are automatically normalised, to make sure datasets where the scale unit info is missing or wrong don't become too large or small.
+You can undy this simply by setting the scale of the outer GameObject (the one containing the `VolumeRenderedObject` component) to 1,1,1.
 
 ## Does this work in VR?
 Yes, hoewever you will need to change "stereo rendering mode" to "multi pass" in the XR settings in Unity. See [#71](https://github.com/mlavik1/UnityVolumeRendering/issues/71).
@@ -126,7 +138,7 @@ Since VR requires two cameras to render each frame, you can expect worse perform
 - Disable the DEPTHWRITE_ON shader variant. You can do this from code, or just remove the line "#pragma multi_compile DEPTHWRITE_ON DEPTHWRITE_OFF" in _DirectVolumeRenderingShader.shader_. Note: this will remove depth writing, so you won't be able to intersect multiple datasets.
 - Make sure "Enable cubic interpolation" is checked on the volume object's inspector.
 
-Your bottleneck will most likely be the pixel/fragment shader (where we do raymarching), so it might be possible to get better performance by enabling [DLSS](https://docs.unity3d.com/Manual/deep-learning-super-sampling.html). This requires HDRP, which this project currently does not officially support (might need to do some upgrading).
+Your bottleneck will most likely be the pixel/fragment shader (where we do raymarching), so it might be possible to get better performance by enabling [DLSS](https://docs.unity3d.com/Manual/deep-learning-super-sampling.html). This requires HDRP, which this project currently does not officially support (but it might still work fine).
 
 Also, some users have reporter having significantly lower performance with OpenXR mode, compared to OpenVR. It might we worth a try to switch between these.
 
