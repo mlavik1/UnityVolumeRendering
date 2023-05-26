@@ -93,7 +93,7 @@ namespace UnityVolumeRendering
                     inputMode = InputMode.Move;
                 if (GUI.Toggle(new Rect(40.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Inspect, new GUIContent(inspectIconTexture, "Inspect values"), GUI.skin.button))
                     inputMode = InputMode.Inspect;
-                if (GUI.Toggle(new Rect(80.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Measure, new GUIContent(measureIconTexture, "Inspect values"), GUI.skin.button))
+                if (GUI.Toggle(new Rect(80.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Measure, new GUIContent(measureIconTexture, "Measure distances"), GUI.skin.button))
                     inputMode = InputMode.Measure;
 
                 if (GUI.Toggle(new Rect(bgWidth - 80.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Measure, new GUIContent(lRotateIconTexture, "Rotate plane to the right"), GUI.skin.button))
