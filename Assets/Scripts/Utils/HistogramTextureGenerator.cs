@@ -72,7 +72,7 @@ namespace UnityVolumeRendering
             Texture3D dataTexture = dataset.GetDataTexture();
 
             if (handleInitialize < 0 || handleMain < 0)
-            { 
+            {
                 Debug.LogError("Histogram compute shader initialization failed.");
             }
 
