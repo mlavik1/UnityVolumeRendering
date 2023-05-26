@@ -72,11 +72,12 @@ namespace UnityVolumeRendering
             Texture3D dataTexture = dataset.GetDataTexture();
 
             if (handleInitialize < 0 || handleMain < 0)
-            {
+            { 
                 Debug.LogError("Histogram compute shader initialization failed.");
             }
 
-            computeHistogram.SetFloat("ValueRange", (float)(numValues - 1));
+            computeHistogram.SetFloat("ValueRange", (float)(sampleCount - 1));
+            computeHistogram.SetInts("Dimension", new int[] { dataTexture.width, dataTexture.height, dataTexture.depth });
             computeHistogram.SetTexture(handleMain, "VolumeTexture", dataTexture);
             computeHistogram.SetBuffer(handleMain, "HistogramBuffer", histogramBuffer);
             computeHistogram.SetBuffer(handleInitialize, "HistogramBuffer", histogramBuffer);

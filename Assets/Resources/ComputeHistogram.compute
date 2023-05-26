@@ -3,6 +3,7 @@
 
 Texture3D<float> VolumeTexture;
 float ValueRange;
+int3 Dimension;
 
 struct histStruct {
 	uint cnt;
@@ -18,7 +19,10 @@ void HistogramInitialize(uint3 id : SV_DispatchThreadID)
 [numthreads(8, 8, 8)]
 void HistogramMain(uint3 id : SV_DispatchThreadID)
 {
-	uint col = uint(floor(ValueRange * VolumeTexture[id.xyz] + 0.5f));
+	if (id.x < Dimension.x && id.y < Dimension.y & id.z < Dimension.z)
+	{
+		uint col = uint(floor(ValueRange * VolumeTexture[id.xyz] + 0.5f));
 
-	InterlockedAdd(HistogramBuffer[col].cnt, 1);
+		InterlockedAdd(HistogramBuffer[col].cnt, 1);
+	}
 }
