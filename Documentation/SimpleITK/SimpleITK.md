@@ -13,8 +13,8 @@ To enable SimpleITK, you simply have to do the following:
 1. In Unity's top toolbar, click "Volume rendering" and then "Settings", to open the settings menu.
 2. In the settings menu, click "Enable SimpleITK"
 
-<img src="img/settings-toolbar.jpg" width="150px">
-<img src="img/settings.jpg" width="300px">
+<img src="settings-toolbar.jpg" width="150px">
+<img src="settings.jpg" width="300px">
 
 This will automatically download the SimpleITK binaries, and enable support for SimpleITK in the code. The `ImporterFactory` class will then return the SimpleITK-based importer implementations.
 

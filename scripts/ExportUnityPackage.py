@@ -26,7 +26,7 @@ if os.path.exists(export_project_path):
 os.mkdir(export_project_path)
 
 if assetstore_package:
-    os.system("pandoc README.md -o MANUAL.pdf")
+    os.system("python scripts/DocsToPDF.py")
 
 if assetstore_package:
     with open('Third-Party Notices.txt', 'r') as original:
