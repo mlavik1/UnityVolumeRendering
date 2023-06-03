@@ -87,6 +87,12 @@ namespace UnityVolumeRendering
                 float bgWidth = Mathf.Min(this.position.width - 20.0f, (this.position.height - 50.0f) * 2.0f);
                 float bgHeight = Mathf.Min(bgWidth, this.position.height - 150.0f);
                 bgWidth = bgHeight / heightWidthRatio;
+                float ratio = bgWidth / this.position.width;
+                if (ratio > 1.0f)
+                {
+                    bgWidth /= ratio;
+                    bgHeight /= ratio;
+                }
                 bgRect = new Rect(0.0f, 40.0f, bgWidth, bgHeight);
 
                 if (GUI.Toggle(new Rect(0.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Move, new GUIContent(moveIconTexture, "Move slice"), GUI.skin.button))
@@ -96,9 +102,9 @@ namespace UnityVolumeRendering
                 if (GUI.Toggle(new Rect(80.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Measure, new GUIContent(measureIconTexture, "Measure distances"), GUI.skin.button))
                     inputMode = InputMode.Measure;
 
-                if (GUI.Toggle(new Rect(bgWidth - 80.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Measure, new GUIContent(lRotateIconTexture, "Rotate plane to the right"), GUI.skin.button))
+                if (GUI.Button(new Rect(Mathf.Max(bgWidth - 80.0f, 120.0f), 0.0f, 40.0f, 40.0f), new GUIContent(lRotateIconTexture, "Rotate plane to the right"), GUI.skin.button))
                     planeObj.transform.Rotate(planeNormal * -90.0f, Space.World);
-                if (GUI.Toggle(new Rect(bgWidth - 40.0f, 0.0f, 40.0f, 40.0f), inputMode == InputMode.Measure, new GUIContent(rRotateIconTexture, "Rotate plane to the left"), GUI.skin.button))
+                if (GUI.Button(new Rect(Mathf.Max(bgWidth - 40.0f, 160.0f), 0.0f, 40.0f, 40.0f), new GUIContent(rRotateIconTexture, "Rotate plane to the left"), GUI.skin.button))
                     planeObj.transform.Rotate(planeNormal * 90.0f, Space.World);
 
                 
@@ -252,6 +258,9 @@ namespace UnityVolumeRendering
             Vector3 uvw = objSpacePoint + Vector3.one * 0.5f;
             // Look up data value at current position.
             Vector3Int index = new Vector3Int((int)(uvw.x * dataset.dimX), (int)(uvw.y * dataset.dimY), (int)(uvw.z * dataset.dimZ));
+            index.x = Mathf.Clamp(index.x, 0, dataset.dimX - 1);
+            index.y = Mathf.Clamp(index.y, 0, dataset.dimY - 1);
+            index.z = Mathf.Clamp(index.z, 0, dataset.dimZ - 1);
             return dataset.GetData(index.x, index.y, index.z);
         }
 
