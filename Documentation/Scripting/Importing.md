@@ -104,3 +104,38 @@ The available importer implementations are:
 ### Notes about DICOM support
 
 The SimpleITK-based importer is the recommended way to import DICOM datasets, as it supports JPEG compression. See the [SimpleITK documentation](../SimpleITK/SimpleITK.md) for information about how to enable it. Once enabled, _ImporterFactory.CreateImageSequenceImporter_ will automatically return an importer of type `SimpleITKImageSequenceImporter`.
+
+# Async import
+
+Most of the importers also support asynchronous import. This is very useful for VR/AR applications where you defnitely don't want the import to freeze the whole application for too long.
+
+To do async import, create and run an async Task that calls the `Async` version for the importer factory's import methods. Below is an example:
+
+```csharp
+private static async Task DicomImportDirectoryAsync(IEnumerable<string> files)
+{
+    
+    using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
+    {
+        progressHandler.StartStage(0.2f, "Loading DICOM series");
+
+        IImageSequenceImporter importer = ImporterFactory.CreateImageSequenceImporter(ImageSequenceFormat.DICOM);
+        IEnumerable<IImageSequenceSeries> seriesList = await importer.LoadSeriesAsync(files, new ImageSequenceImportSettings { progressHandler = progressHandler });
+
+        progressHandler.EndStage();
+        progressHandler.StartStage(0.8f);
+
+        int seriesIndex = 0, numSeries = seriesList.Count();
+        foreach (IImageSequenceSeries series in seriesList)
+        {
+            progressHandler.StartStage(1.0f / numSeries, $"Importing series {seriesIndex + 1} of {numSeries}");
+            VolumeDataset dataset = await importer.ImportSeriesAsync(series, new ImageSequenceImportSettings { progressHandler = progressHandler });
+            progressHandler.EndStage();
+        }
+
+        progressHandler.EndStage();
+    }
+}
+```
+
+You can optionally pass in a progress handler, which is used to track the progress of the async import. The `ProgressView` is used to display the progress, either in the Unity Editor or in your own GUI. In the above example we use the `EditorProgressView`, which will show a progress bar in the editor - but you can also create your own.
