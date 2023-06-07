@@ -3,7 +3,7 @@
 
 Texture3D<float> VolumeTexture;
 float ValueRange;
-int3 Dimension;
+uint3 Dimension;
 
 struct histStruct {
 	uint cnt;
