@@ -61,6 +61,15 @@ namespace UnityVolumeRendering
             EditorGUILayout.MinMaxSlider("Visible value range", ref visibilityWindow.x, ref visibilityWindow.y, 0.0f, 1.0f);
             volrendObj.SetVisibilityWindow(visibilityWindow);
 
+            if (newRenderMode == RenderMode.IsosurfaceRendering)
+            {
+                float oldThreshold = volrendObj.GetGradientVisibilityThreshold();
+                float newThreshold = EditorGUILayout.Slider("Gradient visibility threshold", Mathf.Sqrt(oldThreshold), 0.0f, 1.0f);
+                newThreshold = newThreshold * newThreshold;
+                if (newThreshold != oldThreshold)
+                    volrendObj.SetGradientVisibilityThreshold(newThreshold);
+            }
+
             // Transfer function settings
             EditorGUILayout.Space();
             tfSettings = EditorGUILayout.Foldout(tfSettings, "Transfer function");
@@ -101,6 +110,11 @@ namespace UnityVolumeRendering
                     LightSource newLightSource = (LightSource)EditorGUILayout.EnumPopup("Light source", oldLightSource);
                     if (newLightSource != oldLightSource)
                         volrendObj.SetLightSource(newLightSource);
+
+                    Vector2 gradLightThreshold = volrendObj.GetGradientLightingThreshold();
+                    gradLightThreshold = new Vector2(Mathf.Sqrt(gradLightThreshold.x), Mathf.Sqrt(gradLightThreshold.y));
+                    EditorGUILayout.MinMaxSlider("Visible value range", ref gradLightThreshold.x, ref gradLightThreshold.y, 0.0f, 1.0f);
+                    volrendObj.SetGradientLightingThreshold(new Vector2(gradLightThreshold.x * gradLightThreshold.x, gradLightThreshold.y * gradLightThreshold.y));
                 }
             }
 

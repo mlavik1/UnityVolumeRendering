@@ -25,17 +25,28 @@ namespace UnityVolumeRendering
 
         [SerializeField, HideInInspector]
         private RenderMode renderMode;
+
         [SerializeField, HideInInspector]
         private TFRenderMode tfRenderMode;
+
         [SerializeField, HideInInspector]
         private bool lightingEnabled;
+
         [SerializeField, HideInInspector]
         private LightSource lightSource;
 
         [SerializeField, HideInInspector]
+        private Vector2 gradientLightingThreshold = new Vector2(0.05f, 0.15f);
+
+        [SerializeField, HideInInspector]
+        private float minGradient = 0.01f;
+
+        [SerializeField, HideInInspector]
         private Vector2 visibilityWindow = new Vector2(0.0f, 1.0f);
+
         [SerializeField, HideInInspector]
         private bool rayTerminationEnabled = true;
+
         [SerializeField, HideInInspector]
         private bool cubicInterpolationEnabled = false;
 
@@ -150,8 +161,39 @@ namespace UnityVolumeRendering
 
         public void SetLightSource(LightSource source)
         {
-            lightSource = source;
-            UpdateMaterialProperties();
+            if (lightSource != source)
+            {
+                lightSource = source;
+                UpdateMaterialProperties();
+            }
+        }
+
+        public void SetGradientLightingThreshold(Vector2 threshold)
+        {
+            if (gradientLightingThreshold != threshold)
+            {
+                gradientLightingThreshold = threshold;
+                UpdateMaterialProperties();
+            }
+        }
+
+        public Vector2 GetGradientLightingThreshold()
+        {
+            return gradientLightingThreshold;
+        }
+
+        public void SetGradientVisibilityThreshold(float min)
+        {
+            if (minGradient != min)
+            {
+                minGradient = min;
+                UpdateMaterialProperties();
+            }
+        }
+
+        public float GetGradientVisibilityThreshold()
+        {
+            return minGradient;
         }
 
         public void SetVisibilityWindow(float min, float max)
@@ -307,6 +349,9 @@ namespace UnityVolumeRendering
 
             meshRenderer.sharedMaterial.SetFloat("_MinVal", visibilityWindow.x);
             meshRenderer.sharedMaterial.SetFloat("_MaxVal", visibilityWindow.y);
+            meshRenderer.sharedMaterial.SetFloat("_MinGradient", minGradient);
+            meshRenderer.sharedMaterial.SetFloat("_LightingGradientThresholdStart", gradientLightingThreshold.x);
+            meshRenderer.sharedMaterial.SetFloat("_LightingGradientThresholdEnd", gradientLightingThreshold.y);
             meshRenderer.sharedMaterial.SetVector("_TextureSize", new Vector3(dataset.dimX, dataset.dimY, dataset.dimZ));
 
             if (rayTerminationEnabled)
