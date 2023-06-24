@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using UnityEditor;
 using UnityEngine;
 
 namespace UnityVolumeRendering
@@ -35,18 +34,23 @@ namespace UnityVolumeRendering
         [SerializeField, HideInInspector]
         private LightSource lightSource;
 
+        // Minimum and maximum gradient threshold for lighting contribution. Values below min will be unlit, and between min and max will be partly shaded.
         [SerializeField, HideInInspector]
-        private Vector2 gradientLightingThreshold = new Vector2(0.05f, 0.15f);
+        private Vector2 gradientLightingThreshold = new Vector2(0.02f, 0.15f);
 
+        // Gradient magnitude threshold. Voxels with gradient magnitude less than this will not be rendered in isosurface rendering mode.
         [SerializeField, HideInInspector]
         private float minGradient = 0.01f;
 
+        // Minimum/maximum data value threshold for rendering. Values outside of this range will not be rendered.
         [SerializeField, HideInInspector]
         private Vector2 visibilityWindow = new Vector2(0.0f, 1.0f);
 
+        // Early ray termination
         [SerializeField, HideInInspector]
         private bool rayTerminationEnabled = true;
 
+        // Tri-cubic interpolation of data texture (expensive, but looks better)
         [SerializeField, HideInInspector]
         private bool cubicInterpolationEnabled = false;
 

@@ -64,7 +64,10 @@ namespace UnityVolumeRendering
             if (newRenderMode == RenderMode.IsosurfaceRendering)
             {
                 float oldThreshold = volrendObj.GetGradientVisibilityThreshold();
-                float newThreshold = EditorGUILayout.Slider("Gradient visibility threshold", Mathf.Sqrt(oldThreshold), 0.0f, 1.0f);
+                float newThreshold = EditorGUILayout.Slider(
+                    new GUIContent("Gradient visibility threshold", "Minimum gradient maginitude value that will be visible"),
+                    Mathf.Sqrt(oldThreshold), 0.0f, 1.0f
+                );
                 newThreshold = newThreshold * newThreshold;
                 if (newThreshold != oldThreshold)
                     volrendObj.SetGradientVisibilityThreshold(newThreshold);
@@ -113,7 +116,12 @@ namespace UnityVolumeRendering
 
                     Vector2 gradLightThreshold = volrendObj.GetGradientLightingThreshold();
                     gradLightThreshold = new Vector2(Mathf.Sqrt(gradLightThreshold.x), Mathf.Sqrt(gradLightThreshold.y));
-                    EditorGUILayout.MinMaxSlider("Visible value range", ref gradLightThreshold.x, ref gradLightThreshold.y, 0.0f, 1.0f);
+                    EditorGUILayout.MinMaxSlider(
+                        new GUIContent("Gradient lighting threshold",
+                            "Minimum and maximum threshold for gradient contribution to lighting.\n"
+                            + "Voxels with gradient less than min will be unlit, and with gradient >= max will fully shaded."),
+                        ref gradLightThreshold.x, ref gradLightThreshold.y, 0.0f, 1.0f
+                    );
                     volrendObj.SetGradientLightingThreshold(new Vector2(gradLightThreshold.x * gradLightThreshold.x, gradLightThreshold.y * gradLightThreshold.y));
                 }
             }
