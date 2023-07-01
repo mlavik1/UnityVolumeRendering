@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using UnityEditor;
 using UnityEngine;
 
 namespace UnityVolumeRendering
@@ -25,17 +24,33 @@ namespace UnityVolumeRendering
 
         [SerializeField, HideInInspector]
         private RenderMode renderMode;
+
         [SerializeField, HideInInspector]
         private TFRenderMode tfRenderMode;
+
         [SerializeField, HideInInspector]
         private bool lightingEnabled;
+
         [SerializeField, HideInInspector]
         private LightSource lightSource;
 
+        // Minimum and maximum gradient threshold for lighting contribution. Values below min will be unlit, and between min and max will be partly shaded.
+        [SerializeField, HideInInspector]
+        private Vector2 gradientLightingThreshold = new Vector2(0.02f, 0.15f);
+
+        // Gradient magnitude threshold. Voxels with gradient magnitude less than this will not be rendered in isosurface rendering mode.
+        [SerializeField, HideInInspector]
+        private float minGradient = 0.01f;
+
+        // Minimum/maximum data value threshold for rendering. Values outside of this range will not be rendered.
         [SerializeField, HideInInspector]
         private Vector2 visibilityWindow = new Vector2(0.0f, 1.0f);
+
+        // Early ray termination
         [SerializeField, HideInInspector]
         private bool rayTerminationEnabled = true;
+
+        // Tri-cubic interpolation of data texture (expensive, but looks better)
         [SerializeField, HideInInspector]
         private bool cubicInterpolationEnabled = false;
 
@@ -150,8 +165,39 @@ namespace UnityVolumeRendering
 
         public void SetLightSource(LightSource source)
         {
-            lightSource = source;
-            UpdateMaterialProperties();
+            if (lightSource != source)
+            {
+                lightSource = source;
+                UpdateMaterialProperties();
+            }
+        }
+
+        public void SetGradientLightingThreshold(Vector2 threshold)
+        {
+            if (gradientLightingThreshold != threshold)
+            {
+                gradientLightingThreshold = threshold;
+                UpdateMaterialProperties();
+            }
+        }
+
+        public Vector2 GetGradientLightingThreshold()
+        {
+            return gradientLightingThreshold;
+        }
+
+        public void SetGradientVisibilityThreshold(float min)
+        {
+            if (minGradient != min)
+            {
+                minGradient = min;
+                UpdateMaterialProperties();
+            }
+        }
+
+        public float GetGradientVisibilityThreshold()
+        {
+            return minGradient;
         }
 
         public void SetVisibilityWindow(float min, float max)
@@ -307,6 +353,9 @@ namespace UnityVolumeRendering
 
             meshRenderer.sharedMaterial.SetFloat("_MinVal", visibilityWindow.x);
             meshRenderer.sharedMaterial.SetFloat("_MaxVal", visibilityWindow.y);
+            meshRenderer.sharedMaterial.SetFloat("_MinGradient", minGradient);
+            meshRenderer.sharedMaterial.SetFloat("_LightingGradientThresholdStart", gradientLightingThreshold.x);
+            meshRenderer.sharedMaterial.SetFloat("_LightingGradientThresholdEnd", gradientLightingThreshold.y);
             meshRenderer.sharedMaterial.SetVector("_TextureSize", new Vector3(dataset.dimX, dataset.dimY, dataset.dimZ));
 
             if (rayTerminationEnabled)

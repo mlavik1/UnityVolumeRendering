@@ -8,6 +8,9 @@
         _TFTex("Transfer Function Texture (Generated)", 2D) = "" {}
         _MinVal("Min val", Range(0.0, 1.0)) = 0.0
         _MaxVal("Max val", Range(0.0, 1.0)) = 1.0
+        _MinGradient("Gradient visibility threshold", Range(0.0, 1.0)) = 0.0
+        _LightingGradientThresholdStart("Gradient threshold for lighting (end)", Range(0.0, 1.0)) = 0.0
+        _LightingGradientThresholdEnd("Gradient threshold for lighting (start)", Range(0.0, 1.0)) = 0.0
         [HideInInspector] _TextureSize("Dataset dimensions", Vector) = (1, 1, 1)
     }
     SubShader
@@ -72,6 +75,10 @@
             float _MinVal;
             float _MaxVal;
             float3 _TextureSize;
+
+            float _MinGradient;
+            float _LightingGradientThresholdStart;
+            float _LightingGradientThresholdEnd;
 
 #if CROSS_SECTION_ON
 #define CROSS_SECTION_TYPE_PLANE 1 
@@ -336,7 +343,9 @@
 
                     // Apply lighting
 #if defined(LIGHTING_ON)
-                    src.rgb = calculateLighting(src.rgb, gradient / gradMag, getLightDirection(-ray.direction), -ray.direction, 0.3f);
+                    float factor = smoothstep(_LightingGradientThresholdStart, _LightingGradientThresholdEnd, gradMag);
+                    float3 shaded = calculateLighting(src.rgb, gradient / gradMag, getLightDirection(-ray.direction), -ray.direction, 0.3f);
+                    src.rgb = lerp(src.rgb, shaded, factor);
 #endif
 
                     src.rgb *= src.a;
@@ -428,11 +437,16 @@
                     const float density = getDensity(currPos);
                     if (density > _MinVal && density < _MaxVal)
                     {
-                        float3 normal = normalize(getGradient(currPos));
-                        col = getTF1DColour(density);
-                        col.rgb = calculateLighting(col.rgb, normal, getLightDirection(-ray.direction), -ray.direction, 0.15);
-                        col.a = 1.0f;
-                        break;
+                        float3 gradient = getGradient(currPos);
+                        float gradMag = length(gradient);
+                        if (gradMag > _MinGradient)
+                        {
+                            float3 normal = gradient / gradMag;
+                            col = getTF1DColour(density);
+                            col.rgb = calculateLighting(col.rgb, normal, getLightDirection(-ray.direction), -ray.direction, 0.15);
+                            col.a = 1.0f;
+                            break;
+                        }
                     }
                 }
 

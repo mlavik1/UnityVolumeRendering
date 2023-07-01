@@ -61,6 +61,19 @@ namespace UnityVolumeRendering
             EditorGUILayout.MinMaxSlider("Visible value range", ref visibilityWindow.x, ref visibilityWindow.y, 0.0f, 1.0f);
             volrendObj.SetVisibilityWindow(visibilityWindow);
 
+            if (newRenderMode == RenderMode.IsosurfaceRendering)
+            {
+                float oldThreshold = volrendObj.GetGradientVisibilityThreshold();
+                float oldThresholdSqrt = Mathf.Sqrt(oldThreshold); // Convert to square root scaling (=> more precision close to 0)
+                float newThreshold = EditorGUILayout.Slider(
+                    new GUIContent("Gradient visibility threshold", "Minimum gradient maginitude value that will be visible"),
+                    oldThresholdSqrt, 0.0f, 1.0f
+                );
+                newThreshold = newThreshold * newThreshold; // Convert back to linear scaling
+                if (newThreshold != oldThreshold)
+                    volrendObj.SetGradientVisibilityThreshold(newThreshold);
+            }
+
             // Transfer function settings
             EditorGUILayout.Space();
             tfSettings = EditorGUILayout.Foldout(tfSettings, "Transfer function");
@@ -101,6 +114,19 @@ namespace UnityVolumeRendering
                     LightSource newLightSource = (LightSource)EditorGUILayout.EnumPopup("Light source", oldLightSource);
                     if (newLightSource != oldLightSource)
                         volrendObj.SetLightSource(newLightSource);
+
+                    // Gradient lighting threshold: Threshold for how low gradients can contribute to lighting.
+                    Vector2 gradLightThreshold = volrendObj.GetGradientLightingThreshold();
+                    // Convert to square root scaling (=> more precision close to 0)
+                    gradLightThreshold = new Vector2(Mathf.Sqrt(gradLightThreshold.x), Mathf.Sqrt(gradLightThreshold.y));
+                    EditorGUILayout.MinMaxSlider(
+                        new GUIContent("Gradient lighting threshold",
+                            "Minimum and maximum threshold for gradient contribution to lighting.\n"
+                            + "Voxels with gradient less than min will be unlit, and with gradient >= max will fully shaded."),
+                        ref gradLightThreshold.x, ref gradLightThreshold.y, 0.0f, 1.0f
+                    );
+                    // Convert back to linear scale, before setting updated value.
+                    volrendObj.SetGradientLightingThreshold(new Vector2(gradLightThreshold.x * gradLightThreshold.x, gradLightThreshold.y * gradLightThreshold.y));
                 }
             }
 
