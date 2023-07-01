@@ -64,11 +64,12 @@ namespace UnityVolumeRendering
             if (newRenderMode == RenderMode.IsosurfaceRendering)
             {
                 float oldThreshold = volrendObj.GetGradientVisibilityThreshold();
+                float oldThresholdSqrt = Mathf.Sqrt(oldThreshold); // Convert to square root scaling (=> more precision close to 0)
                 float newThreshold = EditorGUILayout.Slider(
                     new GUIContent("Gradient visibility threshold", "Minimum gradient maginitude value that will be visible"),
-                    Mathf.Sqrt(oldThreshold), 0.0f, 1.0f
+                    oldThresholdSqrt, 0.0f, 1.0f
                 );
-                newThreshold = newThreshold * newThreshold;
+                newThreshold = newThreshold * newThreshold; // Convert back to linear scaling
                 if (newThreshold != oldThreshold)
                     volrendObj.SetGradientVisibilityThreshold(newThreshold);
             }
@@ -114,7 +115,9 @@ namespace UnityVolumeRendering
                     if (newLightSource != oldLightSource)
                         volrendObj.SetLightSource(newLightSource);
 
+                    // Gradient lighting threshold: Threshold for how low gradients can contribute to lighting.
                     Vector2 gradLightThreshold = volrendObj.GetGradientLightingThreshold();
+                    // Convert to square root scaling (=> more precision close to 0)
                     gradLightThreshold = new Vector2(Mathf.Sqrt(gradLightThreshold.x), Mathf.Sqrt(gradLightThreshold.y));
                     EditorGUILayout.MinMaxSlider(
                         new GUIContent("Gradient lighting threshold",
@@ -122,6 +125,7 @@ namespace UnityVolumeRendering
                             + "Voxels with gradient less than min will be unlit, and with gradient >= max will fully shaded."),
                         ref gradLightThreshold.x, ref gradLightThreshold.y, 0.0f, 1.0f
                     );
+                    // Convert back to linear scale, before setting updated value.
                     volrendObj.SetGradientLightingThreshold(new Vector2(gradLightThreshold.x * gradLightThreshold.x, gradLightThreshold.y * gradLightThreshold.y));
                 }
             }
