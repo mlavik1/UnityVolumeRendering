@@ -6,8 +6,6 @@ using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using openDicom.Image;
-using System.Drawing;
 
 namespace UnityVolumeRendering
 {
