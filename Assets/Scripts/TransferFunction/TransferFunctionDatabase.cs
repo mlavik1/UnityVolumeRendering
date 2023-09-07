@@ -12,8 +12,10 @@ namespace UnityVolumeRendering
             public int version;
             public List<TFColourControlPoint> colourPoints;
             public List<TFAlphaControlPoint> alphaPoints;
+            public float minDataValue;
+            public float maxDataValue;
 
-            public const int VERSION_ID = 1;
+            public const int VERSION_ID = 2;
         }
 
         [System.Serializable]
@@ -59,12 +61,11 @@ namespace UnityVolumeRendering
             }
             string jsonstring = File.ReadAllText(filepath);
             TF1DSerialisationData data = JsonUtility.FromJson<TF1DSerialisationData>(jsonstring);
-            Debug.Log(jsonstring);
-            Debug.Log(data.colourPoints.ToString());
-            Debug.Log(data.alphaPoints.ToString());
             TransferFunction tf = ScriptableObject.CreateInstance<TransferFunction>();
             tf.colourControlPoints = data.colourPoints;
             tf.alphaControlPoints = data.alphaPoints;
+            tf.minDataValue = data.minDataValue;
+            tf.maxDataValue = data.maxDataValue;
             return tf;
         }
 
@@ -88,6 +89,8 @@ namespace UnityVolumeRendering
             data.version = TF1DSerialisationData.VERSION_ID;
             data.colourPoints = new List<TFColourControlPoint>(tf.colourControlPoints);
             data.alphaPoints =　new List<TFAlphaControlPoint>(tf.alphaControlPoints);
+            data.minDataValue = tf.minDataValue;
+            data.maxDataValue = tf.maxDataValue;
             string jsonstring = JsonUtility.ToJson(data);
             File.WriteAllText(filepath, jsonstring);
         }
@@ -99,6 +102,31 @@ namespace UnityVolumeRendering
             data.boxes = new List<TransferFunction2D.TF2DBox>(tf2d.boxes);
             string jsonstring = JsonUtility.ToJson(data);
             File.WriteAllText(filepath, jsonstring);
+        }
+
+        public static void ConvertTransferFunctionToScale(TransferFunction tf, float newMinValue, float newMaxValue)
+        {
+            if (tf.minDataValue == tf.maxDataValue)
+            {
+                Debug.Log("Transfer function does not have a defined data value scale.");
+                return;
+            }
+
+            for (int i = 0; i < tf.alphaControlPoints.Count; i++)
+            {
+                TFAlphaControlPoint point = tf.alphaControlPoints[i];
+                float t = Mathf.InverseLerp(tf.minDataValue, tf.maxDataValue, point.dataValue);
+                point.dataValue = Mathf.Lerp(newMinValue, newMaxValue, t);
+                tf.alphaControlPoints[i] = point;
+            }
+
+            for (int i = 0; i < tf.colourControlPoints.Count; i++)
+            {
+                TFColourControlPoint point = tf.colourControlPoints[i];
+                float t = Mathf.InverseLerp(tf.minDataValue, tf.maxDataValue, point.dataValue);
+                point.dataValue = Mathf.Lerp(newMinValue, newMaxValue, t);
+                tf.colourControlPoints[i] = point;
+            }
         }
     }
 }

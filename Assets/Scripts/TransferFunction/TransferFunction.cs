@@ -12,6 +12,11 @@ namespace UnityVolumeRendering
         [SerializeField]
         public List<TFAlphaControlPoint> alphaControlPoints = new List<TFAlphaControlPoint>();
 
+        [SerializeField]
+        public float minDataValue;
+        [SerializeField]
+        public float maxDataValue;
+
         private Texture2D texture = null;
         private Color[] tfCols;
 
