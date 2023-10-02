@@ -16,5 +16,7 @@ Memory leak fix
 Texture downscaling, optimisation.
 - [SitronX](https://github.com/SitronX)
 Async loading
+- [Riccardo Lops](https://github.com/riccardolops)
+Modified shader to handle stereo rendering.
 
 Feel free to add yourself to this list when contributing to this project.
