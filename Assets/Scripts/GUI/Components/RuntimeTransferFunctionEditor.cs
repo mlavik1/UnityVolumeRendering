@@ -5,7 +5,7 @@ namespace UnityVolumeRendering
     public class RuntimeTransferFunctionEditor : MonoBehaviour
     {
         private static RuntimeTransferFunctionEditor instance = null;
-        private TransferFunction tf = null;
+        private TransferFunctionInstance tfInstance = null;
         private VolumeRenderedObject volRendObject = null;
 
         private int windowID;
@@ -60,7 +60,8 @@ namespace UnityVolumeRendering
             if (volRendObject == null)
                 return;
 
-            tf = volRendObject.transferFunction;
+            tfInstance = volRendObject.transferFunctionInstance;
+            TransferFunction tf = tfInstance.transferFunction;
 
             float contentWidth = Mathf.Min(WINDOW_WIDTH, (WINDOW_HEIGHT - 100.0f) * 2.0f);
             float contentHeight = contentWidth * 0.5f;
@@ -68,7 +69,7 @@ namespace UnityVolumeRendering
             Rect outerRect = new Rect(0.0f, 0.0f, contentWidth, contentHeight);
             Rect tfEditorRect = new Rect(outerRect.x + 20.0f, outerRect.y + 20.0f, outerRect.width - 40.0f, outerRect.height - 50.0f);
 
-            tfEditor.SetVolumeObject(volRendObject);
+            tfEditor.SetTransferFunctionInstnace(tfInstance);
             tfEditor.DrawOnGUI(tfEditorRect);
 
             // Save TF
@@ -136,6 +137,7 @@ namespace UnityVolumeRendering
         /// <param name="maxDistance">Threshold for maximum distance. Points further away than this won't get picked.</param>
         private int PickColourControlPoint(float position, float maxDistance = 0.03f)
         {
+            TransferFunction tf = tfInstance.transferFunction;
             int nearestPointIndex = -1;
             float nearestDist = 1000.0f;
             for (int i = 0; i < tf.colourControlPoints.Count; i++)
@@ -157,6 +159,7 @@ namespace UnityVolumeRendering
         /// <param name="maxDistance">Threshold for maximum distance. Points further away than this won't get picked.</param>
         private int PickAlphaControlPoint(Vector2 position, float maxDistance = 0.05f)
         {
+            TransferFunction tf = tfInstance.transferFunction;
             int nearestPointIndex = -1;
             float nearestDist = 1000.0f;
             for (int i = 0; i < tf.alphaControlPoints.Count; i++)

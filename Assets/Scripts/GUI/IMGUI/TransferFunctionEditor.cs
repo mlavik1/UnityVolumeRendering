@@ -8,7 +8,7 @@ namespace UnityVolumeRendering
         private int movingAlphaPointIndex = -1;
         private int selectedColPointIndex = -1;
 
-        private VolumeRenderedObject volRendObject = null;
+        private TransferFunctionInstance transferFunctionInstance = null;
         private Texture2D histTex = null;
 
         private Material tfGUIMat = null;
@@ -25,19 +25,19 @@ namespace UnityVolumeRendering
             tfPaletteGUIMat = Resources.Load<Material>("TransferFunctionPaletteGUIMat");
         }
 
-        public void SetVolumeObject(VolumeRenderedObject volRendObject)
+        public void SetTransferFunctionInstnace(TransferFunctionInstance tfInstance)
         {
-            this.volRendObject = volRendObject;
+            this.transferFunctionInstance = tfInstance;
         }
 
         public void DrawOnGUI(Rect rect)
         {
             GUI.skin.button.alignment = TextAnchor.MiddleCenter;
 
-            if (volRendObject == null)
+            if (transferFunctionInstance == null)
                 return;
 
-            TransferFunction tf = volRendObject.transferFunction;
+            TransferFunction tf = transferFunctionInstance.transferFunction;
 
             Event currentEvent = Event.current;
 
@@ -55,25 +55,25 @@ namespace UnityVolumeRendering
             Rect paletteInteractionRect = new Rect(paletteRect.x - 10.0f, paletteRect.y, paletteRect.width + 30.0f, paletteRect.height);
 
             // TODO: Don't do this every frame
-            tf.GenerateTexture();
+            transferFunctionInstance.GenerateTexture();
 
             // Create histogram texture
             if(histTex == null)
             {
                 if(SystemInfo.supportsComputeShaders)
-                    histTex = HistogramTextureGenerator.GenerateHistogramTextureOnGPU(volRendObject.dataset);
+                    histTex = HistogramTextureGenerator.GenerateHistogramTextureOnGPU(transferFunctionInstance.dataset);
                 else
-                    histTex = HistogramTextureGenerator.GenerateHistogramTexture(volRendObject.dataset);
+                    histTex = HistogramTextureGenerator.GenerateHistogramTexture(transferFunctionInstance.dataset);
             }
 
             // Draw histogram
-            tfGUIMat.SetTexture("_TFTex", tf.GetTexture());
+            tfGUIMat.SetTexture("_TFTex", transferFunctionInstance.GetTexture());
             tfGUIMat.SetTexture("_HistTex", histTex);
-            Graphics.DrawTexture(histRect, tf.GetTexture(), tfGUIMat);
+            Graphics.DrawTexture(histRect, transferFunctionInstance.GetTexture(), tfGUIMat);
 
             // Draw colour palette
-            Texture2D tfTexture = tf.GetTexture();
-            tfPaletteGUIMat.SetTexture("_TFTex", tf.GetTexture());
+            Texture2D tfTexture = transferFunctionInstance.GetTexture();
+            tfPaletteGUIMat.SetTexture("_TFTex", transferFunctionInstance.GetTexture());
             Graphics.DrawTexture(new Rect(paletteRect.x, paletteRect.y, paletteRect.width, paletteRect.height), tfTexture, tfPaletteGUIMat);
 
             // Release selected colour/alpha points if mouse leaves window
@@ -211,7 +211,7 @@ namespace UnityVolumeRendering
         public Color? GetSelectedColour()
         {
             if (selectedColPointIndex != -1)
-                return volRendObject.transferFunction.colourControlPoints[selectedColPointIndex].colourValue;
+                return transferFunctionInstance.transferFunction.colourControlPoints[selectedColPointIndex].colourValue;
             else
                 return null;
         }
@@ -220,9 +220,9 @@ namespace UnityVolumeRendering
         {
             if (selectedColPointIndex != -1)
             {
-                TFColourControlPoint colPoint = volRendObject.transferFunction.colourControlPoints[selectedColPointIndex];
+                TFColourControlPoint colPoint = transferFunctionInstance.transferFunction.colourControlPoints[selectedColPointIndex];
                 colPoint.colourValue = colour;
-                volRendObject.transferFunction.colourControlPoints[selectedColPointIndex] = colPoint;
+                transferFunctionInstance.transferFunction.colourControlPoints[selectedColPointIndex] = colPoint;
             }
         }
 
@@ -230,7 +230,7 @@ namespace UnityVolumeRendering
         {
             if (selectedColPointIndex != -1)
             {
-                volRendObject.transferFunction.colourControlPoints.RemoveAt(selectedColPointIndex);
+                transferFunctionInstance.transferFunction.colourControlPoints.RemoveAt(selectedColPointIndex);
                 selectedColPointIndex = -1;
             }
         }
@@ -241,7 +241,7 @@ namespace UnityVolumeRendering
         /// <param name="maxDistance">Threshold for maximum distance. Points further away than this won't get picked.</param>
         private int PickColourControlPoint(float position, float maxDistance = 0.03f)
         {
-            TransferFunction tf = volRendObject.transferFunction;
+            TransferFunction tf = transferFunctionInstance.transferFunction;
             int nearestPointIndex = -1;
             float nearestDist = 1000.0f;
             for (int i = 0; i < tf.colourControlPoints.Count; i++)
@@ -263,7 +263,7 @@ namespace UnityVolumeRendering
         /// <param name="maxDistance">Threshold for maximum distance. Points further away than this won't get picked.</param>
         private int PickAlphaControlPoint(Vector2 position, float maxDistance = 0.05f)
         {
-            TransferFunction tf = volRendObject.transferFunction;
+            TransferFunction tf = transferFunctionInstance.transferFunction;
             int nearestPointIndex = -1;
             float nearestDist = 1000.0f;
             for (int i = 0; i < tf.alphaControlPoints.Count; i++)

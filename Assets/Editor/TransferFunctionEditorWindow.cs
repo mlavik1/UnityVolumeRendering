@@ -5,7 +5,7 @@ namespace UnityVolumeRendering
 {
     public class TransferFunctionEditorWindow : EditorWindow
     {
-        private TransferFunction tf = null;
+        private TransferFunctionInstance tfInstance = null;
 
         private VolumeRenderedObject volRendObject = null;
 
@@ -49,7 +49,8 @@ namespace UnityVolumeRendering
             if (volRendObject == null)
                 return;
                 
-            tf = volRendObject.transferFunction;
+            tfInstance = volRendObject.transferFunctionInstance;
+            TransferFunction tf = tfInstance.transferFunction;
 
             Event currentEvent = new Event(Event.current);
 
@@ -62,7 +63,7 @@ namespace UnityVolumeRendering
             Rect outerRect = new Rect(0.0f, 0.0f, contentWidth, contentHeight);
             Rect tfEditorRect = new Rect(outerRect.x + 20.0f, outerRect.y + 20.0f, outerRect.width - 40.0f, outerRect.height - 50.0f);
 
-            tfEditor.SetVolumeObject(volRendObject);
+            tfEditor.SetTransferFunctionInstnace(tfInstance);
             tfEditor.DrawOnGUI(tfEditorRect);
 
             // Save TF
