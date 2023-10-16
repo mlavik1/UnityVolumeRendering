@@ -52,13 +52,13 @@ namespace UnityVolumeRendering
                 for (int i = 0; i < transferFunction.colourControlPoints.Count; i++)
                 {
                     TFColourControlPoint point = transferFunction.colourControlPoints[i];
-                    point.dataValue = Mathf.InverseLerp(minValue, maxValue, point.dataValue);
+                    point.dataValue = Mathf.Lerp(minValue, maxValue, point.dataValue);
                     transferFunction.colourControlPoints[i] = point;
                 }
                 for (int i = 0; i < transferFunction.alphaControlPoints.Count; i++)
                 {
                     TFAlphaControlPoint point = transferFunction.alphaControlPoints[i];
-                    point.dataValue = Mathf.InverseLerp(minValue, maxValue, point.dataValue);
+                    point.dataValue = Mathf.Lerp(minValue, maxValue, point.dataValue);
                     transferFunction.alphaControlPoints[i] = point;
                 }
                 transferFunction.relativeScale = false;
@@ -73,20 +73,20 @@ namespace UnityVolumeRendering
             List<TFColourControlPoint> cols = new List<TFColourControlPoint>(transferFunction.colourControlPoints);
             List<TFAlphaControlPoint> alphas = new List<TFAlphaControlPoint>(transferFunction.alphaControlPoints);
 
-            if (transferFunction.relativeScale)
+            if (!transferFunction.relativeScale)
             {
                 float minValue = dataset.GetMinDataValue();
                 float maxValue = dataset.GetMaxDataValue();
                 for (int i = 0; i < cols.Count; i++)
                 {
                     TFColourControlPoint point = cols[i];
-                    point.dataValue = (Mathf.Clamp(point.dataValue, minValue, maxValue) + minValue) / (maxValue - minValue);
+                    point.dataValue = (Mathf.Clamp(point.dataValue, minValue, maxValue) - minValue) / (maxValue - minValue);
                     cols[i] = point;
                 }
                 for (int i = 0; i < alphas.Count; i++)
                 {
                     TFAlphaControlPoint point = alphas[i];
-                    point.dataValue = (Mathf.Clamp(point.dataValue, minValue, maxValue) + minValue) / (maxValue - minValue);
+                    point.dataValue = (Mathf.Clamp(point.dataValue, minValue, maxValue) - minValue) / (maxValue - minValue);
                     alphas[i] = point;
                 }
             }

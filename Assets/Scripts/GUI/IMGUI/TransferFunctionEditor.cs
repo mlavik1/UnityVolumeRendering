@@ -19,6 +19,9 @@ namespace UnityVolumeRendering
         private const float COLOUR_PALETTE_HEIGHT = 20.0f;
         private const float COLOUR_POINT_WIDTH = 10.0f;
 
+        private float dataRangeMin = 0.0f;
+        private float dataRangeMax = 1.0f;
+
         public void Initialise()
         {
             tfGUIMat = Resources.Load<Material>("TransferFunctionGUIMat");
@@ -38,6 +41,8 @@ namespace UnityVolumeRendering
                 return;
 
             TransferFunction tf = transferFunctionInstance.transferFunction;
+            dataRangeMin = tf.relativeScale ? 0.0f : transferFunctionInstance.dataset.GetMinDataValue();
+            dataRangeMax = tf.relativeScale ? 1.0f : transferFunctionInstance.dataset.GetMaxDataValue();
 
             Event currentEvent = Event.current;
 
@@ -135,6 +140,7 @@ namespace UnityVolumeRendering
             {
                 TFAlphaControlPoint alphaPoint = tf.alphaControlPoints[movingAlphaPointIndex];
                 alphaPoint.dataValue = Mathf.Clamp((currentEvent.mousePosition.x - histRect.x) / histRect.width, 0.0f, 1.0f);
+                alphaPoint.dataValue = Rel2AbsTFValue(alphaPoint.dataValue);
                 alphaPoint.alphaValue = Mathf.Clamp(1.0f - (currentEvent.mousePosition.y - histRect.y) / histRect.height, 0.0f, 1.0f);
                 tf.alphaControlPoints[movingAlphaPointIndex] = alphaPoint;
             }
@@ -144,6 +150,7 @@ namespace UnityVolumeRendering
             {
                 TFColourControlPoint colPoint = tf.colourControlPoints[movingColPointIndex];
                 colPoint.dataValue = Mathf.Clamp((currentEvent.mousePosition.x - paletteRect.x -  COLOUR_POINT_WIDTH / 2.0f) / paletteRect.width, 0.0f, 1.0f);
+                colPoint.dataValue = Rel2AbsTFValue(colPoint.dataValue);
                 tf.colourControlPoints[movingColPointIndex] = colPoint;
             }
 
@@ -151,7 +158,8 @@ namespace UnityVolumeRendering
             for (int iCol = 0; iCol < tf.colourControlPoints.Count; iCol++)
             {
                 TFColourControlPoint colPoint = tf.colourControlPoints[iCol];
-                Rect ctrlBox = new Rect(histRect.x + histRect.width * colPoint.dataValue, histRect.y + histRect.height + 20, COLOUR_POINT_WIDTH, COLOUR_PALETTE_HEIGHT);
+                float tDataValue = Abs2RelTFValue(colPoint.dataValue);
+                Rect ctrlBox = new Rect(histRect.x + histRect.width * tDataValue, histRect.y + histRect.height + 20, COLOUR_POINT_WIDTH, COLOUR_PALETTE_HEIGHT);
                 GUI.color = Color.red;
                 GUI.skin.box.fontSize = 6;
                 GUI.Box(ctrlBox, "*");
@@ -162,7 +170,8 @@ namespace UnityVolumeRendering
             {
                 const int pointSize = 10;
                 TFAlphaControlPoint alphaPoint = tf.alphaControlPoints[iAlpha];
-                Rect ctrlBox = new Rect(histRect.x + histRect.width * alphaPoint.dataValue - pointSize / 2, histRect.y + (1.0f - alphaPoint.alphaValue) * histRect.height - pointSize / 2, pointSize, pointSize);
+                float tDataValue = Abs2RelTFValue(alphaPoint.dataValue);
+                Rect ctrlBox = new Rect(histRect.x + histRect.width * tDataValue - pointSize / 2, histRect.y + (1.0f - alphaPoint.alphaValue) * histRect.height - pointSize / 2, pointSize, pointSize);
                 GUI.color = Color.red;
                 GUI.skin.box.fontSize = 6;
                 GUI.Box(ctrlBox, "*");
@@ -247,6 +256,7 @@ namespace UnityVolumeRendering
             for (int i = 0; i < tf.colourControlPoints.Count; i++)
             {
                 TFColourControlPoint ctrlPoint = tf.colourControlPoints[i];
+                ctrlPoint.dataValue = Abs2RelTFValue(ctrlPoint.dataValue);
                 float dist = Mathf.Abs(ctrlPoint.dataValue - position);
                 if (dist < maxDistance && dist < nearestDist)
                 {
@@ -269,6 +279,7 @@ namespace UnityVolumeRendering
             for (int i = 0; i < tf.alphaControlPoints.Count; i++)
             {
                 TFAlphaControlPoint ctrlPoint = tf.alphaControlPoints[i];
+                ctrlPoint.dataValue = Abs2RelTFValue(ctrlPoint.dataValue);
                 Vector2 ctrlPos = new Vector2(ctrlPoint.dataValue, ctrlPoint.alphaValue);
                 float dist = (ctrlPos - position).magnitude;
                 if (dist < maxDistance && dist < nearestDist)
@@ -278,6 +289,16 @@ namespace UnityVolumeRendering
                 }
             }
             return nearestPointIndex;
+        }
+
+        private float Abs2RelTFValue(float value)
+        {
+            return Mathf.InverseLerp(dataRangeMin, dataRangeMax, value);
+        }
+
+        private float Rel2AbsTFValue(float value)
+        {
+            return Mathf.Lerp(dataRangeMin, dataRangeMax, value);
         }
     }
 }

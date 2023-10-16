@@ -372,7 +372,13 @@ namespace UnityVolumeRendering
                 VolumeObjectFactory.SpawnCutoutSphere(objects[0]);
         }
 
-        [MenuItem("Volume Rendering/1D Transfer Function")]
+        [MenuItem("Volume Rendering/Transfer Function/Transfer function upgrader tool")]
+        private static void ShowTFUpgraderWindow()
+        {
+            TransferFunctionUpgraderWindow.ShowWindow();
+        }
+
+        [MenuItem("Volume Rendering/Transfer Function/1D Transfer Function editor")]
         private static void Show1DTFWindow()
         {
             VolumeRenderedObject volRendObj = SelectionHelper.GetSelectedVolumeObject();
@@ -387,7 +393,7 @@ namespace UnityVolumeRendering
             }
         }
 
-        [MenuItem("Volume Rendering/2D Transfer Function")]
+        [MenuItem("Volume Rendering/Transfer Function/2D Transfer Function editor")]
         private static void Show2DTFWindow()
         {
             TransferFunction2DEditorWindow.ShowWindow();
