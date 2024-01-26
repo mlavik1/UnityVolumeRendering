@@ -5,7 +5,7 @@ Have any questions? Create an issue or [contact me on Mastodon](https://fosstodo
 
 I also have [a tutorial video that shows how to use the project](https://www.youtube.com/watch?v=1pIvmhXPh0w)
 
-NEWS: This plugin has now been ported to Godot Engine, thanks to Riccardo Lops: https://github.com/riccardolops/GodotVolumetricRendering
+**NEWS: This plugin has now been ported to Godot Engine**, thanks to Riccardo Lops: https://github.com/riccardolops/GodotVolumetricRendering
 
 ![alt tag](Screenshots/front.jpg)
 
