@@ -56,7 +56,11 @@ namespace UnityVolumeRendering
             {
                 case ImageSequenceFormat.ImageSequence:
                     {
+                        #if UVR_USE_SIMPLEITK
+                        return typeof(SimpleITKImageSequenceImporter);
+                        #else
                         return typeof(ImageSequenceImporter);
+                        #endif
                     }
                 case ImageSequenceFormat.DICOM:
                     {
