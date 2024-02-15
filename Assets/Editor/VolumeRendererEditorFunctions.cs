@@ -315,6 +315,11 @@ namespace UnityVolumeRendering
 
                 IEnumerable<IImageSequenceSeries> seriesList = await importer.LoadSeriesAsync(filePaths);
 
+                if (seriesList.Count() == 0)
+                {
+                    Debug.LogWarning("Found no series to import.");
+                }
+
                 foreach (IImageSequenceSeries series in seriesList)
                 {
                     VolumeDataset dataset = await importer.ImportSeriesAsync(series);
