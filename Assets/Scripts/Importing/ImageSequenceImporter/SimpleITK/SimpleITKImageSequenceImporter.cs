@@ -125,7 +125,7 @@ namespace UnityVolumeRendering
             image = reader.Execute();
 
             // Cast to 32-bit float
-            try
+            if (image.GetDimension() <= 3)
             {
                 image = SimpleITK.Cast(image, PixelIDValueEnum.sitkFloat32);
 
@@ -140,10 +140,10 @@ namespace UnityVolumeRendering
                 IntPtr imgBuffer = image.GetBufferAsFloat();
                 Marshal.Copy(imgBuffer, pixelData, 0, numPixels);
             }
-            catch
+            else
             {
-                image = SimpleITK.Cast(image, PixelIDValueEnum.sitkLabelUInt8);
-                Debug.Log("TODO: Hacky workaround");
+                // TODO: Find a proper way of handling this
+                Debug.LogWarning("Dataset has more than 3 dimensions. Time-series are not supported. Will try to load first frame");
                 size = image.GetSize();
 
                 int numPixels = 1;
