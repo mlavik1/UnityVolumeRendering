@@ -9,6 +9,8 @@ I also have [a tutorial video that shows how to use the project](https://www.you
 
 ![alt tag](Screenshots/front.jpg)
 
+Thanks to JetBrains for providing [open source license](https://www.jetbrains.com/community/opensource/#support) for [Rider](https://www.jetbrains.com/rider/) - the best C# IDE :)
+
 **`Documentation`** |
 ------------------- |
 [See full documentation here](Documentation/Documentation.md)|
@@ -174,3 +176,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute.
 Thanks to [everyone who have contributed so far](CREDITS.md).
 
 See ACKNOWLEDGEMENTS.txt for libraries used by this project.
+
+Ricer IDE license kindly provided by JetBrains.
+
+<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" width="200px">
