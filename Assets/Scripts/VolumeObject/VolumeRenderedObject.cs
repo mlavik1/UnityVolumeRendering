@@ -305,6 +305,19 @@ namespace UnityVolumeRendering
 
         private void UpdateMatInternal()
         {
+            if (meshRenderer.sharedMaterial.GetTexture("_DataTex") == null)
+            {
+                meshRenderer.sharedMaterial.SetTexture("_DataTex", dataset.GetDataTexture());
+            }
+
+            if (meshRenderer.sharedMaterial.GetTexture("_NoiseTex") == null)
+            {
+                const int noiseDimX = 512;
+                const int noiseDimY = 512;
+                Texture2D noiseTexture = NoiseTextureGenerator.GenerateNoiseTexture(noiseDimX, noiseDimY);
+                meshRenderer.sharedMaterial.SetTexture("_NoiseTex", noiseTexture);
+            }
+
             if (tfRenderMode == TFRenderMode.TF2D)
             {
                 meshRenderer.sharedMaterial.SetTexture("_TFTex", transferFunction2D.GetTexture());
