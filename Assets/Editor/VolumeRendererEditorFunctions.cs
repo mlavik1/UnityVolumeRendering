@@ -244,6 +244,58 @@ namespace UnityVolumeRendering
             }
         }
 
+        [MenuItem("Volume Rendering/Load dataset/Load image file")]
+        private static void ShowImageFileImporter()
+        {
+            ImporImageFileDatasetAsync(true);
+        }
+
+        [MenuItem("Assets/Volume Rendering/Import dataset/Import image file")]
+        private static void ImportImageFileAsset()
+        {
+            ImporImageFileDatasetAsync(false);
+        }
+
+        private static async void ImporImageFileDatasetAsync(bool spawnInScene)
+        {
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "DataFiles", "");
+            if (File.Exists(file))
+            {
+                Debug.Log("Async dataset load. Hold on.");
+                using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView(), "Image file import"))
+                {
+                    progressHandler.ReportProgress(0.0f, "Importing image file dataset");
+
+                    IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(ImageFileFormat.Unknown);
+                    VolumeDataset dataset = await importer.ImportAsync(file);
+
+                    progressHandler.ReportProgress(0.0f, "Creating object");
+
+                    if (dataset != null)
+                    {
+                        await OptionallyDownscale(dataset);
+                        if (spawnInScene)
+                        {
+                            await VolumeObjectFactory.CreateObjectAsync(dataset);
+                        }
+                        else
+                        {
+                            ProjectWindowUtil.CreateAsset(dataset, $"{dataset.datasetName}.asset");
+                            AssetDatabase.SaveAssets();
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogError("Failed to import datset");
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogError("File doesn't exist: " + file);
+            }
+        }
+
         [MenuItem("Volume Rendering/Load dataset/Load PARCHG dataset")]
         private static void ShowParDatasetImporter()
         {

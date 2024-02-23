@@ -124,40 +124,24 @@ namespace UnityVolumeRendering
 
             image = reader.Execute();
 
+            if (image.GetDimension() > 3)
+            {
+                Debug.LogWarning("Dataset has more than 3 dimensions. Time-series are not supported. If this fails, please try import one of the files as an image file");
+            }
+
             // Cast to 32-bit float
-            if (image.GetDimension() <= 3)
-            {
-                image = SimpleITK.Cast(image, PixelIDValueEnum.sitkFloat32);
+            image = SimpleITK.Cast(image, PixelIDValueEnum.sitkFloat32);
 
-                size = image.GetSize();
+            size = image.GetSize();
 
-                int numPixels = 1;
-                for (int dim = 0; dim < image.GetDimension(); dim++)
-                    numPixels *= (int)size[dim];
+            int numPixels = 1;
+            for (int dim = 0; dim < image.GetDimension(); dim++)
+                numPixels *= (int)size[dim];
 
-                // Read pixel data
-                pixelData = new float[numPixels];
-                IntPtr imgBuffer = image.GetBufferAsFloat();
-                Marshal.Copy(imgBuffer, pixelData, 0, numPixels);
-            }
-            else
-            {
-                // TODO: Find a proper way of handling this
-                Debug.LogWarning("Dataset has more than 3 dimensions. Time-series are not supported. Will try to load first frame");
-                size = image.GetSize();
-
-                int numPixels = 1;
-                for (int dim = 0; dim < image.GetDimension() && dim < 3; dim++)
-                    numPixels *= (int)size[dim];
-
-                // Read pixel data
-                pixelData = new float[numPixels];
-                IntPtr imgBuffer = image.GetBufferAsUInt8();
-                byte[] pixelDataInt8 = new byte[numPixels];
-                Marshal.Copy(imgBuffer, pixelDataInt8, 0, numPixels);
-                for (int i = 0; i < pixelDataInt8.Length; i++)
-                    pixelData[i] = ((ushort)pixelDataInt8[i]) / 255.0f;
-            }
+            // Read pixel data
+            pixelData = new float[numPixels];
+            IntPtr imgBuffer = image.GetBufferAsFloat();
+            Marshal.Copy(imgBuffer, pixelData, 0, numPixels);
 
             for (int i = 0; i < pixelData.Length; i++)
                 pixelData[i] = Mathf.Clamp(pixelData[i], -1024, 3071);
