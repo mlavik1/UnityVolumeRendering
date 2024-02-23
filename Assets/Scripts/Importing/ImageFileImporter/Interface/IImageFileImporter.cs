@@ -7,7 +7,8 @@ namespace UnityVolumeRendering
     {
         VASP,
         NRRD,
-        NIFTI
+        NIFTI,
+        Unknown
     }
 
     /// <summary>
