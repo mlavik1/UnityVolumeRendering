@@ -116,7 +116,7 @@ namespace UnityVolumeRendering
                     TransferFunction tf = TransferFunctionDatabase.LoadTransferFunction(result.path);
                     if (tf != null)
                     {
-                        targetObject.transferFunction = tf;
+                        targetObject.SetTransferFunction(tf);
                         targetObject.SetTransferFunctionMode(TFRenderMode.TF1D);
                     }
                 }

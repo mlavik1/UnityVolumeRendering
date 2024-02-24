@@ -12,8 +12,9 @@ namespace UnityVolumeRendering
             public int version;
             public List<TFColourControlPoint> colourPoints;
             public List<TFAlphaControlPoint> alphaPoints;
+            public bool relativeScale;
 
-            public const int VERSION_ID = 1;
+            public const int VERSION_ID = 2;
         }
 
         [System.Serializable]
@@ -39,7 +40,6 @@ namespace UnityVolumeRendering
             tf.AddControlPoint(new TFAlphaControlPoint(0.4f, 0.546f));
             tf.AddControlPoint(new TFAlphaControlPoint(0.547f, 0.5266f));
 
-            tf.GenerateTexture();
             return tf;
         }
 
@@ -59,12 +59,10 @@ namespace UnityVolumeRendering
             }
             string jsonstring = File.ReadAllText(filepath);
             TF1DSerialisationData data = JsonUtility.FromJson<TF1DSerialisationData>(jsonstring);
-            Debug.Log(jsonstring);
-            Debug.Log(data.colourPoints.ToString());
-            Debug.Log(data.alphaPoints.ToString());
             TransferFunction tf = ScriptableObject.CreateInstance<TransferFunction>();
             tf.colourControlPoints = data.colourPoints;
             tf.alphaControlPoints = data.alphaPoints;
+            tf.relativeScale = data.version < 2 ? true : data.relativeScale;
             return tf;
         }
 
@@ -88,6 +86,7 @@ namespace UnityVolumeRendering
             data.version = TF1DSerialisationData.VERSION_ID;
             data.colourPoints = new List<TFColourControlPoint>(tf.colourControlPoints);
             data.alphaPoints =　new List<TFAlphaControlPoint>(tf.alphaControlPoints);
+            data.relativeScale = tf.relativeScale;
             string jsonstring = JsonUtility.ToJson(data);
             File.WriteAllText(filepath, jsonstring);
         }

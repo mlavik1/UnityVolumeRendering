@@ -49,24 +49,12 @@ namespace UnityVolumeRendering
             volObj.meshRenderer = meshRenderer;
             volObj.dataset = dataset;
 
-            const int noiseDimX = 512;
-            const int noiseDimY = 512;
-            Texture2D noiseTexture = NoiseTextureGenerator.GenerateNoiseTexture(noiseDimX, noiseDimY);
-
             TransferFunction tf = TransferFunctionDatabase.CreateTransferFunction();
-            Texture2D tfTexture = tf.GetTexture();
-            volObj.transferFunction = tf;
-
             TransferFunction2D tf2D = TransferFunctionDatabase.CreateTransferFunction2D();
+
+            volObj.Initialise(dataset, tf);
+
             volObj.transferFunction2D = tf2D;
-
-            meshRenderer.sharedMaterial.SetTexture("_GradientTex", null);
-            meshRenderer.sharedMaterial.SetTexture("_NoiseTex", noiseTexture);
-            meshRenderer.sharedMaterial.SetTexture("_TFTex", tfTexture);
-
-            meshRenderer.sharedMaterial.EnableKeyword("MODE_DVR");
-            meshRenderer.sharedMaterial.DisableKeyword("MODE_MIP");
-            meshRenderer.sharedMaterial.DisableKeyword("MODE_SURF");
 
             meshContainer.transform.localScale = dataset.scale;
             meshContainer.transform.localRotation = dataset.rotation;

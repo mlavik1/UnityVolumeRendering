@@ -8,7 +8,7 @@ namespace UnityVolumeRendering
     public class VolumeRenderedObject : MonoBehaviour
     {
         [SerializeField, HideInInspector]
-        public TransferFunction transferFunction;
+        public TransferFunctionInstance transferFunctionInstance;
 
         [SerializeField, HideInInspector]
         public TransferFunction2D transferFunction2D;
@@ -58,6 +58,28 @@ namespace UnityVolumeRendering
 
         private SemaphoreSlim updateMatLock = new SemaphoreSlim(1, 1);
 
+        public void Initialise(VolumeDataset dataset, TransferFunction tf)
+        {
+            this.dataset = dataset;
+            this.transferFunctionInstance = ScriptableObject.CreateInstance<TransferFunctionInstance>();
+            this.transferFunctionInstance.transferFunction = tf;
+            this.transferFunctionInstance.dataset = dataset;
+
+            Texture2D tfTexture = transferFunctionInstance.GetTexture();
+
+            const int noiseDimX = 512;
+            const int noiseDimY = 512;
+            Texture2D noiseTexture = NoiseTextureGenerator.GenerateNoiseTexture(noiseDimX, noiseDimY);
+
+            meshRenderer.sharedMaterial.SetTexture("_GradientTex", null);
+            meshRenderer.sharedMaterial.SetTexture("_NoiseTex", noiseTexture);
+            meshRenderer.sharedMaterial.SetTexture("_TFTex", tfTexture);
+
+            meshRenderer.sharedMaterial.EnableKeyword("MODE_DVR");
+            meshRenderer.sharedMaterial.DisableKeyword("MODE_MIP");
+            meshRenderer.sharedMaterial.DisableKeyword("MODE_SURF");
+        }
+
         public SlicingPlane CreateSlicingPlane()
         {
             GameObject sliceRenderingPlane = GameObject.Instantiate(Resources.Load<GameObject>("SlicingPlane"));
@@ -69,7 +91,7 @@ namespace UnityVolumeRendering
             sliceMeshRend.material = new Material(sliceMeshRend.sharedMaterial);
             Material sliceMat = sliceRenderingPlane.GetComponent<MeshRenderer>().sharedMaterial;
             sliceMat.SetTexture("_DataTex", dataset.GetDataTexture());
-            sliceMat.SetTexture("_TFTex", transferFunction.GetTexture());
+            sliceMat.SetTexture("_TFTex", transferFunctionInstance.GetTexture());
             sliceMat.SetMatrix("_parentInverseMat", transform.worldToLocalMatrix);
             sliceMat.SetMatrix("_planeMat", Matrix4x4.TRS(sliceRenderingPlane.transform.position, sliceRenderingPlane.transform.rotation, transform.lossyScale)); // TODO: allow changing scale
 
@@ -105,8 +127,8 @@ namespace UnityVolumeRendering
 
             progressHandler.StartStage(0.3f, "Generating transfer function texture");
             tfRenderMode = mode;
-            if (tfRenderMode == TFRenderMode.TF1D && transferFunction != null)
-                transferFunction.GenerateTexture();
+            if (tfRenderMode == TFRenderMode.TF1D && transferFunctionInstance != null)
+                transferFunctionInstance.GenerateTexture();
             else if (transferFunction2D != null)
                 transferFunction2D.GenerateTexture();
             progressHandler.EndStage();
@@ -261,7 +283,9 @@ namespace UnityVolumeRendering
 
         public void SetTransferFunction(TransferFunction tf)
         {
-            this.transferFunction = tf;
+            this.transferFunctionInstance.transferFunction = tf;
+            this.transferFunctionInstance.EnsureAbsoluteScale();
+            this.transferFunctionInstance.GenerateTexture();
             UpdateMaterialProperties();
         }
 
@@ -272,12 +296,12 @@ namespace UnityVolumeRendering
                 meshRenderer.sharedMaterial = new Material(Shader.Find("VolumeRendering/DirectVolumeRenderingShader"));
                 meshRenderer.sharedMaterial.SetTexture("_DataTex", dataset.GetDataTexture());
             }
-            if (transferFunction == null)
+            if (transferFunctionInstance == null)
             {
-                transferFunction = TransferFunctionDatabase.CreateTransferFunction();
+                transferFunctionInstance = ScriptableObject.CreateInstance<TransferFunctionInstance>();
             }
 
-            this.transferFunction = tf;
+            this.transferFunctionInstance.transferFunction = tf;
             await UpdateMaterialPropertiesAsync(progressHandler);
         }
 
@@ -325,7 +349,7 @@ namespace UnityVolumeRendering
             }
             else
             {
-                meshRenderer.sharedMaterial.SetTexture("_TFTex", transferFunction.GetTexture());
+                meshRenderer.sharedMaterial.SetTexture("_TFTex", transferFunctionInstance.GetTexture());
                 meshRenderer.sharedMaterial.DisableKeyword("TF2D_ON");
             }
 

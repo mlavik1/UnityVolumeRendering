@@ -5,7 +5,7 @@ namespace UnityVolumeRendering
 {
     public class TransferFunctionEditorWindow : EditorWindow
     {
-        private TransferFunction tf = null;
+        private TransferFunctionInstance tfInstance = null;
 
         private VolumeRenderedObject volRendObject = null;
 
@@ -49,7 +49,8 @@ namespace UnityVolumeRendering
             if (volRendObject == null)
                 return;
                 
-            tf = volRendObject.transferFunction;
+            tfInstance = volRendObject.transferFunctionInstance;
+            TransferFunction tf = tfInstance.transferFunction;
 
             Event currentEvent = new Event(Event.current);
 
@@ -62,7 +63,7 @@ namespace UnityVolumeRendering
             Rect outerRect = new Rect(0.0f, 0.0f, contentWidth, contentHeight);
             Rect tfEditorRect = new Rect(outerRect.x + 20.0f, outerRect.y + 20.0f, outerRect.width - 40.0f, outerRect.height - 50.0f);
 
-            tfEditor.SetVolumeObject(volRendObject);
+            tfEditor.SetTransferFunctionInstnace(tfInstance);
             tfEditor.DrawOnGUI(tfEditorRect);
 
             // Save TF
@@ -76,7 +77,7 @@ namespace UnityVolumeRendering
             // Load TF
             if(GUI.Button(new Rect(tfEditorRect.x + 75.0f, tfEditorRect.y + tfEditorRect.height + 20.0f, 70.0f, 30.0f), "Load"))
             {
-                string filepath = EditorUtility.OpenFilePanel("Save transfer function", "", "tf");
+                string filepath = EditorUtility.OpenFilePanel("Load transfer function", "", "tf");
                 if(filepath != "")
                 {
                     TransferFunction newTF = TransferFunctionDatabase.LoadTransferFunction(filepath);
@@ -92,6 +93,7 @@ namespace UnityVolumeRendering
             if(GUI.Button(new Rect(tfEditorRect.x + 150.0f, tfEditorRect.y + tfEditorRect.height + 20.0f, 70.0f, 30.0f), "Clear"))
             {
                 tf = ScriptableObject.CreateInstance<TransferFunction>();
+                tf.relativeScale = true;
                 tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.2f, 0.0f));
                 tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.8f, 1.0f));
                 tf.colourControlPoints.Add(new TFColourControlPoint(0.5f, new Color(0.469f, 0.354f, 0.223f, 1.0f)));
