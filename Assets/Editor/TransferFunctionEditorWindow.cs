@@ -65,6 +65,21 @@ namespace UnityVolumeRendering
             tfEditor.SetVolumeObject(volRendObject);
             tfEditor.DrawOnGUI(tfEditorRect);
 
+            float horZoomMin = tfEditor.zoomRect.x;
+            float horZoomMax = tfEditor.zoomRect.x + tfEditor.zoomRect.width;
+            EditorGUI.MinMaxSlider(new Rect(tfEditorRect.x, tfEditorRect.y + tfEditorRect.height, tfEditorRect.width, 20.0f), ref horZoomMin, ref horZoomMax, 0.0f, 1.0f);
+            tfEditor.zoomRect.x = horZoomMin;
+            tfEditor.zoomRect.width = horZoomMax - horZoomMin;
+
+            GUIUtility.RotateAroundPivot(90.0f, Vector2.zero);
+            GUI.matrix = Matrix4x4.Translate(new Vector3(tfEditorRect.x + tfEditorRect.width + 20.0f, tfEditorRect.y, 0.0f)) * GUI.matrix;
+            float vertZoomMin = tfEditor.zoomRect.y;
+            float vertZoomMax = tfEditor.zoomRect.y + tfEditor.zoomRect.height;
+            EditorGUI.MinMaxSlider(new Rect(0.0f, 0.0f, tfEditorRect.height, 20.0f), ref vertZoomMin, ref vertZoomMax, 0.0f, 1.0f);
+            tfEditor.zoomRect.y = vertZoomMin;
+            tfEditor.zoomRect.height = vertZoomMax - vertZoomMin;
+            GUI.matrix = Matrix4x4.identity;
+
             // Save TF
             if(GUI.Button(new Rect(tfEditorRect.x, tfEditorRect.y + tfEditorRect.height + 20.0f, 70.0f, 30.0f), "Save"))
             {
