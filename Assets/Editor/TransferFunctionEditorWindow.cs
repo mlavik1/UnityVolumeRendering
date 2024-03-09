@@ -114,6 +114,13 @@ namespace UnityVolumeRendering
             GUI.skin.label.wordWrap = false;    
             GUI.Label(new Rect(tfEditorRect.x, tfEditorRect.y + tfEditorRect.height + 55.0f, 720.0f, 50.0f), "Left click to select and move a control point.\nRight click to add a control point, and ctrl + right click to delete.");
 
+            float tDataPos = (currentEvent.mousePosition.x - tfEditorRect.x) / tfEditorRect.width;
+            if (tDataPos >= 0.0f && tDataPos <= 1.0f)
+            {
+                float dataValue = Mathf.Lerp(volRendObject.dataset.GetMinDataValue(), volRendObject.dataset.GetMaxDataValue(), tDataPos);
+                GUI.Label(new Rect(tfEditorRect.x, tfEditorRect.y + tfEditorRect.height + 100.0f, 150.0f, 50.0f), $"Data value: {dataValue}");
+            }
+
             GUI.color = oldColour;
         }
 
