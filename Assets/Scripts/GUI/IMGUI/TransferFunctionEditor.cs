@@ -157,6 +157,8 @@ namespace UnityVolumeRendering
             {
                 TFColourControlPoint colPoint = tf.colourControlPoints[iCol];
                 Vector2 colourPointPos = ApplyZoomInverse(new Vector2(colPoint.dataValue, 0.0f));
+                if (colourPointPos.x < 0.0f || colourPointPos.x > 1.0f)
+                    continue;
                 Rect ctrlBox = new Rect(histRect.x + histRect.width * colourPointPos.x, histRect.y + histRect.height + 20, COLOUR_POINT_WIDTH, COLOUR_PALETTE_HEIGHT);
                 GUI.color = Color.red;
                 GUI.skin.box.fontSize = 6;
@@ -169,6 +171,8 @@ namespace UnityVolumeRendering
                 const int pointSize = 10;
                 TFAlphaControlPoint alphaPoint = tf.alphaControlPoints[iAlpha];
                 Vector2 alphaPointPos = ApplyZoomInverse(new Vector2(alphaPoint.dataValue, alphaPoint.alphaValue));
+                if (alphaPointPos.x < 0.0f || alphaPointPos.x > 1.0f)
+                    continue;
                 Rect ctrlBox = new Rect(histRect.x + histRect.width * alphaPointPos.x - pointSize / 2, histRect.y + (1.0f - alphaPointPos.y) * histRect.height - pointSize / 2, pointSize, pointSize);
                 GUI.color = Color.red;
                 GUI.skin.box.fontSize = 6;
@@ -298,9 +302,14 @@ namespace UnityVolumeRendering
         
         private Vector2 ApplyZoomInverse(Vector2 position)
         {
-            position.x = Mathf.InverseLerp(zoomRect.x, zoomRect.x + zoomRect.width, position.x);
-            position.y = Mathf.InverseLerp(zoomRect.y, zoomRect.y + zoomRect.height, position.y);
+            position.x = InverseLerpUnclamped(zoomRect.x, zoomRect.x + zoomRect.width, position.x);
+            position.y = InverseLerpUnclamped(zoomRect.y, zoomRect.y + zoomRect.height, position.y);
             return position;
+        }
+
+        private float InverseLerpUnclamped(float start, float end, float value)
+        {
+            return (value - start) / (end - start);
         }
     }
 }
