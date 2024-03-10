@@ -254,7 +254,7 @@ namespace UnityVolumeRendering
             for (int i = 0; i < tf.colourControlPoints.Count; i++)
             {
                 TFColourControlPoint ctrlPoint = tf.colourControlPoints[i];
-                float dist = Mathf.Abs(ctrlPoint.dataValue - position);
+                float dist = Mathf.Abs(ctrlPoint.dataValue - position) / zoomRect.width;
                 if (dist < maxDistance && dist < nearestDist)
                 {
                     nearestPointIndex = i;
@@ -270,6 +270,7 @@ namespace UnityVolumeRendering
         /// <param name="maxDistance">Threshold for maximum distance. Points further away than this won't get picked.</param>
         private int PickAlphaControlPoint(Vector2 position, float maxDistance = 0.05f)
         {
+            Vector2 distMultiplier = new Vector2(1.0f / zoomRect.width, 1.0f / zoomRect.height);
             TransferFunction tf = volRendObject.transferFunction;
             int nearestPointIndex = -1;
             float nearestDist = 1000.0f;
@@ -277,7 +278,8 @@ namespace UnityVolumeRendering
             {
                 TFAlphaControlPoint ctrlPoint = tf.alphaControlPoints[i];
                 Vector2 ctrlPos = new Vector2(ctrlPoint.dataValue, ctrlPoint.alphaValue);
-                float dist = (ctrlPos - position).magnitude;
+                Vector2 distVec = Vector2.Distance(ctrlPos, position) * distMultiplier;
+                float dist = distVec.magnitude;
                 if (dist < maxDistance && dist < nearestDist)
                 {
                     nearestPointIndex = i;

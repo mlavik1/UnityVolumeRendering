@@ -71,8 +71,8 @@ namespace UnityVolumeRendering
             tfEditor.zoomRect.x = horZoomMin;
             tfEditor.zoomRect.width = horZoomMax - horZoomMin;
 
-            GUIUtility.RotateAroundPivot(90.0f, Vector2.zero);
-            GUI.matrix = Matrix4x4.Translate(new Vector3(tfEditorRect.x + tfEditorRect.width + 20.0f, tfEditorRect.y, 0.0f)) * GUI.matrix;
+            GUIUtility.RotateAroundPivot(270.0f, Vector2.zero);
+            GUI.matrix = Matrix4x4.Translate(new Vector3(tfEditorRect.x + tfEditorRect.width, tfEditorRect.y + tfEditorRect.height, 0.0f)) * GUI.matrix;
             float vertZoomMin = tfEditor.zoomRect.y;
             float vertZoomMax = tfEditor.zoomRect.y + tfEditor.zoomRect.height;
             EditorGUI.MinMaxSlider(new Rect(0.0f, 0.0f, tfEditorRect.height, 20.0f), ref vertZoomMin, ref vertZoomMax, 0.0f, 1.0f);
