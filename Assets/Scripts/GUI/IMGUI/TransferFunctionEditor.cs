@@ -278,7 +278,7 @@ namespace UnityVolumeRendering
             {
                 TFAlphaControlPoint ctrlPoint = tf.alphaControlPoints[i];
                 Vector2 ctrlPos = new Vector2(ctrlPoint.dataValue, ctrlPoint.alphaValue);
-                Vector2 distVec = Vector2.Distance(ctrlPos, position) * distMultiplier;
+                Vector2 distVec = (ctrlPos - position) * distMultiplier;
                 float dist = distVec.magnitude;
                 if (dist < maxDistance && dist < nearestDist)
                 {
