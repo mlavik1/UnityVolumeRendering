@@ -81,6 +81,8 @@ namespace UnityVolumeRendering
             // Draw colour palette
             Texture2D tfTexture = tf.GetTexture();
             tfPaletteGUIMat.SetTexture("_TFTex", tf.GetTexture());
+            tfGUIMat.SetTextureOffset("_TFTex", zoomRect.position);
+            tfGUIMat.SetTextureScale("_TFTex", zoomRect.size);
             Graphics.DrawTexture(new Rect(paletteRect.x, paletteRect.y, paletteRect.width, paletteRect.height), tfTexture, tfPaletteGUIMat);
 
             // Release selected colour/alpha points if mouse leaves window
@@ -148,7 +150,7 @@ namespace UnityVolumeRendering
             if (movingColPointIndex != -1)
             {
                 TFColourControlPoint colPoint = tf.colourControlPoints[movingColPointIndex];
-                colPoint.dataValue = Mathf.Clamp((currentEvent.mousePosition.x - paletteRect.x -  COLOUR_POINT_WIDTH / 2.0f) / paletteRect.width, 0.0f, 1.0f);
+                colPoint.dataValue = Mathf.Clamp(mousePos.x - (COLOUR_POINT_WIDTH / 2.0f) / paletteRect.width * zoomRect.width, 0.0f, 1.0f);
                 tf.colourControlPoints[movingColPointIndex] = colPoint;
             }
 
@@ -171,7 +173,7 @@ namespace UnityVolumeRendering
                 const int pointSize = 10;
                 TFAlphaControlPoint alphaPoint = tf.alphaControlPoints[iAlpha];
                 Vector2 alphaPointPos = ApplyZoomInverse(new Vector2(alphaPoint.dataValue, alphaPoint.alphaValue));
-                if (alphaPointPos.x < 0.0f || alphaPointPos.x > 1.0f)
+                if (alphaPointPos.x < 0.0f || alphaPointPos.x > 1.0f || alphaPointPos.y < 0.0f || alphaPointPos.y > 1.0f)
                     continue;
                 Rect ctrlBox = new Rect(histRect.x + histRect.width * alphaPointPos.x - pointSize / 2, histRect.y + (1.0f - alphaPointPos.y) * histRect.height - pointSize / 2, pointSize, pointSize);
                 GUI.color = Color.red;
