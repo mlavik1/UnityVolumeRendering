@@ -19,6 +19,7 @@ namespace UnityVolumeRendering
         private const float COLOUR_PALETTE_HEIGHT = 20.0f;
         private const float COLOUR_POINT_WIDTH = 10.0f;
 
+        // Rectangle to zoom into on the TF (all coordinates are between 0 and 1)
         public Rect zoomRect = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
 
         public void Initialise()
@@ -81,8 +82,8 @@ namespace UnityVolumeRendering
             // Draw colour palette
             Texture2D tfTexture = tf.GetTexture();
             tfPaletteGUIMat.SetTexture("_TFTex", tf.GetTexture());
-            tfGUIMat.SetTextureOffset("_TFTex", zoomRect.position);
-            tfGUIMat.SetTextureScale("_TFTex", zoomRect.size);
+            tfPaletteGUIMat.SetTextureOffset("_TFTex", zoomRect.position);
+            tfPaletteGUIMat.SetTextureScale("_TFTex", zoomRect.size);
             Graphics.DrawTexture(new Rect(paletteRect.x, paletteRect.y, paletteRect.width, paletteRect.height), tfTexture, tfPaletteGUIMat);
 
             // Release selected colour/alpha points if mouse leaves window
@@ -92,6 +93,13 @@ namespace UnityVolumeRendering
                 movingColPointIndex = -1;
             if (currentEvent.type == EventType.MouseLeaveWindow)
                 movingColPointIndex = -1;
+
+            // Mouse scroll => handle zoom
+            if (currentEvent.type == EventType.ScrollWheel && histRect.Contains(currentEvent.mousePosition))
+            {
+                float zoomDelta = Mathf.Sign(currentEvent.delta.y) * 0.1f;
+                HandleZoom(zoomDelta, mousePos);
+            }
 
             // Mouse down => Move or remove selected colour control point
             if (currentEvent.type == EventType.MouseDown && paletteInteractionRect.Contains(currentEvent.mousePosition))
@@ -246,6 +254,28 @@ namespace UnityVolumeRendering
                 volRendObject.transferFunction.colourControlPoints.RemoveAt(selectedColPointIndex);
                 selectedColPointIndex = -1;
             }
+        }
+
+        // Zoom in/out on TF, centred at a target position
+        private void HandleZoom(float zoomDelta, Vector2 zoomTarget)
+        {
+            if (zoomDelta == 0.0f)
+                return;
+
+            // Change zoom rect size
+            zoomRect.width = Mathf.Clamp(zoomRect.width + zoomDelta, 0.01f, 1.0f);
+            zoomRect.height = Mathf.Clamp(zoomRect.height + zoomDelta, 0.01f, 1.0f);
+
+            // Offset rect towards zoom target
+            Vector2 zoomTargetDir = zoomTarget - zoomRect.center;
+            Vector2 zoomOffset = new Vector2(
+                Mathf.Clamp(zoomTargetDir.x, -Mathf.Abs(zoomDelta), Mathf.Abs(zoomDelta)),
+                Mathf.Clamp(zoomTargetDir.y, -Mathf.Abs(zoomDelta), Mathf.Abs(zoomDelta))
+            );
+            zoomRect.position = new Vector2(
+                Mathf.Clamp(zoomRect.position.x + zoomOffset.x, 0.0f, 1.0f - zoomRect.width),
+                Mathf.Clamp(zoomRect.position.y + zoomOffset.y, 0.0f, 1.0f - zoomRect.height)
+            );
         }
 
         /// <summary>

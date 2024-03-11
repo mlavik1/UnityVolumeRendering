@@ -65,12 +65,14 @@ namespace UnityVolumeRendering
             tfEditor.SetVolumeObject(volRendObject);
             tfEditor.DrawOnGUI(tfEditorRect);
 
+            // Draw horizontal zoom slider
             float horZoomMin = tfEditor.zoomRect.x;
             float horZoomMax = tfEditor.zoomRect.x + tfEditor.zoomRect.width;
             EditorGUI.MinMaxSlider(new Rect(tfEditorRect.x, tfEditorRect.y + tfEditorRect.height, tfEditorRect.width, 20.0f), ref horZoomMin, ref horZoomMax, 0.0f, 1.0f);
             tfEditor.zoomRect.x = horZoomMin;
             tfEditor.zoomRect.width = horZoomMax - horZoomMin;
 
+            // Draw vertical zoom slider
             GUIUtility.RotateAroundPivot(270.0f, Vector2.zero);
             GUI.matrix = Matrix4x4.Translate(new Vector3(tfEditorRect.x + tfEditorRect.width, tfEditorRect.y + tfEditorRect.height, 0.0f)) * GUI.matrix;
             float vertZoomMin = tfEditor.zoomRect.y;
