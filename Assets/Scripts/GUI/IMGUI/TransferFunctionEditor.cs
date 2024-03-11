@@ -19,6 +19,9 @@ namespace UnityVolumeRendering
         private const float COLOUR_PALETTE_HEIGHT = 20.0f;
         private const float COLOUR_POINT_WIDTH = 10.0f;
 
+        // Rectangle to zoom into on the TF (all coordinates are between 0 and 1)
+        public Rect zoomRect = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
+
         public void Initialise()
         {
             tfGUIMat = Resources.Load<Material>("TransferFunctionGUIMat");
@@ -54,6 +57,9 @@ namespace UnityVolumeRendering
             Rect paletteRect = new Rect(histRect.x, histRect.y + histRect.height + 20, histRect.width, COLOUR_PALETTE_HEIGHT);
             Rect paletteInteractionRect = new Rect(paletteRect.x - 10.0f, paletteRect.y, paletteRect.width + 30.0f, paletteRect.height);
 
+            Vector2 mousePos = new Vector2((currentEvent.mousePosition.x - histRect.x) / histRect.width, 1.0f - (currentEvent.mousePosition.y - histRect.y) / histRect.height);
+            mousePos = ApplyZoom(mousePos);
+
             // TODO: Don't do this every frame
             tf.GenerateTexture();
 
@@ -69,11 +75,15 @@ namespace UnityVolumeRendering
             // Draw histogram
             tfGUIMat.SetTexture("_TFTex", tf.GetTexture());
             tfGUIMat.SetTexture("_HistTex", histTex);
+            tfGUIMat.SetTextureOffset("_TFTex", zoomRect.position);
+            tfGUIMat.SetTextureScale("_TFTex", zoomRect.size);
             Graphics.DrawTexture(histRect, tf.GetTexture(), tfGUIMat);
 
             // Draw colour palette
             Texture2D tfTexture = tf.GetTexture();
             tfPaletteGUIMat.SetTexture("_TFTex", tf.GetTexture());
+            tfPaletteGUIMat.SetTextureOffset("_TFTex", zoomRect.position);
+            tfPaletteGUIMat.SetTextureScale("_TFTex", zoomRect.size);
             Graphics.DrawTexture(new Rect(paletteRect.x, paletteRect.y, paletteRect.width, paletteRect.height), tfTexture, tfPaletteGUIMat);
 
             // Release selected colour/alpha points if mouse leaves window
@@ -84,11 +94,17 @@ namespace UnityVolumeRendering
             if (currentEvent.type == EventType.MouseLeaveWindow)
                 movingColPointIndex = -1;
 
+            // Mouse scroll => handle zoom
+            if (currentEvent.type == EventType.ScrollWheel && histRect.Contains(currentEvent.mousePosition))
+            {
+                float zoomDelta = Mathf.Sign(currentEvent.delta.y) * 0.1f;
+                HandleZoom(zoomDelta, mousePos);
+            }
+
             // Mouse down => Move or remove selected colour control point
             if (currentEvent.type == EventType.MouseDown && paletteInteractionRect.Contains(currentEvent.mousePosition))
             {
-                float mousePos = (currentEvent.mousePosition.x - paletteRect.x) / paletteRect.width;
-                int pointIndex = PickColourControlPoint(mousePos);
+                int pointIndex = PickColourControlPoint(mousePos.x);
                 if (pointIndex != -1)
                 {
                     // Add control point
@@ -111,7 +127,6 @@ namespace UnityVolumeRendering
             // Mouse down => Move or remove selected alpha control point
             if (currentEvent.type == EventType.MouseDown)
             {
-                Vector2 mousePos = new Vector2((currentEvent.mousePosition.x - histRect.x) / histRect.width, 1.0f - (currentEvent.mousePosition.y - histRect.y) / histRect.height);
                 int pointIndex = PickAlphaControlPoint(mousePos);
                 if (pointIndex != -1)
                 {
@@ -134,8 +149,8 @@ namespace UnityVolumeRendering
             if (movingAlphaPointIndex != -1)
             {
                 TFAlphaControlPoint alphaPoint = tf.alphaControlPoints[movingAlphaPointIndex];
-                alphaPoint.dataValue = Mathf.Clamp((currentEvent.mousePosition.x - histRect.x) / histRect.width, 0.0f, 1.0f);
-                alphaPoint.alphaValue = Mathf.Clamp(1.0f - (currentEvent.mousePosition.y - histRect.y) / histRect.height, 0.0f, 1.0f);
+                alphaPoint.dataValue = Mathf.Clamp(mousePos.x, 0.0f, 1.0f);
+                alphaPoint.alphaValue = Mathf.Clamp(mousePos.y, 0.0f, 1.0f);
                 tf.alphaControlPoints[movingAlphaPointIndex] = alphaPoint;
             }
 
@@ -143,7 +158,7 @@ namespace UnityVolumeRendering
             if (movingColPointIndex != -1)
             {
                 TFColourControlPoint colPoint = tf.colourControlPoints[movingColPointIndex];
-                colPoint.dataValue = Mathf.Clamp((currentEvent.mousePosition.x - paletteRect.x -  COLOUR_POINT_WIDTH / 2.0f) / paletteRect.width, 0.0f, 1.0f);
+                colPoint.dataValue = Mathf.Clamp(mousePos.x - (COLOUR_POINT_WIDTH / 2.0f) / paletteRect.width * zoomRect.width, 0.0f, 1.0f);
                 tf.colourControlPoints[movingColPointIndex] = colPoint;
             }
 
@@ -151,7 +166,10 @@ namespace UnityVolumeRendering
             for (int iCol = 0; iCol < tf.colourControlPoints.Count; iCol++)
             {
                 TFColourControlPoint colPoint = tf.colourControlPoints[iCol];
-                Rect ctrlBox = new Rect(histRect.x + histRect.width * colPoint.dataValue, histRect.y + histRect.height + 20, COLOUR_POINT_WIDTH, COLOUR_PALETTE_HEIGHT);
+                Vector2 colourPointPos = ApplyZoomInverse(new Vector2(colPoint.dataValue, 0.0f));
+                if (colourPointPos.x < 0.0f || colourPointPos.x > 1.0f)
+                    continue;
+                Rect ctrlBox = new Rect(histRect.x + histRect.width * colourPointPos.x, histRect.y + histRect.height + 20, COLOUR_POINT_WIDTH, COLOUR_PALETTE_HEIGHT);
                 GUI.color = Color.red;
                 GUI.skin.box.fontSize = 6;
                 GUI.Box(ctrlBox, "*");
@@ -162,7 +180,10 @@ namespace UnityVolumeRendering
             {
                 const int pointSize = 10;
                 TFAlphaControlPoint alphaPoint = tf.alphaControlPoints[iAlpha];
-                Rect ctrlBox = new Rect(histRect.x + histRect.width * alphaPoint.dataValue - pointSize / 2, histRect.y + (1.0f - alphaPoint.alphaValue) * histRect.height - pointSize / 2, pointSize, pointSize);
+                Vector2 alphaPointPos = ApplyZoomInverse(new Vector2(alphaPoint.dataValue, alphaPoint.alphaValue));
+                if (alphaPointPos.x < 0.0f || alphaPointPos.x > 1.0f || alphaPointPos.y < 0.0f || alphaPointPos.y > 1.0f)
+                    continue;
+                Rect ctrlBox = new Rect(histRect.x + histRect.width * alphaPointPos.x - pointSize / 2, histRect.y + (1.0f - alphaPointPos.y) * histRect.height - pointSize / 2, pointSize, pointSize);
                 GUI.color = Color.red;
                 GUI.skin.box.fontSize = 6;
                 GUI.Box(ctrlBox, "*");
@@ -184,13 +205,13 @@ namespace UnityVolumeRendering
             {
                 if (histRect.Contains(new Vector2(currentEvent.mousePosition.x, currentEvent.mousePosition.y)))
                 {
-                    tf.alphaControlPoints.Add(new TFAlphaControlPoint(Mathf.Clamp((currentEvent.mousePosition.x - histRect.x) / histRect.width, 0.0f, 1.0f), Mathf.Clamp(1.0f - (currentEvent.mousePosition.y - histRect.y) / histRect.height, 0.0f, 1.0f)));
+                    tf.alphaControlPoints.Add(new TFAlphaControlPoint(Mathf.Clamp(mousePos.x, 0.0f, 1.0f), Mathf.Clamp(mousePos.y, 0.0f, 1.0f)));
                 }
                 else
                 {
                     float hue = Random.Range(0.0f, 1.0f);
                     Color newColour = Color.HSVToRGB(hue, 1.0f, 1.0f);
-                    tf.colourControlPoints.Add(new TFColourControlPoint(Mathf.Clamp((currentEvent.mousePosition.x - histRect.x) / histRect.width, 0.0f, 1.0f), newColour));
+                    tf.colourControlPoints.Add(new TFColourControlPoint(Mathf.Clamp(mousePos.x, 0.0f, 1.0f), newColour));
                 }
                 selectedColPointIndex = -1;
                 
@@ -235,6 +256,33 @@ namespace UnityVolumeRendering
             }
         }
 
+        // Zoom in/out on TF, centred at a target position
+        private void HandleZoom(float zoomDelta, Vector2 zoomTarget)
+        {
+            if (zoomDelta == 0.0f)
+                return;
+            
+            // Calculate zoom target relative to zoom rectangle
+            Vector2 zoomTargetRelative = (zoomTarget - zoomRect.position) / zoomRect.size;
+
+            // Change zoom rect size
+            zoomRect.width = Mathf.Clamp(zoomRect.width + zoomDelta, 0.01f, 1.0f);
+            zoomRect.height = Mathf.Clamp(zoomRect.height + zoomDelta, 0.01f, 1.0f);
+
+            // Convert zoomTargetRelative back to absolute coordinates (after resizing rect)
+            Vector2 currTargetAbsolute = zoomTargetRelative * zoomRect.size + zoomRect.position;
+            // Offset rect, to ensure relative zoom target remains fixed
+            Vector2 zoomTargetDir = zoomTarget - currTargetAbsolute;
+            Vector2 zoomOffset = new Vector2(
+                Mathf.Clamp(zoomTargetDir.x, -Mathf.Abs(zoomDelta), Mathf.Abs(zoomDelta)),
+                Mathf.Clamp(zoomTargetDir.y, -Mathf.Abs(zoomDelta), Mathf.Abs(zoomDelta))
+            );
+            zoomRect.position = new Vector2(
+                Mathf.Clamp(zoomRect.position.x + zoomOffset.x, 0.0f, 1.0f - zoomRect.width),
+                Mathf.Clamp(zoomRect.position.y + zoomOffset.y, 0.0f, 1.0f - zoomRect.height)
+            );
+        }
+
         /// <summary>
         /// Pick the colour control point, nearest to the specified position.
         /// </summary>
@@ -247,7 +295,7 @@ namespace UnityVolumeRendering
             for (int i = 0; i < tf.colourControlPoints.Count; i++)
             {
                 TFColourControlPoint ctrlPoint = tf.colourControlPoints[i];
-                float dist = Mathf.Abs(ctrlPoint.dataValue - position);
+                float dist = Mathf.Abs(ctrlPoint.dataValue - position) / zoomRect.width;
                 if (dist < maxDistance && dist < nearestDist)
                 {
                     nearestPointIndex = i;
@@ -263,6 +311,7 @@ namespace UnityVolumeRendering
         /// <param name="maxDistance">Threshold for maximum distance. Points further away than this won't get picked.</param>
         private int PickAlphaControlPoint(Vector2 position, float maxDistance = 0.05f)
         {
+            Vector2 distMultiplier = new Vector2(1.0f / zoomRect.width, 1.0f / zoomRect.height);
             TransferFunction tf = volRendObject.transferFunction;
             int nearestPointIndex = -1;
             float nearestDist = 1000.0f;
@@ -270,7 +319,8 @@ namespace UnityVolumeRendering
             {
                 TFAlphaControlPoint ctrlPoint = tf.alphaControlPoints[i];
                 Vector2 ctrlPos = new Vector2(ctrlPoint.dataValue, ctrlPoint.alphaValue);
-                float dist = (ctrlPos - position).magnitude;
+                Vector2 distVec = (ctrlPos - position) * distMultiplier;
+                float dist = distVec.magnitude;
                 if (dist < maxDistance && dist < nearestDist)
                 {
                     nearestPointIndex = i;
@@ -278,6 +328,25 @@ namespace UnityVolumeRendering
                 }
             }
             return nearestPointIndex;
+        }
+
+        private Vector2 ApplyZoom(Vector2 position)
+        {
+            position.x = Mathf.Lerp(zoomRect.x, zoomRect.x + zoomRect.width, position.x);
+            position.y = Mathf.Lerp(zoomRect.y, zoomRect.y + zoomRect.height, position.y);
+            return position;
+        }
+        
+        private Vector2 ApplyZoomInverse(Vector2 position)
+        {
+            position.x = InverseLerpUnclamped(zoomRect.x, zoomRect.x + zoomRect.width, position.x);
+            position.y = InverseLerpUnclamped(zoomRect.y, zoomRect.y + zoomRect.height, position.y);
+            return position;
+        }
+
+        private float InverseLerpUnclamped(float start, float end, float value)
+        {
+            return (value - start) / (end - start);
         }
     }
 }

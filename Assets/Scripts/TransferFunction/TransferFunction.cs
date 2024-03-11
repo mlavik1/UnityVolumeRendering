@@ -15,7 +15,7 @@ namespace UnityVolumeRendering
         private Texture2D texture = null;
         private Color[] tfCols;
 
-        private const int TEXTURE_WIDTH = 512;
+        private const int TEXTURE_WIDTH = 1024;
         private const int TEXTURE_HEIGHT = 2;
 
         public void AddControlPoint(TFColourControlPoint ctrlPoint)
