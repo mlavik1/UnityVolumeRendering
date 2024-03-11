@@ -261,13 +261,18 @@ namespace UnityVolumeRendering
         {
             if (zoomDelta == 0.0f)
                 return;
+            
+            // Calculate zoom target relative to zoom rectangle
+            Vector2 zoomTargetRelative = (zoomTarget - zoomRect.position) / zoomRect.size;
 
             // Change zoom rect size
             zoomRect.width = Mathf.Clamp(zoomRect.width + zoomDelta, 0.01f, 1.0f);
             zoomRect.height = Mathf.Clamp(zoomRect.height + zoomDelta, 0.01f, 1.0f);
 
-            // Offset rect towards zoom target
-            Vector2 zoomTargetDir = zoomTarget - zoomRect.center;
+            // Convert zoomTargetRelative back to absolute coordinates (after resizing rect)
+            Vector2 currTargetAbsolute = zoomTargetRelative * zoomRect.size + zoomRect.position;
+            // Offset rect, to ensure relative zoom target remains fixed
+            Vector2 zoomTargetDir = zoomTarget - currTargetAbsolute;
             Vector2 zoomOffset = new Vector2(
                 Mathf.Clamp(zoomTargetDir.x, -Mathf.Abs(zoomDelta), Mathf.Abs(zoomDelta)),
                 Mathf.Clamp(zoomTargetDir.y, -Mathf.Abs(zoomDelta), Mathf.Abs(zoomDelta))
