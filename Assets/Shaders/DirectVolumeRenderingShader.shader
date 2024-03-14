@@ -232,6 +232,35 @@
                 return diffuse + specular;
             }
 
+            float calculateShadow(float3 startPos, float3 lightDir)
+            {
+                float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
+                int numSteps = 32;
+                float stepSize = 0.5f / numSteps;
+                for (int iStep = 1; iStep < numSteps; iStep++)
+                {
+                    const float3 currPos = startPos + lightDir * stepSize * iStep;
+
+                    // Perform slice culling (cross section plane)
+#ifdef CROSS_SECTION_ON
+                    if (IsCutout(currPos))
+                        continue;
+#endif
+
+                    // Get the dansity/sample value of the current position
+                    const float density = getDensity(currPos);
+
+                    // Apply visibility window
+                    if (density < _MinVal || density > _MaxVal) continue;
+
+                    // Apply 1D transfer function
+                    float4 src = getTF1DColour(density);
+                    src.rgb *= src.a;
+                    col = (1.0f - col.a) * src + col;
+                }
+                return col.a;
+            }
+
             // Converts local position to depth value
             float localToDepth(float3 localPos)
             {
@@ -345,7 +374,10 @@
 #if defined(LIGHTING_ON)
                     float factor = smoothstep(_LightingGradientThresholdStart, _LightingGradientThresholdEnd, gradMag);
                     float3 shaded = calculateLighting(src.rgb, gradient / gradMag, getLightDirection(-ray.direction), -ray.direction, 0.3f);
+                    float shadow = calculateShadow(currPos, getLightDirection(-ray.direction));
+                    //factor *= (1.0f - shadow);
                     src.rgb = lerp(src.rgb, shaded, factor);
+                    src.rgb *= (1.0f - shadow);
 #endif
 
                     src.rgb *= src.a;

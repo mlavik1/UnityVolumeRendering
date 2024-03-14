@@ -1,0 +1,63 @@
+﻿#pragma kernel ShadowVolumeMain
+
+Texture3D<float> VolumeTexture;
+Texture3D<float4> TFTex;
+SamplerState samplerVolumeTexture;
+SamplerState samplerTFTex;
+int3 Dimension;
+float3 TextureSize;
+
+RWTexture3D<float> ShadowVolume;
+
+float getDensity(float3 pos)
+{
+//#if CUBIC_INTERPOLATION_ON
+//    return interpolateTricubicFast(VolumeTexture, float3(pos.x, pos.y, pos.z), TextureSize);
+//#else
+    return VolumeTexture.SampleLevel(samplerVolumeTexture, float3(pos.x, pos.y, pos.z), 0);
+//#endif
+}
+
+// Gets the colour from a 1D Transfer Function (x = density)
+float4 getTF1DColour(float density)
+{
+    return TFTex.SampleLevel(samplerVolumeTexture, float3(density, 0.0f, 0.0f), 0);
+}
+
+float calculateShadow(float3 startPos, float3 lightDir)
+{
+    float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    int numSteps = 32;
+    float stepSize = 0.5f / numSteps;
+    for (int iStep = 1; iStep < numSteps; iStep++)
+    {
+        const float3 currPos = startPos + lightDir * stepSize * iStep;
+
+        // Perform slice culling (cross section plane)
+//#ifdef CROSS_SECTION_ON
+//        if (IsCutout(currPos))
+//            continue;
+//#endif
+
+        // Get the dansity/sample value of the current position
+        const float density = getDensity(currPos);
+
+//        // Apply visibility window
+//        if (density < _MinVal || density > _MaxVal) continue;
+
+        // Apply 1D transfer function
+        float4 src = getTF1DColour(density);
+        src.rgb *= src.a;
+        col = (1.0f - col.a) * src + col;
+    }
+    return col.a;
+}
+
+[numthreads(8, 8, 8)]
+void ShadowVolumeMain(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x < uint(Dimension.x) && id.y < uint(Dimension.y) & id.z < uint(Dimension.z))
+    {
+        ShadowVolume[id.xyz] = VolumeTexture[id.xyz];
+    }
+}
