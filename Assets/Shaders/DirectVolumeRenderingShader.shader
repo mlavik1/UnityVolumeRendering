@@ -6,13 +6,15 @@
         _GradientTex("Gradient Texture (Generated)", 3D) = "" {}
         _NoiseTex("Noise Texture (Generated)", 2D) = "white" {}
         _TFTex("Transfer Function Texture (Generated)", 2D) = "" {}
+        _ShadowVolume("Shadow volume Texture (Generated)", 3D) = "" {}
         _MinVal("Min val", Range(0.0, 1.0)) = 0.0
         _MaxVal("Max val", Range(0.0, 1.0)) = 1.0
         _MinGradient("Gradient visibility threshold", Range(0.0, 1.0)) = 0.0
         _LightingGradientThresholdStart("Gradient threshold for lighting (end)", Range(0.0, 1.0)) = 0.0
         _LightingGradientThresholdEnd("Gradient threshold for lighting (start)", Range(0.0, 1.0)) = 0.0
+        [HideInInspector] _ShadowVolumeTextureSize("Shadow volume dimensions", Vector) = (1, 1, 1)
         [HideInInspector] _TextureSize("Dataset dimensions", Vector) = (1, 1, 1)
-    }
+}
     SubShader
     {
         Tags { "Queue" = "Transparent" "RenderType" = "Transparent" }
@@ -71,10 +73,12 @@
             sampler3D _GradientTex;
             sampler2D _NoiseTex;
             sampler2D _TFTex;
+            sampler3D _ShadowVolume;
 
             float _MinVal;
             float _MaxVal;
             float3 _TextureSize;
+            float3 _ShadowVolumeTextureSize;
 
             float _MinGradient;
             float _LightingGradientThresholdStart;
@@ -232,33 +236,13 @@
                 return diffuse + specular;
             }
 
-            float calculateShadow(float3 startPos, float3 lightDir)
+            float calculateShadow(float3 pos, float3 lightDir)
             {
-                float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
-                int numSteps = 32;
-                float stepSize = 0.5f / numSteps;
-                for (int iStep = 1; iStep < numSteps; iStep++)
-                {
-                    const float3 currPos = startPos + lightDir * stepSize * iStep;
-
-                    // Perform slice culling (cross section plane)
-#ifdef CROSS_SECTION_ON
-                    if (IsCutout(currPos))
-                        continue;
+#if CUBIC_INTERPOLATION_ON
+                return interpolateTricubicFast(_ShadowVolume, float3(pos.x, pos.y, pos.z), _ShadowVolumeTextureSize);
+#else
+                return tex3Dlod(_ShadowVolume, float4(pos.x, pos.y, pos.z, 0.0f));
 #endif
-
-                    // Get the dansity/sample value of the current position
-                    const float density = getDensity(currPos);
-
-                    // Apply visibility window
-                    if (density < _MinVal || density > _MaxVal) continue;
-
-                    // Apply 1D transfer function
-                    float4 src = getTF1DColour(density);
-                    src.rgb *= src.a;
-                    col = (1.0f - col.a) * src + col;
-                }
-                return col.a;
             }
 
             // Converts local position to depth value
