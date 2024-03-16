@@ -14,20 +14,26 @@ namespace UnityVolumeRendering
         private VolumeRenderedObject volumeRenderedObject = null;
         private Texture3D targetTexture = null;
         private RenderTexture shadowVolumeTexture = null;
-        //private GraphicsFence graphicsFence;
-        private bool hasDispatchedCompute = false;
         private Vector3 lightDirection;
         private bool needsUpdate = true;
+        private bool initialised = false;
+        private ComputeShader shadowVolumeShader;
+        private int handleMain;
 
         private void Start()
         {
-            Initialise();
+            if (!initialised)
+                Initialise();
+            needsUpdate = true;
         }
         
         private void OnValidate()
         {
-            Initialise();
+            if (!initialised)
+                Initialise();
+            needsUpdate = true;
         }
+
         private void Initialise()
         {
             Debug.Log("Initialising shadow volume buffers");
@@ -46,27 +52,26 @@ namespace UnityVolumeRendering
             shadowVolumeTexture.wrapMode = TextureWrapMode.Clamp;
             shadowVolumeTexture.Create();
 
+            volumeRenderedObject.meshRenderer.sharedMaterial.SetTexture("_ShadowVolume", targetTexture);
+            volumeRenderedObject.meshRenderer.sharedMaterial.SetVector("_ShadowVolumeTextureSize", new Vector3(targetTexture.width, targetTexture.height, targetTexture.depth));
+
+            shadowVolumeShader = Resources.Load("ShadowVolume") as ComputeShader;
+            handleMain = shadowVolumeShader.FindKernel("ShadowVolumeMain");
+
             needsUpdate = true;
         }
 
         private void Update()
         {
-            if (hasDispatchedCompute/* && graphicsFence.passed*/)
-            {
-                Graphics.CopyTexture(shadowVolumeTexture, targetTexture);
-                volumeRenderedObject.meshRenderer.sharedMaterial.SetTexture("_ShadowVolume", targetTexture);
-                volumeRenderedObject.meshRenderer.sharedMaterial.SetVector("_ShadowVolumeTextureSize", new Vector3(targetTexture.width, targetTexture.height, targetTexture.depth));
-                hasDispatchedCompute = false;
-            }
-
             Vector3 oldLightDirection = lightDirection;
             lightDirection = -GetLightDirection(volumeRenderedObject);
             needsUpdate |= lightDirection != oldLightDirection;
 
-            if (!hasDispatchedCompute && needsUpdate)
+            if (needsUpdate)
             {
                 DispatchCompute(); // TODO
             }
+
         }
 
         private void DispatchCompute()
@@ -75,9 +80,6 @@ namespace UnityVolumeRendering
 
             Debug.Log("Dispatch ShadowVolume compute shader");
             VolumeDataset dataset = volumeRenderedObject.dataset;
-
-            ComputeShader shadowVolumeShader = Resources.Load("ShadowVolume") as ComputeShader;
-            int handleMain = shadowVolumeShader.FindKernel("ShadowVolumeMain");
             
             Texture3D dataTexture = dataset.GetDataTexture();
 
@@ -111,16 +113,31 @@ namespace UnityVolumeRendering
                 shadowVolumeShader.DisableKeyword("CROSS_SECTION_ON");
             }
 
-            CommandBuffer commandBuffer = new CommandBuffer();
-            commandBuffer.SetExecutionFlags(CommandBufferExecutionFlags.AsyncCompute);
-            commandBuffer.DispatchCompute(shadowVolumeShader, handleMain, (shadowVolumeTexture.width + 7) / 8, (shadowVolumeTexture.height + 7) / 8, (shadowVolumeTexture.volumeDepth + 7) / 8);
-            //graphicsFence = commandBuffer.CreateGraphicsFence(GraphicsFenceType.CPUSynchronisation, SynchronisationStageFlags.ComputeProcessing);
-            //Graphics.ExecuteCommandBufferAsync(commandBuffer, ComputeQueueType.Default);
-            Graphics.ExecuteCommandBuffer(commandBuffer);
-            
-            commandBuffer.Release(); // TODO
+            RenderTexture rt = RenderTexture.active;
+            RenderTexture.active = shadowVolumeTexture;
+            GL.Clear(true, true, Color.clear);
+            RenderTexture.active = rt;
+            //shadowVolumeShader.Dispatch(handleMain, (shadowVolumeTexture.width + 7) / 8, (shadowVolumeTexture.height + 7) / 8, (shadowVolumeTexture.volumeDepth + 7) / 8);
+            int NUM_DISPATCH_CHUNKS = 2;
+            int threadGroupsX = (shadowVolumeTexture.width + 7) / (8 * NUM_DISPATCH_CHUNKS);
+            int threadGroupsY = (shadowVolumeTexture.height + 7) / (8 * NUM_DISPATCH_CHUNKS);
+            int threadGroupsZ = (shadowVolumeTexture.volumeDepth + 7) / (8 * NUM_DISPATCH_CHUNKS);
+            int dispatchChunkWidth = shadowVolumeTexture.width / NUM_DISPATCH_CHUNKS;
+            int dispatchChunkHeight = shadowVolumeTexture.height / NUM_DISPATCH_CHUNKS;
+            int dispatchChunkDepth = shadowVolumeTexture.volumeDepth / NUM_DISPATCH_CHUNKS;
+            int dispatchCount = NUM_DISPATCH_CHUNKS * NUM_DISPATCH_CHUNKS * NUM_DISPATCH_CHUNKS;
+            int currentDispatchIndex = 0;
+            while (currentDispatchIndex < dispatchCount)
+            {
+                int ix = currentDispatchIndex % NUM_DISPATCH_CHUNKS;
+                int iy = (currentDispatchIndex / NUM_DISPATCH_CHUNKS) % NUM_DISPATCH_CHUNKS;
+                int iz = currentDispatchIndex / (NUM_DISPATCH_CHUNKS * NUM_DISPATCH_CHUNKS);
+                shadowVolumeShader.SetInts("DispatchOffsets", new int[] { dispatchChunkWidth * ix, dispatchChunkHeight * iy, dispatchChunkDepth * iz });
+                shadowVolumeShader.Dispatch(handleMain, threadGroupsX, threadGroupsY, threadGroupsZ);
+                currentDispatchIndex++;
+            }
 
-            hasDispatchedCompute = true;
+            Graphics.CopyTexture(shadowVolumeTexture, targetTexture);
         }
 
         private Vector3 GetLightDirection(VolumeRenderedObject targetObject)

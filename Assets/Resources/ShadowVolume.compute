@@ -12,6 +12,7 @@ SamplerState samplerNoiseTex;
 int3 Dimension;
 float3 LightDirection;
 float3 TextureSize;
+uint3 DispatchOffsets;
 
 #define CROSS_SECTION_TYPE_PLANE 1 
 #define CROSS_SECTION_TYPE_BOX_INCL 2 
@@ -136,6 +137,7 @@ float calculateShadow(float3 startPos, float3 lightDir)
 [numthreads(8, 8, 8)]
 void ShadowVolumeMain(uint3 id : SV_DispatchThreadID)
 {
+    id += DispatchOffsets;
     if (id.x < uint(Dimension.x) && id.y < uint(Dimension.y) & id.z < uint(Dimension.z))
     {
         float3 rayOrigin = float3((float)id.x / uint(Dimension.x), (float)id.y / uint(Dimension.y), (float)id.z / uint(Dimension.z));
