@@ -11,6 +11,9 @@ namespace UnityVolumeRendering
     [RequireComponent(typeof(VolumeRenderedObject))]
     public class ShadowVolumeManager : MonoBehaviour
     {
+        private const int NUM_DISPATCH_CHUNKS = 3;
+        private const int dispatchCount = NUM_DISPATCH_CHUNKS * NUM_DISPATCH_CHUNKS * NUM_DISPATCH_CHUNKS;
+
         private VolumeRenderedObject volumeRenderedObject = null;
         private Texture3D targetTexture = null;
         private RenderTexture shadowVolumeTexture = null;
@@ -19,6 +22,7 @@ namespace UnityVolumeRendering
         private bool initialised = false;
         private ComputeShader shadowVolumeShader;
         private int handleMain;
+        int currentDispatchIndex = 0;
 
         private void Start()
         {
@@ -57,6 +61,10 @@ namespace UnityVolumeRendering
 
             shadowVolumeShader = Resources.Load("ShadowVolume") as ComputeShader;
             handleMain = shadowVolumeShader.FindKernel("ShadowVolumeMain");
+            if (handleMain < 0)
+            {
+                Debug.LogError("Shadow volume compute shader initialization failed.");
+            }
 
             needsUpdate = true;
         }
@@ -69,24 +77,30 @@ namespace UnityVolumeRendering
 
             if (needsUpdate)
             {
-                DispatchCompute(); // TODO
+                if (currentDispatchIndex == 0)
+                {
+                    ConfigureCompute();
+                    needsUpdate = false;
+                }
+                if (currentDispatchIndex < dispatchCount)
+                {
+                    DispatchComputeChunk();
+                    currentDispatchIndex++;
+                }
+                if (currentDispatchIndex == dispatchCount)
+                {
+                    currentDispatchIndex = 0;
+                }
+                Graphics.CopyTexture(shadowVolumeTexture, targetTexture);
             }
-
         }
 
-        private void DispatchCompute()
+        private void ConfigureCompute()
         {
-            needsUpdate = false;
-
             Debug.Log("Dispatch ShadowVolume compute shader");
             VolumeDataset dataset = volumeRenderedObject.dataset;
             
             Texture3D dataTexture = dataset.GetDataTexture();
-
-            if (handleMain < 0)
-            {
-                Debug.LogError("Shadow volume compute shader initialization failed.");
-            }
             
             if (volumeRenderedObject.GetCubicInterpolationEnabled())
                 shadowVolumeShader.EnableKeyword("CUBIC_INTERPOLATION_ON");
@@ -113,31 +127,22 @@ namespace UnityVolumeRendering
                 shadowVolumeShader.DisableKeyword("CROSS_SECTION_ON");
             }
 
-            RenderTexture rt = RenderTexture.active;
-            RenderTexture.active = shadowVolumeTexture;
-            GL.Clear(true, true, Color.clear);
-            RenderTexture.active = rt;
-            //shadowVolumeShader.Dispatch(handleMain, (shadowVolumeTexture.width + 7) / 8, (shadowVolumeTexture.height + 7) / 8, (shadowVolumeTexture.volumeDepth + 7) / 8);
-            int NUM_DISPATCH_CHUNKS = 2;
+        }
+
+        private void DispatchComputeChunk()
+        {
             int threadGroupsX = (shadowVolumeTexture.width + 7) / (8 * NUM_DISPATCH_CHUNKS);
             int threadGroupsY = (shadowVolumeTexture.height + 7) / (8 * NUM_DISPATCH_CHUNKS);
             int threadGroupsZ = (shadowVolumeTexture.volumeDepth + 7) / (8 * NUM_DISPATCH_CHUNKS);
             int dispatchChunkWidth = shadowVolumeTexture.width / NUM_DISPATCH_CHUNKS;
             int dispatchChunkHeight = shadowVolumeTexture.height / NUM_DISPATCH_CHUNKS;
             int dispatchChunkDepth = shadowVolumeTexture.volumeDepth / NUM_DISPATCH_CHUNKS;
-            int dispatchCount = NUM_DISPATCH_CHUNKS * NUM_DISPATCH_CHUNKS * NUM_DISPATCH_CHUNKS;
-            int currentDispatchIndex = 0;
-            while (currentDispatchIndex < dispatchCount)
-            {
-                int ix = currentDispatchIndex % NUM_DISPATCH_CHUNKS;
-                int iy = (currentDispatchIndex / NUM_DISPATCH_CHUNKS) % NUM_DISPATCH_CHUNKS;
-                int iz = currentDispatchIndex / (NUM_DISPATCH_CHUNKS * NUM_DISPATCH_CHUNKS);
-                shadowVolumeShader.SetInts("DispatchOffsets", new int[] { dispatchChunkWidth * ix, dispatchChunkHeight * iy, dispatchChunkDepth * iz });
-                shadowVolumeShader.Dispatch(handleMain, threadGroupsX, threadGroupsY, threadGroupsZ);
-                currentDispatchIndex++;
-            }
 
-            Graphics.CopyTexture(shadowVolumeTexture, targetTexture);
+            int ix = currentDispatchIndex % NUM_DISPATCH_CHUNKS;
+            int iy = (currentDispatchIndex / NUM_DISPATCH_CHUNKS) % NUM_DISPATCH_CHUNKS;
+            int iz = currentDispatchIndex / (NUM_DISPATCH_CHUNKS * NUM_DISPATCH_CHUNKS);
+            shadowVolumeShader.SetInts("DispatchOffsets", new int[] { dispatchChunkWidth * ix, dispatchChunkHeight * iy, dispatchChunkDepth * iz });
+            shadowVolumeShader.Dispatch(handleMain, threadGroupsX, threadGroupsY, threadGroupsZ);
         }
 
         private Vector3 GetLightDirection(VolumeRenderedObject targetObject)
