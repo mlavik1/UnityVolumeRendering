@@ -22,6 +22,14 @@ namespace UnityVolumeRendering
         private int handleMain;
         private int currentDispatchIndex = 0;
         private float cooldown = 1.0f;
+        private double lastUpdateTimeEditor = 0.0f;
+
+        public ShadowVolumeManager()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.update = OnEditorUpdate;
+#endif
+        }
 
         private void Start()
         {
@@ -33,6 +41,25 @@ namespace UnityVolumeRendering
         {
             if (!initialised)
                 Initialise();
+        }
+
+        private void Update()
+        {
+            HandleUpdate();
+        }
+
+        private void OnEditorUpdate()
+        {
+#if UNITY_EDITOR
+            if (!UnityEditor.EditorApplication.isPlaying)
+            {
+                if (UnityEditor.EditorApplication.timeSinceStartup - lastUpdateTimeEditor > 0.02f)
+                {
+                    HandleUpdate();
+                    UnityEditor.SceneView.lastActiveSceneView.SetDirty();
+                }
+            }
+#endif
         }
 
         private void Initialise()
@@ -61,8 +88,11 @@ namespace UnityVolumeRendering
             }
         }
 
-        private void Update()
+        private void HandleUpdate()
         {
+#if UNITY_EDITOR
+            lastUpdateTimeEditor = UnityEditor.EditorApplication.timeSinceStartup;
+#endif
             // Dirty hack for broken data texture
             // TODO: Investigate issue with calling VolumeDataset.GetDataTexture from first update in editor after leaving play mode
             if (cooldown > 0.0f)
@@ -94,8 +124,6 @@ namespace UnityVolumeRendering
 
         private void ConfigureCompute()
         {
-            Debug.Log("Configure ShadowVolume compute shader");
-
             VolumeDataset dataset = volumeRenderedObject.dataset;
             
             Texture3D dataTexture = dataset.GetDataTexture();
