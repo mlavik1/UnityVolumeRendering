@@ -21,6 +21,7 @@ namespace UnityVolumeRendering
         private ComputeShader shadowVolumeShader;
         private int handleMain;
         private int currentDispatchIndex = 0;
+        private float cooldown = 1.0f;
 
         private void Start()
         {
@@ -62,6 +63,13 @@ namespace UnityVolumeRendering
 
         private void Update()
         {
+            // Dirty hack for broken data texture
+            // TODO: Investigate issue with calling VolumeDataset.GetDataTexture from first update in editor after leaving play mode
+            if (cooldown > 0.0f)
+            {
+                cooldown -= Time.deltaTime;
+                return;
+            }
             lightDirection = -GetLightDirection(volumeRenderedObject);
 
             if (currentDispatchIndex == 0)
