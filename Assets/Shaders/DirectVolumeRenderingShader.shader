@@ -31,6 +31,7 @@
             #pragma multi_compile __ TF2D_ON
             #pragma multi_compile __ CROSS_SECTION_ON
             #pragma multi_compile __ LIGHTING_ON
+            #pragma multi_compile __ SHADOWS_ON
             #pragma multi_compile DEPTHWRITE_ON DEPTHWRITE_OFF
             #pragma multi_compile __ RAY_TERMINATE_ON
             #pragma multi_compile __ USE_MAIN_LIGHT
@@ -358,10 +359,11 @@
 #if defined(LIGHTING_ON)
                     float factor = smoothstep(_LightingGradientThresholdStart, _LightingGradientThresholdEnd, gradMag);
                     float3 shaded = calculateLighting(src.rgb, gradient / gradMag, getLightDirection(-ray.direction), -ray.direction, 0.3f);
-                    float shadow = calculateShadow(currPos, getLightDirection(-ray.direction));
-                    //factor *= (1.0f - shadow);
                     src.rgb = lerp(src.rgb, shaded, factor);
+#if defined(SHADOWS_ON)
+                    float shadow = calculateShadow(currPos, getLightDirection(-ray.direction));
                     src.rgb *= (1.0f - shadow);
+#endif
 #endif
 
                     src.rgb *= src.a;
