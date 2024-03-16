@@ -11,7 +11,7 @@ namespace UnityVolumeRendering
     [RequireComponent(typeof(VolumeRenderedObject))]
     public class ShadowVolumeManager : MonoBehaviour
     {
-        private const int NUM_DISPATCH_CHUNKS = 4;
+        private const int NUM_DISPATCH_CHUNKS = 5;
         private const int dispatchCount = NUM_DISPATCH_CHUNKS * NUM_DISPATCH_CHUNKS * NUM_DISPATCH_CHUNKS;
 
         private VolumeRenderedObject volumeRenderedObject = null;
@@ -129,9 +129,9 @@ namespace UnityVolumeRendering
 
         private void DispatchComputeChunk()
         {
-            int threadGroupsX = (shadowVolumeTexture.width + 7) / (8 * NUM_DISPATCH_CHUNKS);
-            int threadGroupsY = (shadowVolumeTexture.height + 7) / (8 * NUM_DISPATCH_CHUNKS);
-            int threadGroupsZ = (shadowVolumeTexture.volumeDepth + 7) / (8 * NUM_DISPATCH_CHUNKS);
+            int threadGroupsX = (shadowVolumeTexture.width / NUM_DISPATCH_CHUNKS + 7) / 8;
+            int threadGroupsY = (shadowVolumeTexture.height / NUM_DISPATCH_CHUNKS + 7) / 8;
+            int threadGroupsZ = (shadowVolumeTexture.volumeDepth / NUM_DISPATCH_CHUNKS + 7) / 8;
             int dispatchChunkWidth = shadowVolumeTexture.width / NUM_DISPATCH_CHUNKS;
             int dispatchChunkHeight = shadowVolumeTexture.height / NUM_DISPATCH_CHUNKS;
             int dispatchChunkDepth = shadowVolumeTexture.volumeDepth / NUM_DISPATCH_CHUNKS;
