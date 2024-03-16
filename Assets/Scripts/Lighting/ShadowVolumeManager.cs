@@ -23,6 +23,7 @@ namespace UnityVolumeRendering
         private int currentDispatchIndex = 0;
         private float cooldown = 1.0f;
         private double lastUpdateTimeEditor = 0.0f;
+        private bool isDirty = true;
 
         public ShadowVolumeManager()
         {
@@ -70,7 +71,7 @@ namespace UnityVolumeRendering
 #if UNITY_EDITOR
             if (!UnityEditor.EditorApplication.isPlaying)
             {
-                if (currentDispatchIndex > 0 && UnityEditor.EditorApplication.timeSinceStartup - lastUpdateTimeEditor > 0.02f)
+                if (isDirty || (currentDispatchIndex > 0 && UnityEditor.EditorApplication.timeSinceStartup - lastUpdateTimeEditor > 0.02f))
                 {
                     HandleUpdate();
                     UnityEditor.EditorUtility.SetDirty(UnityEditor.SceneView.lastActiveSceneView);
@@ -103,6 +104,7 @@ namespace UnityVolumeRendering
             {
                 Debug.LogError("Shadow volume compute shader initialization failed.");
             }
+            initialised = true;
         }
 
         private void HandleUpdate()
@@ -132,6 +134,7 @@ namespace UnityVolumeRendering
             {
                 currentDispatchIndex = 0;
             }
+            isDirty = false;
         }
 
         private void ConfigureCompute()
@@ -164,7 +167,10 @@ namespace UnityVolumeRendering
             {
                 shadowVolumeShader.DisableKeyword("CROSS_SECTION_ON");
             }
-
+            if (volumeRenderedObject != null)
+            {
+                volumeRenderedObject.meshRenderer.sharedMaterial.EnableKeyword("SHADOWS_ON");
+            }
         }
 
         private void DispatchComputeChunk()
