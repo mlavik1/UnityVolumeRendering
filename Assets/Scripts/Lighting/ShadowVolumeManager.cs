@@ -48,6 +48,23 @@ namespace UnityVolumeRendering
             HandleUpdate();
         }
 
+        private void OnEnable()
+        {
+            if (volumeRenderedObject != null)
+            {
+                volumeRenderedObject.meshRenderer.sharedMaterial.EnableKeyword("SHADOWS_ON");
+            }
+        }
+
+        private void OnDisable()
+        {
+            currentDispatchIndex = 0;
+            if (volumeRenderedObject != null)
+            {
+                volumeRenderedObject.meshRenderer.sharedMaterial.DisableKeyword("SHADOWS_ON");
+            }
+        }
+
         private void OnEditorUpdate()
         {
 #if UNITY_EDITOR
@@ -56,7 +73,7 @@ namespace UnityVolumeRendering
                 if (UnityEditor.EditorApplication.timeSinceStartup - lastUpdateTimeEditor > 0.02f)
                 {
                     HandleUpdate();
-                    UnityEditor.SceneView.lastActiveSceneView.SetDirty();
+                    UnityEditor.EditorUtility.SetDirty(UnityEditor.SceneView.lastActiveSceneView);
                 }
             }
 #endif
@@ -115,11 +132,6 @@ namespace UnityVolumeRendering
             {
                 currentDispatchIndex = 0;
             }
-        }
-
-        private void OnDisable()
-        {
-            currentDispatchIndex = 0;
         }
 
         private void ConfigureCompute()
