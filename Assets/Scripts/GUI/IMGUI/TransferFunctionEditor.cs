@@ -125,7 +125,7 @@ namespace UnityVolumeRendering
                 movingColPointIndex = -1;
 
             // Mouse down => Move or remove selected alpha control point
-            if (currentEvent.type == EventType.MouseDown)
+            if (currentEvent.type == EventType.MouseDown && histMouseRect.Contains(currentEvent.mousePosition))
             {
                 int pointIndex = PickAlphaControlPoint(mousePos);
                 if (pointIndex != -1)
