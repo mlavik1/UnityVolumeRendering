@@ -148,12 +148,12 @@ namespace UnityVolumeRendering
             else
                 shadowVolumeShader.DisableKeyword("CUBIC_INTERPOLATION_ON");
 
-            shadowVolumeShader.SetVector("TextureSize", new Vector3(dataset.dimX, dataset.dimY, dataset.dimZ));
-            shadowVolumeShader.SetInts("Dimension", new int[] { shadowVolumeTexture.width, shadowVolumeTexture.height, shadowVolumeTexture.volumeDepth });
-            shadowVolumeShader.SetTexture(handleMain, "VolumeTexture", dataTexture);
-            shadowVolumeShader.SetTexture(handleMain, "TFTex", volumeRenderedObject.transferFunction.GetTexture());
-            shadowVolumeShader.SetTexture(handleMain, "ShadowVolume", shadowVolumeTexture);
-            shadowVolumeShader.SetVector("LightDirection", lightDirection);
+            shadowVolumeShader.SetVector("_TextureSize", new Vector3(dataset.dimX, dataset.dimY, dataset.dimZ));
+            shadowVolumeShader.SetInts("_Dimension", new int[] { shadowVolumeTexture.width, shadowVolumeTexture.height, shadowVolumeTexture.volumeDepth });
+            shadowVolumeShader.SetTexture(handleMain, "_VolumeTexture", dataTexture);
+            shadowVolumeShader.SetTexture(handleMain, "_TFTex", volumeRenderedObject.transferFunction.GetTexture());
+            shadowVolumeShader.SetTexture(handleMain, "_ShadowVolume", shadowVolumeTexture);
+            shadowVolumeShader.SetVector("_LightDirection", lightDirection);
 
             Material volRendMaterial = volumeRenderedObject.meshRenderer.sharedMaterial;
             if (volRendMaterial.IsKeywordEnabled("CROSS_SECTION_ON"))
@@ -185,7 +185,7 @@ namespace UnityVolumeRendering
             int ix = currentDispatchIndex % NUM_DISPATCH_CHUNKS;
             int iy = (currentDispatchIndex / NUM_DISPATCH_CHUNKS) % NUM_DISPATCH_CHUNKS;
             int iz = currentDispatchIndex / (NUM_DISPATCH_CHUNKS * NUM_DISPATCH_CHUNKS);
-            shadowVolumeShader.SetInts("DispatchOffsets", new int[] { dispatchChunkWidth * ix, dispatchChunkHeight * iy, dispatchChunkDepth * iz });
+            shadowVolumeShader.SetInts("_DispatchOffsets", new int[] { dispatchChunkWidth * ix, dispatchChunkHeight * iy, dispatchChunkDepth * iz });
             shadowVolumeShader.Dispatch(handleMain, threadGroupsX, threadGroupsY, threadGroupsZ);
         }
 

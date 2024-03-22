@@ -3,28 +3,28 @@
 #pragma multi_compile __ CUBIC_INTERPOLATION_ON
 #pragma multi_compile __ CROSS_SECTION_ON
 
-sampler3D VolumeTexture;
-sampler2D TFTex;
+sampler3D _VolumeTexture;
+sampler2D _TFTex;
 
-int3 Dimension;
-float3 LightDirection;
-float3 TextureSize;
-uint3 DispatchOffsets;
+int3 _Dimension;
+float3 _LightDirection;
+float3 _TextureSize;
+uint3 _DispatchOffsets;
 
-RWTexture3D<float> ShadowVolume;
+RWTexture3D<float> _ShadowVolume;
 
 #include "Assets/Shaders/Include/TricubicSampling.cginc"
 #include "Assets/Shaders/Include/VolumeCutout.cginc"
 
 float getDensity(float3 pos)
 {
-    return interpolateTricubicFast(VolumeTexture, float3(pos.x, pos.y, pos.z), TextureSize).r;
+    return interpolateTricubicFast(_VolumeTexture, float3(pos.x, pos.y, pos.z), _TextureSize).r;
 }
 
 // Gets the colour from a 1D Transfer Function (x = density)
 float4 getTF1DColour(float density)
 {
-    return tex2Dlod(TFTex, float4(density, 0.0f, 0.0f, 0.0f));
+    return tex2Dlod(_TFTex, float4(density, 0.0f, 0.0f, 0.0f));
 }
 
 float calculateShadow(float3 startPos, float3 lightDir)
@@ -62,12 +62,12 @@ float calculateShadow(float3 startPos, float3 lightDir)
 [numthreads(8, 8, 8)]
 void ShadowVolumeMain(uint3 id : SV_DispatchThreadID)
 {
-    id += DispatchOffsets;
-    if (id.x < uint(Dimension.x) && id.y < uint(Dimension.y) & id.z < uint(Dimension.z))
+    id += _DispatchOffsets;
+    if (id.x < uint(_Dimension.x) && id.y < uint(_Dimension.y) & id.z < uint(_Dimension.z))
     {
-        float3 rayOrigin = float3((float)id.x / uint(Dimension.x), (float)id.y / uint(Dimension.y), (float)id.z / uint(Dimension.z));
-        float3 rayDir = LightDirection;
+        float3 rayOrigin = float3((float)id.x / uint(_Dimension.x), (float)id.y / uint(_Dimension.y), (float)id.z / uint(_Dimension.z));
+        float3 rayDir = _LightDirection;
         float shadow = calculateShadow(rayOrigin, rayDir);
-        ShadowVolume[id.xyz] = shadow;
+        _ShadowVolume[id.xyz] = shadow;
     }
 }
