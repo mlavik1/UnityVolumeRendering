@@ -71,7 +71,7 @@ namespace UnityVolumeRendering
 #if UNITY_EDITOR
             if (!UnityEditor.EditorApplication.isPlaying)
             {
-                if (isDirty || (currentDispatchIndex > 0 && UnityEditor.EditorApplication.timeSinceStartup - lastUpdateTimeEditor > 0.02f))
+                if (isDirty || (UnityEditor.EditorApplication.timeSinceStartup - lastUpdateTimeEditor > 0.02f))
                 {
                     HandleUpdate();
                     UnityEditor.EditorUtility.SetDirty(UnityEditor.SceneView.lastActiveSceneView);
