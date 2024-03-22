@@ -48,6 +48,8 @@ namespace UnityVolumeRendering
 
         private bool RaycastObject(Ray worldSpaceRay, VolumeRenderedObject volumeObject, out RaycastHit hit)
         {
+            Transform volumeTransform = volumeObject.volumeContainerObject.transform;
+
             hit = new RaycastHit();
             // Get cross section objects.
             CrossSectionManager crossSectionManager = volumeObject.GetCrossSectionManager();
@@ -60,8 +62,8 @@ namespace UnityVolumeRendering
             float maxValue = Mathf.Lerp(dataset.GetMinDataValue(), dataset.GetMaxDataValue(), visibilityWindow.y);
             // Convert ray to local space coordinates.
             Ray localRay = worldSpaceRay;
-            localRay.origin = volumeObject.transform.InverseTransformPoint(worldSpaceRay.origin);
-            localRay.direction = volumeObject.transform.InverseTransformVector(worldSpaceRay.direction);
+            localRay.origin = volumeTransform.InverseTransformPoint(worldSpaceRay.origin);
+            localRay.direction = volumeTransform.InverseTransformVector(worldSpaceRay.direction);
             // Find intersection with AABB.
             Bounds localBounds = new Bounds(Vector3.zero, Vector3.one);
             if (localBounds.IntersectRay(localRay, out float tStart))
@@ -88,8 +90,8 @@ namespace UnityVolumeRendering
                     // Check if value is within visibility window, and TF gives us a visible colour.
                     if (value >= minValue && value <= maxValue && volumeObject.transferFunction.GetColour(normalisedValue).a > 0.0f)
                     {
-                        hit.point = volumeObject.transform.TransformPoint(position);
-                        hit.distance = (worldSpaceRay.origin - volumeObject.transform.TransformPoint(position)).magnitude;
+                        hit.point = volumeTransform.TransformPoint(position);
+                        hit.distance = (worldSpaceRay.origin - volumeTransform.TransformPoint(position)).magnitude;
                         return true;
                     }
                 }

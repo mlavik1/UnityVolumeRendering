@@ -94,31 +94,5 @@ namespace UnityVolumeRendering
 
             GUILayout.EndVertical();
         }
-
-        private void OnLoadTransferFunction(RuntimeFileBrowser.DialogResult result)
-        {
-            if(!result.cancelled)
-            {
-                string extension = Path.GetExtension(result.path);
-                if(extension == ".tf")
-                {
-                    TransferFunction tf = TransferFunctionDatabase.LoadTransferFunction(result.path);
-                    if (tf != null)
-                    {
-                        targetObject.transferFunction = tf;
-                        targetObject.SetTransferFunctionMode(TFRenderMode.TF1D);
-                    }
-                }
-                if (extension == ".tf2d")
-                {
-                    TransferFunction2D tf = TransferFunctionDatabase.LoadTransferFunction2D(result.path);
-                    if (tf != null)
-                    {
-                        targetObject.transferFunction2D = tf;
-                        targetObject.SetTransferFunctionMode(TFRenderMode.TF2D);
-                    }
-                }
-            }
-        }
     }
 }
