@@ -3,103 +3,28 @@
 #pragma multi_compile __ CUBIC_INTERPOLATION_ON
 #pragma multi_compile __ CROSS_SECTION_ON
 
-Texture3D<float> VolumeTexture;
-SamplerState samplerVolumeTexture;
-Texture2D<float4> TFTex;
-SamplerState samplerTFTex;
-Texture2D<float4> NoiseTex;
-SamplerState samplerNoiseTex;
+sampler3D VolumeTexture;
+sampler2D TFTex;
+
 int3 Dimension;
 float3 LightDirection;
 float3 TextureSize;
 uint3 DispatchOffsets;
 
-#define CROSS_SECTION_TYPE_PLANE 1 
-#define CROSS_SECTION_TYPE_BOX_INCL 2 
-#define CROSS_SECTION_TYPE_BOX_EXCL 3
-#define CROSS_SECTION_TYPE_SPHERE_INCL 4
-#define CROSS_SECTION_TYPE_SPHERE_EXCL 5
-
-float4x4 _CrossSectionMatrices[8];
-float _CrossSectionTypes[8];
-int _NumCrossSections;
-
 RWTexture3D<float> ShadowVolume;
-float4 interpolateTricubicFast(Texture3D<float> tex, SamplerState samplerState, float3 texCoord, float3 texSize)
-{
-    // shift the coordinate from [0,1] to [-0.5, texSize-0.5]
-    float3 coord_grid = texCoord * texSize - 0.5;
-    float3 index = floor(coord_grid);
-    float3 fraction = coord_grid - index;
-    float3 one_frac = 1.0 - fraction;
 
-    float3 w0 = 1.0/6.0 * one_frac*one_frac*one_frac;
-    float3 w1 = 2.0/3.0 - 0.5 * fraction*fraction*(2.0-fraction);
-    float3 w2 = 2.0/3.0 - 0.5 * one_frac*one_frac*(2.0-one_frac);
-    float3 w3 = 1.0/6.0 * fraction*fraction*fraction;
-
-    float3 g0 = w0 + w1;
-    float3 g1 = w2 + w3;
-    float3 mult = 1.0 / texSize;
-    float3 h0 = mult * ((w1 / g0) - 0.5 + index);  //h0 = w1/g0 - 1, move from [-0.5, texSize-0.5] to [0,1]
-    float3 h1 = mult * ((w3 / g1) + 1.5 + index);  //h1 = w3/g1 + 1, move from [-0.5, texSize-0.5] to [0,1]
-
-    // fetch the eight linear interpolations
-    // weighting and fetching is interleaved for performance and stability reasons
-    float4 tex000 = tex.SampleLevel(samplerState, float3(h0), 0);
-    float4 tex100 = tex.SampleLevel(samplerState, float3(h1.x, h0.y, h0.z), 0);
-    tex000 = lerp(tex100, tex000, g0.x);  //weigh along the x-direction
-    float4 tex010 = tex.SampleLevel(samplerState, float3(h0.x, h1.y, h0.z), 0);
-    float4 tex110 = tex.SampleLevel(samplerState, float3(h1.x, h1.y, h0.z), 0);
-    tex010 = lerp(tex110, tex010, g0.x);  //weigh along the x-direction
-    tex000 = lerp(tex010, tex000, g0.y);  //weigh along the y-direction
-    float4 tex001 = tex.SampleLevel(samplerState, float3(h0.x, h0.y, h1.z), 0);
-    float4 tex101 = tex.SampleLevel(samplerState, float3(h1.x, h0.y, h1.z), 0);
-    tex001 = lerp(tex101, tex001, g0.x);  //weigh along the x-direction
-    float4 tex011 = tex.SampleLevel(samplerState, float3(h0.x, h1.y, h1.z), 0);
-    float4 tex111 = tex.SampleLevel(samplerState, float3(h1), 0);
-    tex011 = lerp(tex111, tex011, g0.x);  //weigh along the x-direction
-    tex001 = lerp(tex011, tex001, g0.y);  //weigh along the y-direction
-
-    return lerp(tex001, tex000, g0.z);  //weigh along the z-direction
-}
-
-bool IsCutout(float3 currPos)
-{
-    // Move the reference in the middle of the mesh, like the pivot
-    float4 pivotPos = float4(currPos - float3(0.5f, 0.5f, 0.5f), 1.0f);
-
-    bool clipped = false;
-    for (int i = 0; i < _NumCrossSections && !clipped; ++i)
-    {
-        const int type = (int)_CrossSectionTypes[i];
-        const float4x4 mat = _CrossSectionMatrices[i];
-
-        // Convert from model space to plane's vector space
-        float3 planeSpacePos = mul(mat, pivotPos).xyz;
-        if (type == CROSS_SECTION_TYPE_PLANE)
-            clipped = planeSpacePos.z > 0.0f;
-        else if (type == CROSS_SECTION_TYPE_BOX_INCL)
-            clipped = !(planeSpacePos.x >= -0.5f && planeSpacePos.x <= 0.5f && planeSpacePos.y >= -0.5f && planeSpacePos.y <= 0.5f && planeSpacePos.z >= -0.5f && planeSpacePos.z <= 0.5f);
-        else if (type == CROSS_SECTION_TYPE_BOX_EXCL)
-            clipped = planeSpacePos.x >= -0.5f && planeSpacePos.x <= 0.5f && planeSpacePos.y >= -0.5f && planeSpacePos.y <= 0.5f && planeSpacePos.z >= -0.5f && planeSpacePos.z <= 0.5f;
-        else if (type == CROSS_SECTION_TYPE_SPHERE_INCL)
-            clipped = length(planeSpacePos) > 0.5;
-        else if (type == CROSS_SECTION_TYPE_SPHERE_EXCL)
-            clipped = length(planeSpacePos) < 0.5;
-    }
-    return clipped;
-}
+#include "Assets/Shaders/Include/TricubicSampling.cginc"
+#include "Assets/Shaders/Include/VolumeCutout.cginc"
 
 float getDensity(float3 pos)
 {
-    return interpolateTricubicFast(VolumeTexture, samplerVolumeTexture, float3(pos.x, pos.y, pos.z), TextureSize).r;
+    return interpolateTricubicFast(VolumeTexture, float3(pos.x, pos.y, pos.z), TextureSize).r;
 }
 
 // Gets the colour from a 1D Transfer Function (x = density)
 float4 getTF1DColour(float density)
 {
-    return TFTex.SampleLevel(samplerTFTex, float2(density, 0.0f), 0);
+    return tex2Dlod(TFTex, float4(density, 0.0f, 0.0f, 0.0f));
 }
 
 float calculateShadow(float3 startPos, float3 lightDir)
