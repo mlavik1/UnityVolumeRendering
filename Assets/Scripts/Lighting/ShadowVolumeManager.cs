@@ -119,6 +119,12 @@ namespace UnityVolumeRendering
                 cooldown -= Time.deltaTime;
                 return;
             }
+
+            if (volumeRenderedObject.GetRenderMode() != RenderMode.DirectVolumeRendering)
+            {
+                return;
+            }
+
             lightDirection = -GetLightDirection(volumeRenderedObject);
 
             if (currentDispatchIndex == 0)
