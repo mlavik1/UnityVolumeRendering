@@ -25,6 +25,15 @@ namespace UnityVolumeRendering
         private double lastUpdateTimeEditor = 0.0f;
         private bool isDirty = true;
 
+        private void Awake()
+        {
+            if (!SystemInfo.supportsComputeShaders)
+            {
+                Debug.LogError("Shadow volumes not supported on this platform (SystemInfo.supportsComputeShaders == false)");
+                DestroyImmediate(this);
+            }
+        }
+
         private void Start()
         {
             if (!initialised)
