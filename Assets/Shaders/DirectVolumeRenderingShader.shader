@@ -6,13 +6,15 @@
         _GradientTex("Gradient Texture (Generated)", 3D) = "" {}
         _NoiseTex("Noise Texture (Generated)", 2D) = "white" {}
         _TFTex("Transfer Function Texture (Generated)", 2D) = "" {}
+        _ShadowVolume("Shadow volume Texture (Generated)", 3D) = "" {}
         _MinVal("Min val", Range(0.0, 1.0)) = 0.0
         _MaxVal("Max val", Range(0.0, 1.0)) = 1.0
         _MinGradient("Gradient visibility threshold", Range(0.0, 1.0)) = 0.0
         _LightingGradientThresholdStart("Gradient threshold for lighting (end)", Range(0.0, 1.0)) = 0.0
         _LightingGradientThresholdEnd("Gradient threshold for lighting (start)", Range(0.0, 1.0)) = 0.0
+        [HideInInspector] _ShadowVolumeTextureSize("Shadow volume dimensions", Vector) = (1, 1, 1)
         [HideInInspector] _TextureSize("Dataset dimensions", Vector) = (1, 1, 1)
-    }
+}
     SubShader
     {
         Tags { "Queue" = "Transparent" "RenderType" = "Transparent" }
@@ -29,6 +31,7 @@
             #pragma multi_compile __ TF2D_ON
             #pragma multi_compile __ CROSS_SECTION_ON
             #pragma multi_compile __ LIGHTING_ON
+            #pragma multi_compile __ SHADOWS_ON
             #pragma multi_compile DEPTHWRITE_ON DEPTHWRITE_OFF
             #pragma multi_compile __ RAY_TERMINATE_ON
             #pragma multi_compile __ USE_MAIN_LIGHT
@@ -37,7 +40,7 @@
             #pragma fragment frag
 
             #include "UnityCG.cginc"
-            #include "TricubicSampling.cginc"
+            #include "Include/TricubicSampling.cginc"
 
             #define AMBIENT_LIGHTING_FACTOR 0.5
             #define JITTER_FACTOR 5.0
@@ -71,25 +74,24 @@
             sampler3D _GradientTex;
             sampler2D _NoiseTex;
             sampler2D _TFTex;
+            sampler3D _ShadowVolume;
 
             float _MinVal;
             float _MaxVal;
             float3 _TextureSize;
+            float3 _ShadowVolumeTextureSize;
 
             float _MinGradient;
             float _LightingGradientThresholdStart;
             float _LightingGradientThresholdEnd;
 
 #if CROSS_SECTION_ON
-#define CROSS_SECTION_TYPE_PLANE 1 
-#define CROSS_SECTION_TYPE_BOX_INCL 2 
-#define CROSS_SECTION_TYPE_BOX_EXCL 3
-#define CROSS_SECTION_TYPE_SPHERE_INCL 4
-#define CROSS_SECTION_TYPE_SPHERE_EXCL 5
-
-            float4x4 _CrossSectionMatrices[8];
-            float _CrossSectionTypes[8];
-            int _NumCrossSections;
+#include "Include/VolumeCutout.cginc"
+#else
+            bool IsCutout(float3 currPos)
+            {
+                return false;
+            }
 #endif
 
             struct RayInfo
@@ -232,6 +234,15 @@
                 return diffuse + specular;
             }
 
+            float calculateShadow(float3 pos, float3 lightDir)
+            {
+#if CUBIC_INTERPOLATION_ON
+                return interpolateTricubicFast(_ShadowVolume, float3(pos.x, pos.y, pos.z), _ShadowVolumeTextureSize);
+#else
+                return tex3Dlod(_ShadowVolume, float4(pos.x, pos.y, pos.z, 0.0f));
+#endif
+            }
+
             // Converts local position to depth value
             float localToDepth(float3 localPos)
             {
@@ -241,37 +252,6 @@
                 return (clipPos.z / clipPos.w) * 0.5 + 0.5;
 #else
                 return clipPos.z / clipPos.w;
-#endif
-            }
-
-            bool IsCutout(float3 currPos)
-            {
-#if CROSS_SECTION_ON
-                // Move the reference in the middle of the mesh, like the pivot
-                float4 pivotPos = float4(currPos - float3(0.5f, 0.5f, 0.5f), 1.0f);
-
-                bool clipped = false;
-                for (int i = 0; i < _NumCrossSections && !clipped; ++i)
-                {
-                    const int type = (int)_CrossSectionTypes[i];
-                    const float4x4 mat = _CrossSectionMatrices[i];
-
-                    // Convert from model space to plane's vector space
-                    float3 planeSpacePos = mul(mat, pivotPos);
-                    if (type == CROSS_SECTION_TYPE_PLANE)
-                        clipped = planeSpacePos.z > 0.0f;
-                    else if (type == CROSS_SECTION_TYPE_BOX_INCL)
-                        clipped = !(planeSpacePos.x >= -0.5f && planeSpacePos.x <= 0.5f && planeSpacePos.y >= -0.5f && planeSpacePos.y <= 0.5f && planeSpacePos.z >= -0.5f && planeSpacePos.z <= 0.5f);
-                    else if (type == CROSS_SECTION_TYPE_BOX_EXCL)
-                        clipped = planeSpacePos.x >= -0.5f && planeSpacePos.x <= 0.5f && planeSpacePos.y >= -0.5f && planeSpacePos.y <= 0.5f && planeSpacePos.z >= -0.5f && planeSpacePos.z <= 0.5f;
-                    else if (type == CROSS_SECTION_TYPE_SPHERE_INCL)
-                        clipped = length(planeSpacePos) > 0.5;
-                    else if (type == CROSS_SECTION_TYPE_SPHERE_EXCL)
-                        clipped = length(planeSpacePos) < 0.5;
-                }
-                return clipped;
-#else
-                return false;
 #endif
             }
 
@@ -346,6 +326,10 @@
                     float factor = smoothstep(_LightingGradientThresholdStart, _LightingGradientThresholdEnd, gradMag);
                     float3 shaded = calculateLighting(src.rgb, gradient / gradMag, getLightDirection(-ray.direction), -ray.direction, 0.3f);
                     src.rgb = lerp(src.rgb, shaded, factor);
+#if defined(SHADOWS_ON)
+                    float shadow = calculateShadow(currPos, getLightDirection(-ray.direction));
+                    src.rgb *= (1.0f - shadow);
+#endif
 #endif
 
                     src.rgb *= src.a;

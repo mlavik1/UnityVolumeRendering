@@ -1,0 +1,76 @@
+﻿#pragma kernel ShadowVolumeMain
+
+#pragma multi_compile __ CUBIC_INTERPOLATION_ON
+#pragma multi_compile __ CROSS_SECTION_ON
+
+sampler3D _VolumeTexture;
+sampler2D _TFTex;
+
+float _MinVal;
+float _MaxVal;
+
+int3 _Dimension;
+float3 _LightDirection;
+float3 _TextureSize;
+uint3 _DispatchOffsets;
+
+RWTexture3D<float> _ShadowVolume;
+
+#include "Assets/Shaders/Include/TricubicSampling.cginc"
+#include "Assets/Shaders/Include/VolumeCutout.cginc"
+
+float getDensity(float3 pos)
+{
+    return interpolateTricubicFast(_VolumeTexture, float3(pos.x, pos.y, pos.z), _TextureSize).r;
+}
+
+// Gets the colour from a 1D Transfer Function (x = density)
+float4 getTF1DColour(float density)
+{
+    return tex2Dlod(_TFTex, float4(density, 0.0f, 0.0f, 0.0f));
+}
+
+float calculateShadow(float3 startPos, float3 lightDir)
+{
+    float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    int numSteps = 32;
+    float stepSize = 0.25f / numSteps;
+    for (int iStep = 1; iStep < numSteps; iStep++)
+    {
+        const float3 currPos = startPos + lightDir * stepSize * iStep;
+
+        if (currPos.x < 0.0f || currPos.y < 0.0f || currPos.z < 0.0f || currPos.x > 1.0f || currPos.y > 1.0f || currPos.z > 1.0f)
+            break;
+
+        // Perform slice culling (cross section plane)
+        if (IsCutout(currPos))
+            continue;
+
+        // Get the dansity/sample value of the current position
+        const float density = getDensity(currPos);
+
+        // Apply visibility window
+        if (density < _MinVal || density > _MaxVal) continue;
+
+        // Apply 1D transfer function
+        float4 src = getTF1DColour(density);
+        if (src.a == 0.0)
+            continue;
+        src.rgb *= src.a;
+        col = (1.0f - col.a) * src + col;
+    }
+    return col.a;
+}
+
+[numthreads(8, 8, 8)]
+void ShadowVolumeMain(uint3 id : SV_DispatchThreadID)
+{
+    id += _DispatchOffsets;
+    if (id.x < uint(_Dimension.x) && id.y < uint(_Dimension.y) & id.z < uint(_Dimension.z))
+    {
+        float3 rayOrigin = float3((float)id.x / uint(_Dimension.x), (float)id.y / uint(_Dimension.y), (float)id.z / uint(_Dimension.z));
+        float3 rayDir = _LightDirection;
+        float shadow = calculateShadow(rayOrigin, rayDir);
+        _ShadowVolume[id.xyz] = shadow;
+    }
+}

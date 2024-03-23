@@ -127,6 +127,13 @@ namespace UnityVolumeRendering
                     );
                     // Convert back to linear scale, before setting updated value.
                     volrendObj.SetGradientLightingThreshold(new Vector2(gradLightThreshold.x * gradLightThreshold.x, gradLightThreshold.y * gradLightThreshold.y));
+
+                    ShadowVolumeManager shadowVoumeManager = volrendObj.GetComponent<ShadowVolumeManager>();
+                    bool enableShadowVolume = GUILayout.Toggle(shadowVoumeManager != null, "Enable shadow volume (expensive)");
+                    if (enableShadowVolume && shadowVoumeManager == null)
+                        shadowVoumeManager = volrendObj.gameObject.AddComponent<ShadowVolumeManager>();
+                    else if (!enableShadowVolume && shadowVoumeManager != null)
+                        GameObject.DestroyImmediate(shadowVoumeManager);
                 }
             }
 
