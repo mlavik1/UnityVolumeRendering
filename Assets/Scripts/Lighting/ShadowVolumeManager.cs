@@ -25,13 +25,6 @@ namespace UnityVolumeRendering
         private double lastUpdateTimeEditor = 0.0f;
         private bool isDirty = true;
 
-        public ShadowVolumeManager()
-        {
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.update = OnEditorUpdate;
-#endif
-        }
-
         private void Start()
         {
             if (!initialised)
@@ -51,6 +44,9 @@ namespace UnityVolumeRendering
 
         private void OnEnable()
         {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.update += OnEditorUpdate;
+#endif
             if (volumeRenderedObject != null)
             {
                 volumeRenderedObject.meshRenderer.sharedMaterial.EnableKeyword("SHADOWS_ON");
@@ -59,6 +55,9 @@ namespace UnityVolumeRendering
 
         private void OnDisable()
         {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.update -= OnEditorUpdate;
+#endif
             currentDispatchIndex = 0;
             if (volumeRenderedObject != null)
             {
