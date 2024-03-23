@@ -6,6 +6,9 @@
 sampler3D _VolumeTexture;
 sampler2D _TFTex;
 
+float _MinVal;
+float _MaxVal;
+
 int3 _Dimension;
 float3 _LightDirection;
 float3 _TextureSize;
@@ -46,8 +49,8 @@ float calculateShadow(float3 startPos, float3 lightDir)
         // Get the dansity/sample value of the current position
         const float density = getDensity(currPos);
 
-//        // Apply visibility window
-//        if (density < _MinVal || density > _MaxVal) continue;
+        // Apply visibility window
+        if (density < _MinVal || density > _MaxVal) continue;
 
         // Apply 1D transfer function
         float4 src = getTF1DColour(density);

@@ -170,6 +170,9 @@ namespace UnityVolumeRendering
             shadowVolumeShader.SetVector("_LightDirection", lightDirection);
 
             Material volRendMaterial = volumeRenderedObject.meshRenderer.sharedMaterial;
+            shadowVolumeShader.SetFloat("_MinVal", volRendMaterial.GetFloat("_MinVal"));
+            shadowVolumeShader.SetFloat("_MaxVal", volRendMaterial.GetFloat("_MaxVal"));
+
             if (volRendMaterial.IsKeywordEnabled("CROSS_SECTION_ON"))
             {
                 shadowVolumeShader.EnableKeyword("CROSS_SECTION_ON");
