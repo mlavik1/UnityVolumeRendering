@@ -274,7 +274,7 @@ namespace UnityVolumeRendering
                     texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
                     texture.wrapMode = TextureWrapMode.Clamp;
                     texture.SetPixelData(pixelBytes, 0);
-                    texture.Apply();
+                    texture.Apply(false, true);
                     dataTexture = texture;
                     pixelBytes.Dispose();
                 }
@@ -299,7 +299,7 @@ namespace UnityVolumeRendering
                     texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
                     texture.wrapMode = TextureWrapMode.Clamp;
                     texture.SetPixelData(pixelBytes, 0);
-                    texture.Apply();
+                    texture.Apply(false, true);
                     pixelBytes.Dispose();
                 }
             }
@@ -315,7 +315,7 @@ namespace UnityVolumeRendering
                         for (int z = 0; z < dimZ; z++)
                             texture.SetPixel(x, y, z, new Color((float)(data[x + y * dimX + z * (dimX * dimY)] - minValue) / maxRange, 0.0f, 0.0f, 0.0f));
 
-                texture.Apply();
+                texture.Apply(false, true);
             }
             progressHandler.EndStage();
             Debug.Log("Texture generation done.");
@@ -370,7 +370,7 @@ namespace UnityVolumeRendering
                 }
                 progressHandler.EndStage();
                 progressHandler.StartStage(0.2f, "Uploading gradient texture");
-                textureTmp.Apply();
+                textureTmp.Apply(false, true);
 
                 progressHandler.EndStage();
                 Debug.Log("Gradient gereneration done.");
@@ -401,7 +401,7 @@ namespace UnityVolumeRendering
             Texture3D texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
             texture.wrapMode = TextureWrapMode.Clamp;
             texture.SetPixels(cols);
-            texture.Apply();
+            texture.Apply(false, true);
             progressHandler.EndStage();
 
             Debug.Log("Gradient gereneration done.");

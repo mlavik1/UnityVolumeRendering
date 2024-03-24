@@ -281,7 +281,7 @@ namespace UnityVolumeRendering
             await UpdateMaterialPropertiesAsync(progressHandler);
         }
 
-        private void UpdateMaterialProperties(IProgressHandler progressHandler = null)
+        public void UpdateMaterialProperties(IProgressHandler progressHandler = null)
         {
             Task task = UpdateMaterialPropertiesAsync(progressHandler);
         }
@@ -293,8 +293,10 @@ namespace UnityVolumeRendering
             try
             {
                 bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
-                Texture3D texture = useGradientTexture ? await dataset.GetGradientTextureAsync(progressHandler) : null;
-                meshRenderer.sharedMaterial.SetTexture("_GradientTex", texture);
+                Texture3D gradientTexture = useGradientTexture ? await dataset.GetGradientTextureAsync(progressHandler) : null;
+                Texture3D dataTexture = await dataset.GetDataTextureAsync(progressHandler);
+                meshRenderer.sharedMaterial.SetTexture("_DataTex", dataTexture);
+                meshRenderer.sharedMaterial.SetTexture("_GradientTex", gradientTexture);
                 UpdateMatInternal();
             }
             finally
