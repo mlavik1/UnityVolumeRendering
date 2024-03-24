@@ -16,8 +16,8 @@ uint3 _DispatchOffsets;
 
 RWTexture3D<float> _ShadowVolume;
 
-#include "Assets/Shaders/Include/TricubicSampling.cginc"
-#include "Assets/Shaders/Include/VolumeCutout.cginc"
+#include "../Shaders/Include/TricubicSampling.cginc"
+#include "../Shaders/Include/VolumeCutout.cginc"
 
 float getDensity(float3 pos)
 {
