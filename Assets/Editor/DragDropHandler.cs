@@ -84,17 +84,44 @@ namespace UnityVolumeRendering
                 {
                     VolumeRenderedObject srcVolRendObj = volRendObjects[i];
                     VolumeRenderedObject prefabVolRendObj = prefabVolRendObjects[i];
-                    VolumeDataset dataset = ScriptableObject.Instantiate(srcVolRendObj.dataset);
-                    TransferFunction transferFunction = ScriptableObject.Instantiate(srcVolRendObj.transferFunction);
-                    Material material = Material.Instantiate(srcVolRendObj.meshRenderer.sharedMaterial);
-                    AssetDatabase.AddObjectToAsset(dataset, prefab);
-                    AssetDatabase.AddObjectToAsset(transferFunction, prefab);
-                    AssetDatabase.AddObjectToAsset(material, prefab);
-                    prefabVolRendObj.dataset = dataset;
-                    prefabVolRendObj.transferFunction = transferFunction;
-                    prefabVolRendObj.meshRenderer.material = material;
+                    if (srcVolRendObj.dataset != prefabVolRendObj.dataset)
+                    {
+                        // Dataset changed => remove old one form asset to avoid wasting space
+                        if (prefabVolRendObj.dataset != null)
+                            AssetDatabase.RemoveObjectFromAsset(prefabVolRendObj.dataset);
+                        VolumeDataset dataset = ScriptableObject.Instantiate(srcVolRendObj.dataset);
+                        AssetDatabase.AddObjectToAsset(dataset, prefab);
+                        prefabVolRendObj.dataset = dataset;
+                    }
+                    if (srcVolRendObj.transferFunction != prefabVolRendObj.transferFunction)
+                    {
+                        if (prefabVolRendObj.transferFunction != null)
+                            AssetDatabase.RemoveObjectFromAsset(prefabVolRendObj.transferFunction);
+                        TransferFunction transferFunction = ScriptableObject.Instantiate(srcVolRendObj.transferFunction);
+                        AssetDatabase.AddObjectToAsset(transferFunction, prefab);
+                        prefabVolRendObj.transferFunction = transferFunction;
+                    }
+                    if (srcVolRendObj.meshRenderer.sharedMaterial != prefabVolRendObj.meshRenderer.sharedMaterial)
+                    {
+                        if (prefabVolRendObj.meshRenderer.sharedMaterial != null)
+                            AssetDatabase.RemoveObjectFromAsset(prefabVolRendObj.meshRenderer.sharedMaterial);
+                        Material material = Material.Instantiate(srcVolRendObj.meshRenderer.sharedMaterial);
+                        AssetDatabase.AddObjectToAsset(material, prefab);
+                        prefabVolRendObj.meshRenderer.material = material;
+                    }
                 }
                 PrefabUtility.SavePrefabAsset(prefab);
+                for (int i = 0; i < volRendObjects.Length; i++)
+                {
+                    VolumeRenderedObject srcVolRendObj = volRendObjects[i];
+                    VolumeRenderedObject prefabVolRendObj = prefabVolRendObjects[i];
+                    if (!AssetDatabase.Contains(srcVolRendObj.dataset))
+                        ScriptableObject.DestroyImmediate(srcVolRendObj.dataset);
+                    srcVolRendObj.dataset = prefabVolRendObj.dataset;
+                    srcVolRendObj.transferFunction = prefabVolRendObj.transferFunction;
+                    srcVolRendObj.meshRenderer.sharedMaterial = prefabVolRendObj.meshRenderer.sharedMaterial;
+                    srcVolRendObj.UpdateMaterialProperties();
+                }
             }
 
             return DragAndDropVisualMode.Copy;
