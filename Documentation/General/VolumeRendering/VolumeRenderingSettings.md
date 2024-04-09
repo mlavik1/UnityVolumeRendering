@@ -3,10 +3,11 @@
 **Table of contents:**
 <!-- TOC -->
 
-- [Cross section tools](#cross-section-tools)
-    - [Cross section plane](#cross-section-plane)
-    - [Box cutout](#box-cutout)
-    - [Sphere cutout](#sphere-cutout)
+- [Render Mode](#render-mode)
+- [Lighting](#lighting)
+- [Shadow volumes](#shadow-volumes)
+- [Cubic interpolation](#cubic-interpolation)
+- [Early ray termination](#early-ray-termination)
 
 <!-- /TOC -->
 
@@ -32,6 +33,11 @@ You can enable lighting to get more realistic visualisation.
 This comes at a cost, and performance may suffer (both memory and rendering speed).
 
 To apply lighting to the volume rendering, we calculate the gradient at each voxel and use this to calculate a normal, which we use to apply phong lighting.
+
+## Shadow volumes
+
+Improve the rendered image by using shadow volumes.
+This is expensive, but there are ways to still get good performance with this enabled. See [shadow volume documentation](ShadowVolumes.md)
 
 ## Cubic interpolation
 

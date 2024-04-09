@@ -84,6 +84,7 @@ There are 3 render modes:
 
 There are also some other settings that you can adjust:
 - "Enable lighting": Enable lighting calculations during volume rendering.
+- "Enable shadow volume": Expensive, but may look much better!
 - Enable early ray termination: Optimisation (you usually want this on). Requires the above setting to be disabled.
 - Enable cubic interpolation: Use cubic interpolation of the 3D volume texture and gradient texture.
 
@@ -161,14 +162,18 @@ Yes, it's free even for commercial projects. The license ([MIT](https://chooseal
 
 ## How can I make it look better?
 - Try [enabling cubic sampling](https://github.com/mlavik1/UnityVolumeRendering/pull/121#issuecomment-1281289885) in the inspector.
+- Try [enabling shadow volumes](Documentation/General/VolumeRendering/ShadowVolumes.md) in the inspector.
 - Try increasing the value of "MAX_NUM_STEPS" in the [DirectVolumeRenderingShader.shader](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Assets/Shaders/DirectVolumeRenderingShader.shader)
+
+## How can I get better rendering performance with lighting enabled?
+If you're on a platform that supports it (Windows, etc.), try [enabling DLSS (HDRP)](https://docs.unity3d.com/Packages/com.unity.render-pipelines.high-definition@12.0/manual/deep-learning-super-sampling-in-hdrp.html) or [FidelityFX Super Resolution (URP)](https://forum.unity.com/threads/amd-fidelityfx-super-resolution-fsr-preview-now-available.1141495/) and reduce the render scale.
 
 ## How can I raycast the scene to find an intersection?
 - See the [VolumeRaycasting documentation](Documentation/Scripting/VolumeRaycasting.md).
 
 ## I'm stuck! How can I get help?
 [Create an issue](https://github.com/mlavik1/UnityVolumeRendering/issues).
-You can also reach me on [Mastodon](https://floss.social/@sigsegv).
+You can also reach me on [the fediverse](https://nattomaki.social/@matias).
 
 # Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute.
