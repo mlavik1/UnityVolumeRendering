@@ -127,6 +127,7 @@ See the [importer documentation](Documentation/Scripting/Importing.md) for more 
 - [Can I use WebGL?](#can-i-use-webgl)
 - [Is this project free to use?](#is-this-project-free-to-use)
 - [How can I make it look better?](#how-can-i-make-it-look-better)
+- [How can I get better rendering performance with lighting enabled?](#how-can-i-get-better-rendering-performance-with-lighting-enabled)
 - [How can I raycast the scene to find an intersection?](#how-can-i-raycast-the-scene-to-find-an-intersection)
 - [I'm stuck! How can I get help?](#im-stuck-how-can-i-get-help)
 
