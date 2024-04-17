@@ -7,6 +7,7 @@
         _NoiseTex("Noise Texture (Generated)", 2D) = "white" {}
         _TFTex("Transfer Function Texture (Generated)", 2D) = "" {}
         _ShadowVolume("Shadow volume Texture (Generated)", 3D) = "" {}
+        _SamplingRateMultiplier("Sampling rate multiplier", Range(0.2, 2.0)) = 1.0
         _MinVal("Min val", Range(0.0, 1.0)) = 0.0
         _MaxVal("Max val", Range(0.0, 1.0)) = 1.0
         _MinGradient("Gradient visibility threshold", Range(0.0, 1.0)) = 0.0
@@ -84,6 +85,8 @@
             float _MinGradient;
             float _LightingGradientThresholdStart;
             float _LightingGradientThresholdEnd;
+
+            float _SamplingRateMultiplier;
 
 #if CROSS_SECTION_ON
 #include "Include/VolumeCutout.cginc"
@@ -198,6 +201,12 @@
 #endif
             }
 
+            // Gets the density at the specified position, without tricubic interpolation
+            float getDensityNoTricubic(float3 pos)
+            {
+                return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f));
+            }
+
             // Gets the gradient at the specified position
             float3 getGradient(float3 pos)
             {
@@ -272,9 +281,10 @@
             {
                 #define MAX_NUM_STEPS 512
                 #define OPACITY_THRESHOLD (1.0 - 1.0 / 255.0)
+                const int samplingRate = (int)(MAX_NUM_STEPS * _SamplingRateMultiplier);
 
                 RayInfo ray = getRayFront2Back(i.vertexLocal);
-                RaymarchInfo raymarchInfo = initRaymarch(ray, MAX_NUM_STEPS);
+                RaymarchInfo raymarchInfo = initRaymarch(ray, samplingRate);
 
                 float3 lightDir = normalize(ObjSpaceViewDir(float4(float3(0.0f, 0.0f, 0.0f), 0.0f)));
 
@@ -292,6 +302,12 @@
 #ifdef CROSS_SECTION_ON
                     if(IsCutout(currPos))
                     	continue;
+#endif
+
+#if CUBIC_INTERPOLATION_ON
+                    // Optimisation: First get density without tricubic interpolation, before doing an early return
+                    if (getTF1DColour(getDensityNoTricubic(currPos)).a == 0.0)
+                        continue;
 #endif
 
                     // Get the dansity/sample value of the current position
@@ -362,9 +378,10 @@
             frag_out frag_mip(frag_in i)
             {
                 #define MAX_NUM_STEPS 512
+                const int samplingRate = (int)(MAX_NUM_STEPS * _SamplingRateMultiplier);
 
                 RayInfo ray = getRayBack2Front(i.vertexLocal);
-                RaymarchInfo raymarchInfo = initRaymarch(ray, MAX_NUM_STEPS);
+                RaymarchInfo raymarchInfo = initRaymarch(ray, samplingRate);
 
                 float maxDensity = 0.0f;
                 float3 maxDensityPos = ray.startPos;
@@ -400,9 +417,10 @@
             frag_out frag_surf(frag_in i)
             {
                 #define MAX_NUM_STEPS 1024
+                const int samplingRate = (int)(MAX_NUM_STEPS * _SamplingRateMultiplier);
 
                 RayInfo ray = getRayFront2Back(i.vertexLocal);
-                RaymarchInfo raymarchInfo = initRaymarch(ray, MAX_NUM_STEPS);
+                RaymarchInfo raymarchInfo = initRaymarch(ray, samplingRate);
 
                 // Create a small random offset in order to remove artifacts
                 ray.startPos = ray.startPos + (JITTER_FACTOR * ray.direction * raymarchInfo.stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;

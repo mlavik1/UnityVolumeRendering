@@ -54,6 +54,10 @@ namespace UnityVolumeRendering
         [SerializeField, HideInInspector]
         private bool cubicInterpolationEnabled = false;
 
+        // Sampling rate multiplier, which affects how many samples are calculated for each ray. Lower values yield better peformance at the cost of visual quality.
+        [SerializeField, HideInInspector]
+        private float samplingRateMultiplier = 1.0f;
+
         private CrossSectionManager crossSectionManager;
 
         private SemaphoreSlim updateMatLock = new SemaphoreSlim(1, 1);
@@ -259,6 +263,20 @@ namespace UnityVolumeRendering
             }
         }
 
+        public float GetSamplingRateMultiplier()
+        {
+            return samplingRateMultiplier;
+        }
+
+        public void SetSamplingRateMultiplier(float value)
+        {
+            if (value != samplingRateMultiplier)
+            {
+                samplingRateMultiplier = value;
+                UpdateMaterialProperties();
+            }
+        }
+
         public void SetTransferFunction(TransferFunction tf)
         {
             this.transferFunction = tf;
@@ -368,6 +386,7 @@ namespace UnityVolumeRendering
 
             meshRenderer.sharedMaterial.SetFloat("_MinVal", visibilityWindow.x);
             meshRenderer.sharedMaterial.SetFloat("_MaxVal", visibilityWindow.y);
+            meshRenderer.sharedMaterial.SetFloat("_SamplingRateMultiplier", samplingRateMultiplier);
             meshRenderer.sharedMaterial.SetFloat("_MinGradient", minGradient);
             meshRenderer.sharedMaterial.SetFloat("_LightingGradientThresholdStart", gradientLightingThreshold.x);
             meshRenderer.sharedMaterial.SetFloat("_LightingGradientThresholdEnd", gradientLightingThreshold.y);
