@@ -348,6 +348,9 @@
 #endif
 #endif
 
+                    // Opacity correction
+                    float blendFactor = 1.0f / _SamplingRateMultiplier;
+                    src.a = 1.0f - pow(1.0f - src.a, blendFactor);
                     src.rgb *= src.a;
                     col = (1.0f - col.a) * src + col;
 
