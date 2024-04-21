@@ -157,10 +157,12 @@ namespace UnityVolumeRendering
             
             Texture3D dataTexture = dataset.GetDataTexture();
             
+#if UNITY_2020_2_OR_NEWER
             if (volumeRenderedObject.GetCubicInterpolationEnabled())
                 shadowVolumeShader.EnableKeyword("CUBIC_INTERPOLATION_ON");
             else
                 shadowVolumeShader.DisableKeyword("CUBIC_INTERPOLATION_ON");
+#endif
 
             shadowVolumeShader.SetVector("_TextureSize", new Vector3(dataset.dimX, dataset.dimY, dataset.dimZ));
             shadowVolumeShader.SetInts("_Dimension", new int[] { shadowVolumeTexture.width, shadowVolumeTexture.height, shadowVolumeTexture.volumeDepth });
@@ -173,6 +175,7 @@ namespace UnityVolumeRendering
             shadowVolumeShader.SetFloat("_MinVal", volRendMaterial.GetFloat("_MinVal"));
             shadowVolumeShader.SetFloat("_MaxVal", volRendMaterial.GetFloat("_MaxVal"));
 
+#if UNITY_2020_2_OR_NEWER
             if (volRendMaterial.IsKeywordEnabled("CROSS_SECTION_ON"))
             {
                 shadowVolumeShader.EnableKeyword("CROSS_SECTION_ON");
@@ -184,6 +187,7 @@ namespace UnityVolumeRendering
             {
                 shadowVolumeShader.DisableKeyword("CROSS_SECTION_ON");
             }
+#endif
             if (volumeRenderedObject != null)
             {
                 volumeRenderedObject.meshRenderer.sharedMaterial.EnableKeyword("SHADOWS_ON");
