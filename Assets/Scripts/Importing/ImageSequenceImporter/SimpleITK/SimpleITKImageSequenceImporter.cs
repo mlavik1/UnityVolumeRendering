@@ -160,9 +160,6 @@ namespace UnityVolumeRendering
                 (float)(spacing[2] * size[2]) / 1000.0f // mm to m
             );
 
-            // Convert from LPS to Unity's coordinate system
-            ImporterUtilsInternal.ConvertLPSToUnityCoordinateSpace(volumeDataset);
-
             volumeDataset.FixDimensions();
         }
     }

@@ -145,6 +145,9 @@ namespace UnityVolumeRendering
 
             image = reader.Execute();
 
+            // Convert to Unity's coordinate system (Right, Superior, Anterior)
+            image = SimpleITK.DICOMOrient(image, "RSA");
+
             // Cast to 32-bit float
             image = SimpleITK.Cast(image, PixelIDValueEnum.sitkFloat32);
 
@@ -175,9 +178,6 @@ namespace UnityVolumeRendering
                 (float)(spacing[1] * size[1]) / 1000.0f, // mm to m
                 (float)(spacing[2] * size[2]) / 1000.0f // mm to m
             );
-
-            // Convert from LPS to Unity's coordinate system
-            ImporterUtilsInternal.ConvertLPSToUnityCoordinateSpace(volumeDataset);
 
             volumeDataset.FixDimensions();
         }
