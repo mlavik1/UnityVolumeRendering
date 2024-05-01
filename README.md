@@ -1,7 +1,7 @@
 # UnityVolumeRendering
 A volume renderer, made in Unity3D.
 I have written a [tutorial explaining the basic implementation](https://matiaslavik.codeberg.page/volume-renderer/).
-Have any questions? Create an issue or [contact me on Mastodon](https://fosstodon.org/@unityvolrend) or **微信**: wxid_errnr1hr7p1p22.
+Have any questions? Create an issue or [contact me on Mastodon](https://fosstodon.org/@unityvolrend) or **微信**: mati31415.
 
 I also have [a tutorial video that shows how to use the project](https://www.youtube.com/watch?v=1pIvmhXPh0w)
 
