@@ -17,6 +17,9 @@ namespace UnityVolumeRendering
         public VolumeDataset dataset;
 
         [SerializeField, HideInInspector]
+        public VolumeDataset segmentationDataset;
+
+        [SerializeField, HideInInspector]
         public MeshRenderer meshRenderer;
 
         [SerializeField, HideInInspector]
@@ -96,6 +99,15 @@ namespace UnityVolumeRendering
             }
             await UpdateMaterialPropertiesAsync(progressHandler);
         }
+        
+        public void SetSegmentationDataset(VolumeDataset dataset,  IProgressHandler progressHandler = null)
+        {
+            this.segmentationDataset = dataset;
+            
+            UpdateMaterialProperties(progressHandler);
+            
+        }
+
 
         public void SetTransferFunctionMode(TFRenderMode mode)
         {
@@ -307,14 +319,20 @@ namespace UnityVolumeRendering
         private async Task UpdateMaterialPropertiesAsync(IProgressHandler progressHandler = null)
         {
             await updateMatLock.WaitAsync();
-
+            
             try
             {
+                
                 bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
                 Texture3D gradientTexture = useGradientTexture ? await dataset.GetGradientTextureAsync(progressHandler) : null;
+                
                 Texture3D dataTexture = await dataset.GetDataTextureAsync(progressHandler);
-                meshRenderer.sharedMaterial.SetTexture("_DataTex", dataTexture);
+                Texture3D segmentationTexture = await segmentationDataset.GetDataTextureAsync(progressHandler);
+                
+                meshRenderer.sharedMaterial.SetTexture("_DataTex", dataTexture);   
+                meshRenderer.sharedMaterial.SetTexture("_SegmentationTex", segmentationTexture);
                 meshRenderer.sharedMaterial.SetTexture("_GradientTex", gradientTexture);
+                
                 UpdateMatInternal();
             }
             finally
@@ -329,7 +347,8 @@ namespace UnityVolumeRendering
             {
                 meshRenderer.sharedMaterial.SetTexture("_DataTex", dataset.GetDataTexture());
             }
-
+            meshRenderer.sharedMaterial.SetTexture("_SegmentationTex", segmentationDataset.GetDataTexture());
+            
             if (meshRenderer.sharedMaterial.GetTexture("_NoiseTex") == null)
             {
                 const int noiseDimX = 512;

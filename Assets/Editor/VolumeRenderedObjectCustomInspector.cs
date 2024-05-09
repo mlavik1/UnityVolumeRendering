@@ -74,6 +74,40 @@ namespace UnityVolumeRendering
                     volrendObj.SetGradientVisibilityThreshold(newThreshold);
             }
 
+
+            // Segmentations
+            EditorGUILayout.Space();
+            var segmentationSettings = EditorGUILayout.Foldout(tfSettings, "Segmentations");
+            if (segmentationSettings)
+            {
+                // File Format 
+                ImageFileFormat format = (ImageFileFormat)EditorGUILayout.EnumPopup("File Format", ImageFileFormat.NIFTI);
+            
+                // Import Button
+                if (GUILayout.Button("Import"))
+                {
+                    switch (format)
+                    {
+                        case ImageFileFormat.VASP:
+                            VolumeLoader.LoadParDataset(volrendObj);
+                            break;
+                        case ImageFileFormat.NRRD:
+                            VolumeLoader.LoadNRRDDataset(volrendObj);
+                            break;
+                        case ImageFileFormat.NIFTI:
+                            VolumeLoader.LoadNIFTIDataset(volrendObj);
+                            break;
+                        case ImageFileFormat.Unknown:
+                            Debug.Log("The file format is unknown.");
+                            break;
+                        default:
+                            Debug.Log("Invalid file format.");
+                            break;
+                    }
+                    
+                }
+            }
+
             // Transfer function settings
             EditorGUILayout.Space();
             tfSettings = EditorGUILayout.Foldout(tfSettings, "Transfer function");
