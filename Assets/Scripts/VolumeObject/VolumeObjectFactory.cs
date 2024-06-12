@@ -71,9 +71,8 @@ namespace UnityVolumeRendering
             meshContainer.transform.localScale = dataset.scale;
             meshContainer.transform.localRotation = dataset.rotation;
 
-            // Normalise size (TODO: Add setting for diabling this?)
-            float maxScale = Mathf.Max(dataset.scale.x, dataset.scale.y, dataset.scale.z);
-            volObj.transform.localScale = Vector3.one / maxScale;
+            if (PlayerPrefs.GetInt("NormaliseScaleOnImport") > 0)
+                volObj.NormaliseScale();
         }
 
         public static void SpawnCrossSectionPlane(VolumeRenderedObject volobj)

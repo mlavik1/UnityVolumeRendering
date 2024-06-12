@@ -18,13 +18,24 @@ namespace UnityVolumeRendering
         {
             GUIStyle headerStyle = new GUIStyle(EditorStyles.label);
             headerStyle.fontSize = 20;
+            headerStyle.fixedHeight = 20;
 
             EditorGUILayout.LabelField("Volume rendering import settings", headerStyle);
             EditorGUILayout.Space();
 
-            EditorGUILayout.LabelField("Show promt asking if you want to downscale the dataset on import?");
-            bool showDownscalePrompt = EditorGUILayout.Toggle("Show downscale prompt", EditorPrefs.GetBool("DownscaleDatasetPrompt"));
-            EditorPrefs.SetBool("DownscaleDatasetPrompt", showDownscalePrompt);
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Show prompt asking if you want to downscale the dataset on import?");
+            bool showDownscalePrompt = EditorGUILayout.Toggle("", PlayerPrefs.GetInt("DownscaleDatasetPrompt") > 0);
+            PlayerPrefs.SetInt("DownscaleDatasetPrompt", showDownscalePrompt ? 1 : 0);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space();
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Normalise dataset scale on import?");
+            bool normaliseScaleOnImport = EditorGUILayout.Toggle("", PlayerPrefs.GetInt("NormaliseScaleOnImport") > 0);
+            PlayerPrefs.SetInt("NormaliseScaleOnImport", normaliseScaleOnImport ? 1 : 0);
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
             EditorGUILayout.Space();
