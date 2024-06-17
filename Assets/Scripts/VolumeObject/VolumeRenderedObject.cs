@@ -97,6 +97,12 @@ namespace UnityVolumeRendering
             await UpdateMaterialPropertiesAsync(progressHandler);
         }
 
+        public void NormaliseScale()
+        {
+            float maxScale = Mathf.Max(dataset.scale.x, dataset.scale.y, dataset.scale.z);
+            transform.localScale = Vector3.one / maxScale;
+        }
+
         public void SetTransferFunctionMode(TFRenderMode mode)
         {
             Task task = SetTransferFunctionModeAsync(mode);
