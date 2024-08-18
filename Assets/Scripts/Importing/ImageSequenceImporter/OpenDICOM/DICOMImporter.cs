@@ -147,7 +147,8 @@ namespace UnityVolumeRendering
             // Create dataset
             VolumeDataset dataset = ScriptableObject.CreateInstance<VolumeDataset>();
 
-            ImportSeriesInternal(files, dataset, settings.progressHandler);
+            bool clampHounsfield = PlayerPrefs.GetInt("ClampHounsfield") > 0;
+            ImportSeriesInternal(files, dataset, settings.progressHandler, clampHounsfield);
 
             return dataset;
         }
@@ -165,11 +166,12 @@ namespace UnityVolumeRendering
             // Create dataset
             VolumeDataset dataset = ScriptableObject.CreateInstance<VolumeDataset>();
 
-            await Task.Run(() => ImportSeriesInternal(files,dataset, settings.progressHandler));
+            bool clampHounsfield = PlayerPrefs.GetInt("ClampHounsfield") > 0;
+            await Task.Run(() => ImportSeriesInternal(files,dataset, settings.progressHandler, clampHounsfield));
 
             return dataset;
         }
-        private void ImportSeriesInternal(List<DICOMSliceFile> files,VolumeDataset dataset, IProgressHandler progress)
+        private void ImportSeriesInternal(List<DICOMSliceFile> files,VolumeDataset dataset, IProgressHandler progress, bool clampHounsfield)
         {
             // Calculate slice location from "Image Position" (0020,0032)
             CalculateSliceLocations(files);
@@ -205,7 +207,10 @@ namespace UnityVolumeRendering
                         int pixelValue = pixelArr[pixelIndex];
                         float hounsfieldValue = pixelValue * slice.slope + slice.intercept;
 
-                        dataset.data[dataIndex] = Mathf.Clamp(hounsfieldValue, -1024.0f, 3071.0f);
+                        if (clampHounsfield)
+                            hounsfieldValue = Mathf.Clamp(hounsfieldValue, -1024.0f, 3071.0f);
+
+                        dataset.data[dataIndex] = hounsfieldValue;
                     }
                 }
             }
