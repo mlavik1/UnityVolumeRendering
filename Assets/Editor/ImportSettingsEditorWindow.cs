@@ -37,6 +37,12 @@ namespace UnityVolumeRendering
             PlayerPrefs.SetInt("NormaliseScaleOnImport", normaliseScaleOnImport ? 1 : 0);
             EditorGUILayout.EndHorizontal();
 
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Clamp Hounsfield values to body tissues range?");
+            bool clampHounsfield = EditorGUILayout.Toggle("", PlayerPrefs.GetInt("ClampHounsfield") > 0);
+            PlayerPrefs.SetInt("ClampHounsfield", clampHounsfield ? 1 : 0);
+            EditorGUILayout.EndHorizontal();
+
             EditorGUILayout.Space();
             EditorGUILayout.Space();
 

@@ -105,7 +105,8 @@ namespace UnityVolumeRendering
                 return null;
             }
 
-            ImportSeriesInternal(dicomNames, sequenceSeries, image, size, pixelData, volumeDataset);
+            bool clampHounsfield = PlayerPrefs.GetInt("ClampHounsfield") > 0;
+            ImportSeriesInternal(dicomNames, sequenceSeries, image, size, pixelData, volumeDataset, clampHounsfield);
 
             return volumeDataset;
         }
@@ -128,12 +129,13 @@ namespace UnityVolumeRendering
                 return null;
             }
 
-            await Task.Run(() => ImportSeriesInternal(dicomNames, sequenceSeries, image, size, pixelData, volumeDataset));
+            bool clampHounsfield = PlayerPrefs.GetInt("ClampHounsfield") > 0;
+            await Task.Run(() => ImportSeriesInternal(dicomNames, sequenceSeries, image, size, pixelData, volumeDataset, clampHounsfield));
 
             return volumeDataset;
         }
 
-        private void ImportSeriesInternal(VectorString dicomNames, ImageSequenceSeries sequenceSeries, Image image, VectorUInt32 size, float[] pixelData, VolumeDataset volumeDataset)
+        private void ImportSeriesInternal(VectorString dicomNames, ImageSequenceSeries sequenceSeries, Image image, VectorUInt32 size, float[] pixelData, VolumeDataset volumeDataset, bool clampHounsfield)
         {
             ImageSeriesReader reader = new ImageSeriesReader();
 
@@ -163,7 +165,12 @@ namespace UnityVolumeRendering
             Marshal.Copy(imgBuffer, pixelData, 0, numPixels);
 
             for (int i = 0; i < pixelData.Length; i++)
-                pixelData[i] = Mathf.Clamp(pixelData[i], -1024, 3071);
+            {
+                if (clampHounsfield)
+                    pixelData[i] = Mathf.Clamp(pixelData[i], -1024.0f, 3071.0f);
+                else
+                    pixelData[i] = pixelData[i];
+            }
 
             VectorDouble spacing = image.GetSpacing();
 
