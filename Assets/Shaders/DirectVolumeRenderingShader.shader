@@ -3,6 +3,7 @@
     Properties
     {
         _DataTex ("Data Texture (Generated)", 3D) = "" {}
+        _SegmentationTex ("Segmentation Texture (Generated)", 3D) = "" {}
         _GradientTex("Gradient Texture (Generated)", 3D) = "" {}
         _NoiseTex("Noise Texture (Generated)", 2D) = "white" {}
         _TFTex("Transfer Function Texture (Generated)", 2D) = "" {}
@@ -72,6 +73,7 @@
             };
 
             sampler3D _DataTex;
+            sampler3D _SegmentationTex;
             sampler3D _GradientTex;
             sampler2D _NoiseTex;
             sampler2D _TFTex;
@@ -207,6 +209,12 @@
                 return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f));
             }
 
+            // Get segmentation label
+            float getLabel(float3 pos)
+            {
+                return tex3Dlod(_SegmentationTex, float4(pos.x, pos.y, pos.z, 0.0f));
+            }
+
             // Gets the gradient at the specified position
             float3 getGradient(float3 pos)
             {
@@ -312,13 +320,20 @@
 
                     // Get the dansity/sample value of the current position
                     const float density = getDensity(currPos);
+                    const float segmentationLabel = getLabel(currPos);
 
                     // Apply visibility window
                     if (density < _MinVal || density > _MaxVal) continue;
 
                     // Apply 1D transfer function
 #if !TF2D_ON
+                
                     float4 src = getTF1DColour(density);
+                    if (segmentationLabel == 1 )
+                    {
+                        src = float4(1.0, 0.0, 0.0, 1.0);
+                    }
+                    
                     if (src.a == 0.0)
                         continue;
 #endif
