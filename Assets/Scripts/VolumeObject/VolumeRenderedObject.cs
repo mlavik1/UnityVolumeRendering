@@ -34,6 +34,9 @@ namespace UnityVolumeRendering
         [SerializeField, HideInInspector]
         private LightSource lightSource;
 
+        [SerializeField, HideInInspector]
+        private VolumeRenderedObject secondaryVolume;
+
         // Minimum and maximum gradient threshold for lighting contribution. Values below min will be unlit, and between min and max will be partly shaded.
         [SerializeField, HideInInspector]
         private Vector2 gradientLightingThreshold = new Vector2(0.02f, 0.15f);
@@ -80,6 +83,12 @@ namespace UnityVolumeRendering
             SlicingPlane slicingPlaneComp = sliceRenderingPlane.GetComponent<SlicingPlane>();
             slicingPlaneComp.targetObject = this;
             return slicingPlaneComp;
+        }
+
+        public void SetSecondaryVolume(VolumeRenderedObject volumeObject)
+        {
+            this.secondaryVolume = volumeObject;
+            UpdateMaterialProperties();
         }
 
         public void SetRenderMode(RenderMode mode)
@@ -317,11 +326,10 @@ namespace UnityVolumeRendering
             try
             {
                 bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
-                Texture3D gradientTexture = useGradientTexture ? await dataset.GetGradientTextureAsync(progressHandler) : null;
                 Texture3D dataTexture = await dataset.GetDataTextureAsync(progressHandler);
-                meshRenderer.sharedMaterial.SetTexture("_DataTex", dataTexture);
-                meshRenderer.sharedMaterial.SetTexture("_GradientTex", gradientTexture);
-                UpdateMatInternal();
+                Texture3D gradientTexture = useGradientTexture ? await dataset.GetGradientTextureAsync(progressHandler) : null;
+                Texture3D secondaryDataTexture = await secondaryVolume?.dataset?.GetDataTextureAsync(progressHandler);
+                UpdateMatInternal(dataTexture, gradientTexture, secondaryDataTexture);
             }
             finally
             {
@@ -329,11 +337,28 @@ namespace UnityVolumeRendering
             }
         }
 
-        private void UpdateMatInternal()
+        private void UpdateMatInternal(Texture3D dataTexture, Texture3D gradientTexture, Texture3D secondaryDataTexture)
         {
-            if (meshRenderer.sharedMaterial.GetTexture("_DataTex") == null)
+            if (dataTexture != null)
             {
-                meshRenderer.sharedMaterial.SetTexture("_DataTex", dataset.GetDataTexture());
+                meshRenderer.sharedMaterial.SetTexture("_DataTex", dataTexture);
+            }
+
+            if (gradientTexture != null)
+            {
+                meshRenderer.sharedMaterial.SetTexture("_GradientTex", gradientTexture);
+            }
+
+            if (secondaryDataTexture != null)
+            {
+                Texture2D secondaryTF = secondaryVolume.transferFunction.GetTexture();
+                meshRenderer.sharedMaterial.SetTexture("_SecondaryDataTex", secondaryDataTexture);
+                meshRenderer.sharedMaterial.SetTexture("_SecondaryTFTex", secondaryTF);
+                meshRenderer.sharedMaterial.EnableKeyword("SECONDARY_VOLUME_ON");
+            }
+            else
+            {
+                meshRenderer.sharedMaterial.DisableKeyword("SECONDARY_VOLUME_ON");
             }
 
             if (meshRenderer.sharedMaterial.GetTexture("_NoiseTex") == null)

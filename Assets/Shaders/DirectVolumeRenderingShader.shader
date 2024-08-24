@@ -13,6 +13,8 @@
         _MinGradient("Gradient visibility threshold", Range(0.0, 1.0)) = 0.0
         _LightingGradientThresholdStart("Gradient threshold for lighting (end)", Range(0.0, 1.0)) = 0.0
         _LightingGradientThresholdEnd("Gradient threshold for lighting (start)", Range(0.0, 1.0)) = 0.0
+        _SecondaryDataTex ("Secondary Data Texture (Generated)", 3D) = "" {}
+        _SecondaryTFTex("Transfer Function Texture for secondary volume", 2D) = "" {}
         [HideInInspector] _ShadowVolumeTextureSize("Shadow volume dimensions", Vector) = (1, 1, 1)
         [HideInInspector] _TextureSize("Dataset dimensions", Vector) = (1, 1, 1)
 }
@@ -37,6 +39,7 @@
             #pragma multi_compile __ RAY_TERMINATE_ON
             #pragma multi_compile __ USE_MAIN_LIGHT
             #pragma multi_compile __ CUBIC_INTERPOLATION_ON
+            #pragma multi_compile __ SECONDARY_VOLUME_ON
             #pragma vertex vert
             #pragma fragment frag
 
@@ -76,6 +79,8 @@
             sampler2D _NoiseTex;
             sampler2D _TFTex;
             sampler3D _ShadowVolume;
+            sampler3D _SecondaryDataTex;
+            sampler2D _SecondaryTFTex;
 
             float _MinVal;
             float _MaxVal;
@@ -191,6 +196,12 @@
                 return tex2Dlod(_TFTex, float4(density, gradientMagnitude, 0.0f, 0.0f));
             }
 
+            // Gets the colour from a secondary 1D Transfer Function (x = density)
+            float4 getSecondaryTF1DColour(float density)
+            {
+                return tex2Dlod(_SecondaryTFTex, float4(density, 0.0f, 0.0f, 0.0f));
+            }
+
             // Gets the density at the specified position
             float getDensity(float3 pos)
             {
@@ -198,6 +209,16 @@
                 return interpolateTricubicFast(_DataTex, float3(pos.x, pos.y, pos.z), _TextureSize);
 #else
                 return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f));
+#endif
+            }
+
+            // Gets the density of the secondary volume at the specified position
+            float getSecondaryDensity(float3 pos)
+            {
+#if CUBIC_INTERPOLATION_ON
+                return interpolateTricubicFast(_SecondaryDataTex, float3(pos.x, pos.y, pos.z), _TextureSize);
+#else
+                return tex3Dlod(_SecondaryDataTex, float4(pos.x, pos.y, pos.z, 0.0f));
 #endif
             }
 
@@ -321,6 +342,14 @@
                     float4 src = getTF1DColour(density);
                     if (src.a == 0.0)
                         continue;
+#endif
+
+#if SECONDARY_VOLUME_ON
+                    const float density2 = getSecondaryDensity(currPos);
+                    float4 src2 = getSecondaryTF1DColour(density2);
+                    //src.rgb = src.rgb * (1.0 - src2.a) + src2.rgb * src2.a;
+                    src = src2.a > 0.0 ? src2 : src;
+                    //src.a = src2.a > 0.0 ? src.a : 0.0;
 #endif
 
                     // Calculate gradient (needed for lighting and 2D transfer functions)

@@ -36,6 +36,12 @@ namespace UnityVolumeRendering
             DicomImportAsync(true);
         }
 
+        [MenuItem("Volume Rendering/Load dataset/Load PET-CT DICOM")]
+        private static void ShowPETCTDICOMImporter()
+        {
+            PETCTDicomImportAsync();
+        }
+
         [MenuItem("Assets/Volume Rendering/Import dataset/Import DICOM")]
         private static void ImportDICOMAsset()
         {
@@ -76,6 +82,43 @@ namespace UnityVolumeRendering
             else
             {
                 Debug.LogError("Directory doesn't exist: " + dir);
+            }
+        }
+
+        private static async void PETCTDicomImportAsync()
+        {
+            string dirCT = EditorUtility.OpenFolderPanel("Select a CT DICOM folder to load", "", "");
+            string dirPET = EditorUtility.OpenFolderPanel("Select a PET DICOM folder to load", "", "");
+            if (Directory.Exists(dirCT) && Directory.Exists(dirPET))
+            {
+                Debug.Log("Async dataset load. Hold on.");
+                using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
+                {
+                    progressHandler.StartStage(0.35f, "Importing CT dataset");
+                    Task<VolumeDataset[]> importTaskCT = DicomImportDirectoryAsync(dirCT, progressHandler);
+                    await importTaskCT;
+                    progressHandler.EndStage();
+                    Debug.Assert(importTaskCT.Result.Length > 0);
+                    progressHandler.StartStage(0.35f, "Importing PET dataset");
+                    Task<VolumeDataset[]> importTaskPET = DicomImportDirectoryAsync(dirPET, progressHandler);
+                    await importTaskPET;
+                    progressHandler.EndStage();
+                    Debug.Assert(importTaskPET.Result.Length > 0);
+                    progressHandler.StartStage(0.3f, "Spawning dataset");
+                    VolumeDataset datasetCT = importTaskCT.Result[0];
+                    VolumeDataset datasetPET = importTaskPET.Result[0];
+                    VolumeRenderedObject objCT = await VolumeObjectFactory.CreateObjectAsync(datasetCT);
+                    VolumeRenderedObject objPET = await VolumeObjectFactory.CreateObjectAsync(datasetPET);
+                    objPET.transferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
+                    objPET.transferFunction.GenerateTexture();
+                    progressHandler.EndStage();
+                    objCT.SetSecondaryVolume(objPET);
+                    objPET.gameObject.SetActive(false);
+                }
+            }
+            else
+            {
+                Debug.LogError("Directory doesn't exist");
             }
         }
 
