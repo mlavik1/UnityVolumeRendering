@@ -2,6 +2,7 @@
 using UnityEditor;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace UnityVolumeRendering
 {
@@ -11,6 +12,7 @@ namespace UnityVolumeRendering
         private bool tfSettings = true;
         private bool lightSettings = true;
         private bool otherSettings = true;
+        private bool secondaryVolumeSettings = true;
         private float currentProgress = 1.0f;
         private string currentProgressDescrition = "";
         private bool progressDirty = false;
@@ -137,6 +139,30 @@ namespace UnityVolumeRendering
                 }
             }
 
+            // Secondary volume
+            secondaryVolumeSettings = EditorGUILayout.Foldout(secondaryVolumeSettings, "Overlay volume");
+            VolumeRenderedObject secondaryObject = volrendObj.GetSecondaryVolume();
+            if (secondaryObject == null)
+            {
+                if (GUILayout.Button("Load PET data"))
+                {
+                    ImportPetScan(volrendObj);
+                }
+            }
+            else
+            {
+                if (GUILayout.Button("Edit secondary transfer function"))
+                {
+                    TransferFunctionEditorWindow.ShowWindow(secondaryObject);
+                }
+
+                if (GUILayout.Button("Remove secondary volume"))
+                {
+                    volrendObj.SetSecondaryVolume(null);
+                    GameObject.Destroy(secondaryObject.gameObject);
+                }
+            }
+
             // Other settings
             GUILayout.Space(10);
             otherSettings = EditorGUILayout.Foldout(otherSettings, "Other Settings");
@@ -151,6 +177,14 @@ namespace UnityVolumeRendering
                 volrendObj.SetCubicInterpolationEnabled(GUILayout.Toggle(volrendObj.GetCubicInterpolationEnabled(), "Enable cubic interpolation (better quality)"));
                 volrendObj.SetSamplingRateMultiplier(EditorGUILayout.Slider("Sampling rate multiplier", volrendObj.GetSamplingRateMultiplier(), 0.2f, 2.0f));
             }
+        }
+        private static async void ImportPetScan(VolumeRenderedObject targetObject)
+        {
+            VolumeRenderedObject petObject = await VolumeRendererEditorFunctions.DicomImportAsync(true);
+            petObject.transferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
+            petObject.transferFunction.GenerateTexture();
+            targetObject.SetSecondaryVolume(petObject);
+            petObject.gameObject.SetActive(false);
         }
     }
 }

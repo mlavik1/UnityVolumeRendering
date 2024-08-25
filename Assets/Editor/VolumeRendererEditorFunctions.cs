@@ -33,7 +33,7 @@ namespace UnityVolumeRendering
         [MenuItem("Volume Rendering/Load dataset/Load DICOM")]
         private static void ShowDICOMImporter()
         {
-            DicomImportAsync(true);
+            _ = DicomImportAsync(true);
         }
 
         [MenuItem("Volume Rendering/Load dataset/Load PET-CT DICOM")]
@@ -45,11 +45,12 @@ namespace UnityVolumeRendering
         [MenuItem("Assets/Volume Rendering/Import dataset/Import DICOM")]
         private static void ImportDICOMAsset()
         {
-            DicomImportAsync(false);
+            _ = DicomImportAsync(false);
         }
 
-        private static async void DicomImportAsync(bool spawnInScene)
+        public static async Task<VolumeRenderedObject> DicomImportAsync(bool spawnInScene)
         {
+            VolumeRenderedObject obj = null;
             string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
             if (Directory.Exists(dir))
             {
@@ -66,7 +67,7 @@ namespace UnityVolumeRendering
                         if (spawnInScene)
                         {
                             VolumeDataset dataset = importTask.Result[i];
-                            VolumeRenderedObject obj = await VolumeObjectFactory.CreateObjectAsync(dataset);
+                            obj = await VolumeObjectFactory.CreateObjectAsync(dataset);
                             obj.transform.position = new Vector3(i, 0, 0);
                         }
                         else
@@ -83,6 +84,7 @@ namespace UnityVolumeRendering
             {
                 Debug.LogError("Directory doesn't exist: " + dir);
             }
+            return obj;
         }
 
         private static async void PETCTDicomImportAsync()

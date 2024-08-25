@@ -85,6 +85,11 @@ namespace UnityVolumeRendering
             return slicingPlaneComp;
         }
 
+        public VolumeRenderedObject GetSecondaryVolume()
+        {
+            return this.secondaryVolume;
+        }
+
         public void SetSecondaryVolume(VolumeRenderedObject volumeObject)
         {
             this.secondaryVolume = volumeObject;
