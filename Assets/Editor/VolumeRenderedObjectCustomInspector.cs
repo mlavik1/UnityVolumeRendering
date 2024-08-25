@@ -180,11 +180,27 @@ namespace UnityVolumeRendering
         }
         private static async void ImportPetScan(VolumeRenderedObject targetObject)
         {
-            VolumeRenderedObject petObject = await VolumeRendererEditorFunctions.DicomImportAsync(true);
-            petObject.transferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
-            petObject.transferFunction.GenerateTexture();
-            targetObject.SetSecondaryVolume(petObject);
-            petObject.gameObject.SetActive(false);
+            string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
+            if (Directory.Exists(dir))
+            {
+                using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
+                {
+                    progressHandler.StartStage(0.7f, "Importing PET dataset");
+                    Task<VolumeDataset[]> importTask = EditorDatasetImportUtils.ImportDicomDirectoryAsync(dir, progressHandler);
+                    await importTask;
+                    progressHandler.EndStage();
+
+                    progressHandler.StartStage(0.3f, "Spawning PET dataset");
+                    Debug.Assert(importTask.Result.Length > 0);
+                    VolumeRenderedObject petObject = await VolumeObjectFactory.CreateObjectAsync(importTask.Result[0]);
+                    petObject.transform.position = targetObject.transform.position;
+                    petObject.transferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
+                    petObject.transferFunction.GenerateTexture();
+                    targetObject.SetSecondaryVolume(petObject);
+                    petObject.gameObject.SetActive(false);
+                    progressHandler.EndStage();
+                }
+            }
         }
     }
 }
