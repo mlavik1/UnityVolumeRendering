@@ -347,7 +347,7 @@ namespace UnityVolumeRendering
                 bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
                 Texture3D dataTexture = await dataset.GetDataTextureAsync(progressHandler);
                 Texture3D gradientTexture = useGradientTexture ? await dataset.GetGradientTextureAsync(progressHandler) : null;
-                Texture3D secondaryDataTexture = await secondaryDataset?.GetDataTextureAsync(progressHandler);
+                Texture3D secondaryDataTexture = secondaryDataset ? await secondaryDataset?.GetDataTextureAsync(progressHandler) : null;
                 UpdateMatInternal(dataTexture, gradientTexture, secondaryDataTexture);
             }
             finally
