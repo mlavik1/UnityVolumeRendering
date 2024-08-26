@@ -141,25 +141,29 @@ namespace UnityVolumeRendering
 
             // Secondary volume
             secondaryVolumeSettings = EditorGUILayout.Foldout(secondaryVolumeSettings, "Overlay volume");
-            VolumeRenderedObject secondaryObject = volrendObj.GetSecondaryVolume();
-            if (secondaryObject == null)
+            VolumeDataset secondaryDataset = volrendObj.GetSecondaryDataset();
+            TransferFunction secondaryTransferFunction = volrendObj.GetSecondaryTransferFunction();
+            if (secondaryDataset == null)
             {
-                if (GUILayout.Button("Load PET data"))
+                if (GUILayout.Button("Load PET (NRRD, NIFTI)"))
                 {
                     ImportPetScan(volrendObj);
+                }
+                if (GUILayout.Button("Load PET (DICOM)"))
+                {
+                    ImportPetScanDicom(volrendObj);
                 }
             }
             else
             {
                 if (GUILayout.Button("Edit secondary transfer function"))
                 {
-                    TransferFunctionEditorWindow.ShowWindow(secondaryObject);
+                    TransferFunctionEditorWindow.ShowWindow(volrendObj, secondaryTransferFunction);
                 }
 
                 if (GUILayout.Button("Remove secondary volume"))
                 {
-                    volrendObj.SetSecondaryVolume(null);
-                    GameObject.Destroy(secondaryObject.gameObject);
+                    volrendObj.SetSecondaryDataset(null);
                 }
             }
 
@@ -180,25 +184,53 @@ namespace UnityVolumeRendering
         }
         private static async void ImportPetScan(VolumeRenderedObject targetObject)
         {
+            string filePath = EditorUtility.OpenFilePanel("Select a folder to load", "", "");
+            ImageFileFormat imageFileFormat = DatasetFormatUtilities.GetImageFileFormat(filePath);
+            if (!File.Exists(filePath))
+            {
+                Debug.LogError($"File doesn't exist: {filePath}");
+                return;
+            }
+            if (imageFileFormat == ImageFileFormat.Unknown)
+            {
+                Debug.LogError($"Invalid file format: {Path.GetExtension(filePath)}");
+                return;
+            }
+
+            using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
+            {
+                progressHandler.StartStage(1.0f, "Importing PET dataset");
+                IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(imageFileFormat);
+                Task<VolumeDataset> importTask = importer.ImportAsync(filePath);
+                await importTask;
+                progressHandler.EndStage();
+
+                TransferFunction secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
+                secondaryTransferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
+                secondaryTransferFunction.GenerateTexture();
+                targetObject.SetSecondaryDataset(importTask.Result);
+                targetObject.SetSecondaryTransferFunction(secondaryTransferFunction);
+            }
+        }
+
+        private static async void ImportPetScanDicom(VolumeRenderedObject targetObject)
+        {
             string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
             if (Directory.Exists(dir))
             {
                 using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
                 {
-                    progressHandler.StartStage(0.7f, "Importing PET dataset");
+                    progressHandler.StartStage(1.0f, "Importing PET dataset");
                     Task<VolumeDataset[]> importTask = EditorDatasetImportUtils.ImportDicomDirectoryAsync(dir, progressHandler);
                     await importTask;
                     progressHandler.EndStage();
 
-                    progressHandler.StartStage(0.3f, "Spawning PET dataset");
                     Debug.Assert(importTask.Result.Length > 0);
-                    VolumeRenderedObject petObject = await VolumeObjectFactory.CreateObjectAsync(importTask.Result[0]);
-                    petObject.transform.position = targetObject.transform.position;
-                    petObject.transferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
-                    petObject.transferFunction.GenerateTexture();
-                    targetObject.SetSecondaryVolume(petObject);
-                    petObject.gameObject.SetActive(false);
-                    progressHandler.EndStage();
+                    TransferFunction secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
+                    secondaryTransferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
+                    secondaryTransferFunction.GenerateTexture();
+                    targetObject.SetSecondaryDataset(importTask.Result[0]);
+                    targetObject.SetSecondaryTransferFunction(secondaryTransferFunction);
                 }
             }
         }

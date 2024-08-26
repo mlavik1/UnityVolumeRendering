@@ -35,7 +35,10 @@ namespace UnityVolumeRendering
         private LightSource lightSource;
 
         [SerializeField, HideInInspector]
-        private VolumeRenderedObject secondaryVolume;
+        private VolumeDataset secondaryDataset;
+
+        [SerializeField, HideInInspector]
+        private TransferFunction secondaryTransferFunction;
 
         // Minimum and maximum gradient threshold for lighting contribution. Values below min will be unlit, and between min and max will be partly shaded.
         [SerializeField, HideInInspector]
@@ -85,14 +88,25 @@ namespace UnityVolumeRendering
             return slicingPlaneComp;
         }
 
-        public VolumeRenderedObject GetSecondaryVolume()
+        public VolumeDataset GetSecondaryDataset()
         {
-            return this.secondaryVolume;
+            return this.secondaryDataset;
         }
 
-        public void SetSecondaryVolume(VolumeRenderedObject volumeObject)
+        public TransferFunction GetSecondaryTransferFunction()
         {
-            this.secondaryVolume = volumeObject;
+            return this.secondaryTransferFunction;
+        }
+
+        public void SetSecondaryDataset(VolumeDataset dataset)
+        {
+            this.secondaryDataset = dataset;
+            UpdateMaterialProperties();
+        }
+
+        public void SetSecondaryTransferFunction(TransferFunction tf)
+        {
+            this.secondaryTransferFunction = tf;
             UpdateMaterialProperties();
         }
 
@@ -333,7 +347,7 @@ namespace UnityVolumeRendering
                 bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
                 Texture3D dataTexture = await dataset.GetDataTextureAsync(progressHandler);
                 Texture3D gradientTexture = useGradientTexture ? await dataset.GetGradientTextureAsync(progressHandler) : null;
-                Texture3D secondaryDataTexture = await secondaryVolume?.dataset?.GetDataTextureAsync(progressHandler);
+                Texture3D secondaryDataTexture = await secondaryDataset?.GetDataTextureAsync(progressHandler);
                 UpdateMatInternal(dataTexture, gradientTexture, secondaryDataTexture);
             }
             finally
@@ -356,7 +370,7 @@ namespace UnityVolumeRendering
 
             if (secondaryDataTexture != null)
             {
-                Texture2D secondaryTF = secondaryVolume.transferFunction.GetTexture();
+                Texture2D secondaryTF = secondaryTransferFunction.GetTexture();
                 meshRenderer.sharedMaterial.SetTexture("_SecondaryDataTex", secondaryDataTexture);
                 meshRenderer.sharedMaterial.SetTexture("_SecondaryTFTex", secondaryTF);
                 meshRenderer.sharedMaterial.EnableKeyword("SECONDARY_VOLUME_ON");
