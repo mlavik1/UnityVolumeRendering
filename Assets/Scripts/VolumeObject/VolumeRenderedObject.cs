@@ -1,9 +1,20 @@
-﻿using System.Threading;
+﻿using openDicom.Encoding;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
 namespace UnityVolumeRendering
 {
+    [System.Serializable]
+    public struct SegmentationLabel
+    {
+        public int id;
+        public string name;
+        public Color colour;
+    }
+
     [ExecuteInEditMode]
     public class VolumeRenderedObject : MonoBehaviour
     {
@@ -39,6 +50,9 @@ namespace UnityVolumeRendering
 
         [SerializeField, HideInInspector]
         private TransferFunction secondaryTransferFunction;
+
+        [SerializeField, HideInInspector]
+        private List<SegmentationLabel> segmentationLabels = new List<SegmentationLabel>();
 
         // Minimum and maximum gradient threshold for lighting contribution. Values below min will be unlit, and between min and max will be partly shaded.
         [SerializeField, HideInInspector]
@@ -93,20 +107,92 @@ namespace UnityVolumeRendering
             return this.secondaryDataset;
         }
 
-        public TransferFunction GetSecondaryTransferFunction()
-        {
-            return this.secondaryTransferFunction;
-        }
-
         public void SetSecondaryDataset(VolumeDataset dataset)
         {
             this.secondaryDataset = dataset;
             UpdateMaterialProperties();
         }
 
+        public TransferFunction GetSecondaryTransferFunction()
+        {
+            return this.secondaryTransferFunction;
+        }
+
         public void SetSecondaryTransferFunction(TransferFunction tf)
         {
             this.secondaryTransferFunction = tf;
+            UpdateMaterialProperties();
+        }
+
+        public List<SegmentationLabel> GetSegmentationLabels()
+        {
+            return segmentationLabels;
+        }
+
+        public void AddSegmentation(VolumeDataset dataset)
+        {
+            if (dataset.data.Length != secondaryDataset.data.Length)
+            {
+                Debug.LogError("Can't add segmentation with different dimension than original dataset.");
+                return;
+            }
+
+            int segmentationId = segmentationLabels.Count > 0 ? segmentationLabels.Max(l => l.id) + 1 : 1;
+
+            if (segmentationLabels.Count == 0)
+            {
+                secondaryDataset = dataset;
+            }
+            else
+            {
+                for (int i = 0; i < secondaryDataset.data.Length; i++)
+                {
+                    secondaryDataset.data[i] = dataset.data[i] > 0.0f ? (float)segmentationId : secondaryDataset.data[i];
+                }
+                secondaryDataset.RecalculateBounds();
+                secondaryDataset.RecreateDataTexture();
+                secondaryDataset.GetDataTexture().filterMode = FilterMode.Point;
+            }
+            SegmentationLabel segmentationLabel = new SegmentationLabel();
+            segmentationLabel.id = segmentationId;
+            segmentationLabel.name = dataset.name;
+            segmentationLabel.colour = Random.ColorHSV();
+            segmentationLabels.Add(segmentationLabel);
+            UpdateSegmentationLabels();
+        }
+
+        public void UpdateSegmentationLabels()
+        {
+            if (segmentationLabels.Count == 0)
+            {
+                return;
+            }
+
+            segmentationLabels.OrderBy(l => l.id);
+            if (secondaryTransferFunction == null)
+            {
+                secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
+            }
+            secondaryTransferFunction.alphaControlPoints.Clear();
+            secondaryTransferFunction.colourControlPoints.Clear();
+            int maxSegmentationId = segmentationLabels[segmentationLabels.Count - 1].id;
+            float minDataValue = secondaryDataset.GetMinDataValue();
+            float maxDataValue = secondaryDataset.GetMaxDataValue();
+            secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(0.0f, 0.0f));
+            secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(1.0f, 1.0f));
+            for (int i = 0; i < segmentationLabels.Count; i++)
+            {
+                SegmentationLabel segmentationLabel = segmentationLabels[i];
+                float t = segmentationLabel.id / maxDataValue;
+                secondaryTransferFunction.colourControlPoints.Add(new TFColourControlPoint(t, segmentationLabel.colour));
+                if (i == 0)
+                {
+                    secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(t - 0.01f, 0.0f));
+                    secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(t, 1.0f));
+                }
+            }
+            secondaryTransferFunction.GenerateTexture();
+            secondaryTransferFunction.GetTexture().filterMode = FilterMode.Point;
             UpdateMaterialProperties();
         }
 

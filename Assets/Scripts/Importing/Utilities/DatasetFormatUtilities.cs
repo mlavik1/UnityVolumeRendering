@@ -12,7 +12,8 @@ namespace UnityVolumeRendering
                 case ".vasp":
                     return ImageFileFormat.VASP;
                 case ".nii":
-                    return ImageFileFormat.NIFTI;
+                case ".gz":
+                    return filePath.ToLower().EndsWith(".nii.gz") ? ImageFileFormat.NIFTI : ImageFileFormat.Unknown;
                 default:
                     return ImageFileFormat.Unknown;
             }

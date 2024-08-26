@@ -13,6 +13,7 @@ namespace UnityVolumeRendering
         private bool lightSettings = true;
         private bool otherSettings = true;
         private bool secondaryVolumeSettings = true;
+        private bool segmentationSettings = true;
         private float currentProgress = 1.0f;
         private string currentProgressDescrition = "";
         private bool progressDirty = false;
@@ -140,7 +141,7 @@ namespace UnityVolumeRendering
             }
 
             // Secondary volume
-            secondaryVolumeSettings = EditorGUILayout.Foldout(secondaryVolumeSettings, "Overlay volume");
+            secondaryVolumeSettings = EditorGUILayout.Foldout(secondaryVolumeSettings, "PET/overlay volume");
             VolumeDataset secondaryDataset = volrendObj.GetSecondaryDataset();
             TransferFunction secondaryTransferFunction = volrendObj.GetSecondaryTransferFunction();
             if (secondaryDataset == null)
@@ -166,6 +167,39 @@ namespace UnityVolumeRendering
                     volrendObj.SetSecondaryDataset(null);
                 }
             }
+
+            // Segmentations
+            segmentationSettings = EditorGUILayout.Foldout(segmentationSettings, "Segmentations");
+            List<SegmentationLabel> segmentationLabels = volrendObj.GetSegmentationLabels();
+            if (segmentationLabels != null && segmentationLabels.Count > 0)
+            {
+                for (int i = 0; i < segmentationLabels.Count; i++)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    SegmentationLabel segmentationlabel = segmentationLabels[i];
+                    segmentationlabel.name = EditorGUILayout.TextField(segmentationlabel.name);
+                    segmentationlabel.colour = EditorGUILayout.ColorField(segmentationlabel.colour);
+                    segmentationLabels[i] = segmentationlabel;
+                    if (GUILayout.Button("delete"))
+                    {
+                        segmentationLabels.RemoveAt(i);
+                        volrendObj.UpdateSegmentationLabels();
+                    }
+                    if (GUILayout.Button("test"))
+                    {
+                        volrendObj.UpdateSegmentationLabels();
+                    }
+                    EditorGUILayout.EndHorizontal();
+                }
+            }
+            if (GUILayout.Button("Add segmentation (NRRD, NIFTI)"))
+            {
+                ImportSegmentation(volrendObj);
+            }
+            /*if (GUILayout.Button("Add segmentation (DICOM)"))
+            {
+                ImportSegmentationDicom(volrendObj);
+            }*/
 
             // Other settings
             GUILayout.Space(10);
@@ -232,6 +266,33 @@ namespace UnityVolumeRendering
                     targetObject.SetSecondaryDataset(importTask.Result[0]);
                     targetObject.SetSecondaryTransferFunction(secondaryTransferFunction);
                 }
+            }
+        }
+
+        private static async void ImportSegmentation(VolumeRenderedObject targetObject)
+        {
+            string filePath = EditorUtility.OpenFilePanel("Select a folder to load", "", "");
+            ImageFileFormat imageFileFormat = DatasetFormatUtilities.GetImageFileFormat(filePath);
+            if (!File.Exists(filePath))
+            {
+                Debug.LogError($"File doesn't exist: {filePath}");
+                return;
+            }
+            if (imageFileFormat == ImageFileFormat.Unknown)
+            {
+                Debug.LogError($"Invalid file format: {Path.GetExtension(filePath)}");
+                return;
+            }
+
+            using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
+            {
+                progressHandler.StartStage(1.0f, "Importing segmentation dataset");
+                IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(imageFileFormat);
+                Task<VolumeDataset> importTask = importer.ImportAsync(filePath);
+                await importTask;
+                progressHandler.EndStage();
+
+                targetObject.AddSegmentation(importTask.Result);
             }
         }
     }
