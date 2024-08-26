@@ -131,7 +131,7 @@ namespace UnityVolumeRendering
 
         public void AddSegmentation(VolumeDataset dataset)
         {
-            if (dataset.data.Length != secondaryDataset.data.Length)
+            if (secondaryDataset != null && dataset.data.Length != secondaryDataset.data.Length)
             {
                 Debug.LogError("Can't add segmentation with different dimension than original dataset.");
                 return;
