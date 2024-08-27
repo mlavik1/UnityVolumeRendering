@@ -520,7 +520,7 @@ namespace UnityVolumeRendering
                     meshRenderer.sharedMaterial.EnableKeyword("MULTIVOLUME_ISOLATE");
                     meshRenderer.sharedMaterial.DisableKeyword("MULTIVOLUME_OVERLAY");
                 }
-                else if(overlayType == OverlayType.Overlay)
+                else
                 {
                     meshRenderer.sharedMaterial.EnableKeyword("MULTIVOLUME_OVERLAY");
                     meshRenderer.sharedMaterial.DisableKeyword("MULTIVOLUME_ISOLATE");
