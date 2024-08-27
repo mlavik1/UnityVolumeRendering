@@ -7,14 +7,6 @@ using UnityEngine;
 
 namespace UnityVolumeRendering
 {
-    [System.Serializable]
-    public struct SegmentationLabel
-    {
-        public int id;
-        public string name;
-        public Color colour;
-    }
-
     [ExecuteInEditMode]
     public class VolumeRenderedObject : MonoBehaviour
     {
@@ -53,6 +45,12 @@ namespace UnityVolumeRendering
 
         [SerializeField, HideInInspector]
         private List<SegmentationLabel> segmentationLabels = new List<SegmentationLabel>();
+
+        [SerializeField, HideInInspector]
+        private OverlayType overlayType = OverlayType.None;
+
+        [SerializeField, HideInInspector]
+        private SegmentationRenderMode segmentationRenderMode = SegmentationRenderMode.OverlayColour;
 
         // Minimum and maximum gradient threshold for lighting contribution. Values below min will be unlit, and between min and max will be partly shaded.
         [SerializeField, HideInInspector]
@@ -102,15 +100,9 @@ namespace UnityVolumeRendering
             return slicingPlaneComp;
         }
 
-        public VolumeDataset GetSecondaryDataset()
+        public OverlayType GetOverlayType()
         {
-            return this.secondaryDataset;
-        }
-
-        public void SetSecondaryDataset(VolumeDataset dataset)
-        {
-            this.secondaryDataset = dataset;
-            UpdateMaterialProperties();
+            return this.overlayType;
         }
 
         public TransferFunction GetSecondaryTransferFunction()
@@ -122,6 +114,34 @@ namespace UnityVolumeRendering
         {
             this.secondaryTransferFunction = tf;
             UpdateMaterialProperties();
+        }
+
+        public void SetOverlayDataset(VolumeDataset dataset)
+        {
+            if (dataset != null)
+            {
+                this.overlayType = OverlayType.Overlay;
+            }
+            else if(this.overlayType == OverlayType.Overlay)
+            {
+                this.overlayType = OverlayType.None;
+            }
+            this.secondaryDataset = dataset;
+            UpdateMaterialProperties();
+        }
+
+        public SegmentationRenderMode GetSegmentationRenderMode()
+        {
+            return segmentationRenderMode;
+        }
+
+        public void SetSegmentationRenderMode(SegmentationRenderMode mode)
+        {
+            if (mode != segmentationRenderMode)
+            {
+                segmentationRenderMode = mode;
+                UpdateMaterialProperties();
+            }
         }
 
         public List<SegmentationLabel> GetSegmentationLabels()
@@ -136,6 +156,8 @@ namespace UnityVolumeRendering
                 Debug.LogError("Can't add segmentation with different dimension than original dataset.");
                 return;
             }
+
+            overlayType = OverlayType.Segmentation;
 
             int segmentationId = segmentationLabels.Count > 0 ? segmentationLabels.Max(l => l.id) + 1 : 1;
 
@@ -161,10 +183,44 @@ namespace UnityVolumeRendering
             UpdateSegmentationLabels();
         }
 
+        public void RemoveSegmentation(int id)
+        {
+            int segmentationIndex = segmentationLabels.FindIndex(s => s.id == id);
+            if (segmentationIndex != -1)
+            {
+                segmentationLabels.RemoveAt(segmentationIndex);
+            }
+            else
+            {
+                Debug.LogError($"Segmentation not found: {id}");
+            }
+            for (int i = 0; i < secondaryDataset.data.Length; i++)
+            {
+                secondaryDataset.data[i] = secondaryDataset.data[i] == id ? 0 : secondaryDataset.data[i];
+            }
+            secondaryDataset.RecalculateBounds();
+            secondaryDataset.RecreateDataTexture();
+            secondaryDataset.GetDataTexture().filterMode = FilterMode.Point;
+            UpdateSegmentationLabels();
+        }
+
+        public void ClearSegmentations()
+        {
+            if (overlayType == OverlayType.Segmentation)
+            {
+                secondaryDataset = null;
+                secondaryTransferFunction = null;
+                overlayType = OverlayType.None;
+            }
+            segmentationLabels.Clear();
+            UpdateMaterialProperties();
+        }
+
         public void UpdateSegmentationLabels()
         {
             if (segmentationLabels.Count == 0)
             {
+                UpdateMaterialProperties();
                 return;
             }
 
@@ -454,16 +510,26 @@ namespace UnityVolumeRendering
                 meshRenderer.sharedMaterial.SetTexture("_GradientTex", gradientTexture);
             }
 
-            if (secondaryDataTexture != null)
+            if (overlayType != OverlayType.None && secondaryDataTexture != null)
             {
                 Texture2D secondaryTF = secondaryTransferFunction.GetTexture();
                 meshRenderer.sharedMaterial.SetTexture("_SecondaryDataTex", secondaryDataTexture);
                 meshRenderer.sharedMaterial.SetTexture("_SecondaryTFTex", secondaryTF);
-                meshRenderer.sharedMaterial.EnableKeyword("SECONDARY_VOLUME_ON");
+                if (overlayType == OverlayType.Segmentation && segmentationRenderMode == SegmentationRenderMode.Isolate)
+                {
+                    meshRenderer.sharedMaterial.EnableKeyword("MULTIVOLUME_ISOLATE");
+                    meshRenderer.sharedMaterial.DisableKeyword("MULTIVOLUME_OVERLAY");
+                }
+                else if(overlayType == OverlayType.Overlay)
+                {
+                    meshRenderer.sharedMaterial.EnableKeyword("MULTIVOLUME_OVERLAY");
+                    meshRenderer.sharedMaterial.DisableKeyword("MULTIVOLUME_ISOLATE");
+                }
             }
             else
             {
-                meshRenderer.sharedMaterial.DisableKeyword("SECONDARY_VOLUME_ON");
+                meshRenderer.sharedMaterial.DisableKeyword("MULTIVOLUME_OVERLAY");
+                meshRenderer.sharedMaterial.DisableKeyword("MULTIVOLUME_ISOLATE");
             }
 
             if (meshRenderer.sharedMaterial.GetTexture("_NoiseTex") == null)

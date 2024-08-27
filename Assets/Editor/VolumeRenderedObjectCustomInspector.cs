@@ -142,9 +142,9 @@ namespace UnityVolumeRendering
 
             // Secondary volume
             secondaryVolumeSettings = EditorGUILayout.Foldout(secondaryVolumeSettings, "PET/overlay volume");
-            VolumeDataset secondaryDataset = volrendObj.GetSecondaryDataset();
+            OverlayType overlayType = volrendObj.GetOverlayType();
             TransferFunction secondaryTransferFunction = volrendObj.GetSecondaryTransferFunction();
-            if (secondaryDataset == null)
+            if (overlayType != OverlayType.Overlay)
             {
                 if (GUILayout.Button("Load PET (NRRD, NIFTI)"))
                 {
@@ -164,7 +164,7 @@ namespace UnityVolumeRendering
 
                 if (GUILayout.Button("Remove secondary volume"))
                 {
-                    volrendObj.SetSecondaryDataset(null);
+                    volrendObj.SetOverlayDataset(null);
                 }
             }
 
@@ -177,20 +177,24 @@ namespace UnityVolumeRendering
                 {
                     EditorGUILayout.BeginHorizontal();
                     SegmentationLabel segmentationlabel = segmentationLabels[i];
+                    EditorGUI.BeginChangeCheck();
                     segmentationlabel.name = EditorGUILayout.TextField(segmentationlabel.name);
                     segmentationlabel.colour = EditorGUILayout.ColorField(segmentationlabel.colour);
+                    bool changed = EditorGUI.EndChangeCheck();
                     segmentationLabels[i] = segmentationlabel;
                     if (GUILayout.Button("delete"))
                     {
-                        segmentationLabels.RemoveAt(i);
-                        volrendObj.UpdateSegmentationLabels();
+                        volrendObj.RemoveSegmentation(segmentationlabel.id);
                     }
-                    if (GUILayout.Button("test"))
+                    EditorGUILayout.EndHorizontal();
+                    if (changed)
                     {
                         volrendObj.UpdateSegmentationLabels();
                     }
-                    EditorGUILayout.EndHorizontal();
                 }
+
+                SegmentationRenderMode segmentationRendreMode = (SegmentationRenderMode)EditorGUILayout.EnumPopup("Render mode", volrendObj.GetSegmentationRenderMode());
+                volrendObj.SetSegmentationRenderMode(segmentationRendreMode);
             }
             if (GUILayout.Button("Add segmentation (NRRD, NIFTI)"))
             {
@@ -200,6 +204,10 @@ namespace UnityVolumeRendering
             {
                 ImportSegmentationDicom(volrendObj);
             }*/
+            if (GUILayout.Button("Clear segmentations"))
+            {
+                volrendObj.ClearSegmentations();
+            }
 
             // Other settings
             GUILayout.Space(10);
@@ -242,7 +250,7 @@ namespace UnityVolumeRendering
                 TransferFunction secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
                 secondaryTransferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
                 secondaryTransferFunction.GenerateTexture();
-                targetObject.SetSecondaryDataset(importTask.Result);
+                targetObject.SetOverlayDataset(importTask.Result);
                 targetObject.SetSecondaryTransferFunction(secondaryTransferFunction);
             }
         }
@@ -263,7 +271,7 @@ namespace UnityVolumeRendering
                     TransferFunction secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
                     secondaryTransferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
                     secondaryTransferFunction.GenerateTexture();
-                    targetObject.SetSecondaryDataset(importTask.Result[0]);
+                    targetObject.SetOverlayDataset(importTask.Result[0]);
                     targetObject.SetSecondaryTransferFunction(secondaryTransferFunction);
                 }
             }
