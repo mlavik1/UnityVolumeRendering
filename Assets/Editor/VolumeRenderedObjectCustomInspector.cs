@@ -13,8 +13,8 @@ namespace UnityVolumeRendering
         private bool tfSettings = true;
         private bool lightSettings = true;
         private bool otherSettings = true;
-        private bool secondaryVolumeSettings = true;
-        private bool segmentationSettings = true;
+        private bool overlayVolumeSettings = false;
+        private bool segmentationSettings = false;
         private float currentProgress = 1.0f;
         private string currentProgressDescrition = "";
         private bool progressDirty = false;
@@ -141,93 +141,99 @@ namespace UnityVolumeRendering
                 }
             }
 
-            // Secondary volume
-            secondaryVolumeSettings = EditorGUILayout.Foldout(secondaryVolumeSettings, "PET/overlay volume");
-            OverlayType overlayType = volrendObj.GetOverlayType();
-            TransferFunction secondaryTransferFunction = volrendObj.GetSecondaryTransferFunction();
-            if (overlayType != OverlayType.Overlay)
+            // Overlay volume
+            overlayVolumeSettings = EditorGUILayout.Foldout(overlayVolumeSettings, "PET/overlay volume");
+            if (overlayVolumeSettings)
             {
-                if (GUILayout.Button("Load PET (NRRD, NIFTI)"))
+                OverlayType overlayType = volrendObj.GetOverlayType();
+                TransferFunction secondaryTransferFunction = volrendObj.GetSecondaryTransferFunction();
+                if (overlayType != OverlayType.Overlay)
                 {
-                    ImportImageFileDataset(volrendObj, (VolumeDataset dataset) =>
+                    if (GUILayout.Button("Load PET (NRRD, NIFTI)"))
                     {
-                        TransferFunction secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
-                        secondaryTransferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
-                        secondaryTransferFunction.GenerateTexture();
-                        volrendObj.SetOverlayDataset(dataset);
-                        volrendObj.SetSecondaryTransferFunction(secondaryTransferFunction);
-                    });
-                }
-                if (GUILayout.Button("Load PET (DICOM)"))
-                {
-                    ImportDicomDataset(volrendObj, (VolumeDataset dataset) =>
+                        ImportImageFileDataset(volrendObj, (VolumeDataset dataset) =>
+                        {
+                            TransferFunction secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
+                            secondaryTransferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
+                            secondaryTransferFunction.GenerateTexture();
+                            volrendObj.SetOverlayDataset(dataset);
+                            volrendObj.SetSecondaryTransferFunction(secondaryTransferFunction);
+                        });
+                    }
+                    if (GUILayout.Button("Load PET (DICOM)"))
                     {
-                        TransferFunction secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
-                        secondaryTransferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
-                        secondaryTransferFunction.GenerateTexture();
-                        volrendObj.SetOverlayDataset(dataset);
-                        volrendObj.SetSecondaryTransferFunction(secondaryTransferFunction);
-                    });
+                        ImportDicomDataset(volrendObj, (VolumeDataset dataset) =>
+                        {
+                            TransferFunction secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
+                            secondaryTransferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
+                            secondaryTransferFunction.GenerateTexture();
+                            volrendObj.SetOverlayDataset(dataset);
+                            volrendObj.SetSecondaryTransferFunction(secondaryTransferFunction);
+                        });
+                    }
                 }
-            }
-            else
-            {
-                if (GUILayout.Button("Edit secondary transfer function"))
+                else
                 {
-                    TransferFunctionEditorWindow.ShowWindow(volrendObj, secondaryTransferFunction);
-                }
+                    if (GUILayout.Button("Edit overlay transfer function"))
+                    {
+                        TransferFunctionEditorWindow.ShowWindow(volrendObj, secondaryTransferFunction);
+                    }
 
-                if (GUILayout.Button("Remove secondary volume"))
-                {
-                    volrendObj.SetOverlayDataset(null);
+                    if (GUILayout.Button("Remove secondary volume"))
+                    {
+                        volrendObj.SetOverlayDataset(null);
+                    }
                 }
             }
 
             // Segmentations
             segmentationSettings = EditorGUILayout.Foldout(segmentationSettings, "Segmentations");
-            List<SegmentationLabel> segmentationLabels = volrendObj.GetSegmentationLabels();
-            if (segmentationLabels != null && segmentationLabels.Count > 0)
+            if (segmentationSettings)
             {
-                for (int i = 0; i < segmentationLabels.Count; i++)
+                List<SegmentationLabel> segmentationLabels = volrendObj.GetSegmentationLabels();
+                if (segmentationLabels != null && segmentationLabels.Count > 0)
                 {
-                    EditorGUILayout.BeginHorizontal();
-                    SegmentationLabel segmentationlabel = segmentationLabels[i];
-                    EditorGUI.BeginChangeCheck();
-                    segmentationlabel.name = EditorGUILayout.TextField(segmentationlabel.name);
-                    segmentationlabel.colour = EditorGUILayout.ColorField(segmentationlabel.colour);
-                    bool changed = EditorGUI.EndChangeCheck();
-                    segmentationLabels[i] = segmentationlabel;
-                    if (GUILayout.Button("delete"))
+                    for (int i = 0; i < segmentationLabels.Count; i++)
                     {
-                        volrendObj.RemoveSegmentation(segmentationlabel.id);
+                        EditorGUILayout.BeginHorizontal();
+                        SegmentationLabel segmentationlabel = segmentationLabels[i];
+                        EditorGUI.BeginChangeCheck();
+                        segmentationlabel.name = EditorGUILayout.TextField(segmentationlabel.name);
+                        segmentationlabel.colour = EditorGUILayout.ColorField(segmentationlabel.colour);
+                        bool changed = EditorGUI.EndChangeCheck();
+                        segmentationLabels[i] = segmentationlabel;
+                        if (GUILayout.Button("delete"))
+                        {
+                            volrendObj.RemoveSegmentation(segmentationlabel.id);
+                        }
+                        EditorGUILayout.EndHorizontal();
+                        if (changed)
+                        {
+                            volrendObj.UpdateSegmentationLabels();
+                        }
                     }
-                    EditorGUILayout.EndHorizontal();
-                    if (changed)
-                    {
-                        volrendObj.UpdateSegmentationLabels();
-                    }
-                }
 
-                SegmentationRenderMode segmentationRendreMode = (SegmentationRenderMode)EditorGUILayout.EnumPopup("Render mode", volrendObj.GetSegmentationRenderMode());
-                volrendObj.SetSegmentationRenderMode(segmentationRendreMode);
-            }
-            if (GUILayout.Button("Add segmentation (NRRD, NIFTI)"))
-            {
-                ImportImageFileDataset(volrendObj, (VolumeDataset dataset) =>
+                    SegmentationRenderMode segmentationRendreMode = (SegmentationRenderMode)EditorGUILayout.EnumPopup("Render mode", volrendObj.GetSegmentationRenderMode());
+                    volrendObj.SetSegmentationRenderMode(segmentationRendreMode);
+                }
+                if (GUILayout.Button("Add segmentation (NRRD, NIFTI)"))
                 {
-                    volrendObj.AddSegmentation(dataset);
-                });
-            }
-            if (GUILayout.Button("Add segmentation (DICOM)"))
-            {
-                ImportDicomDataset(volrendObj, (VolumeDataset dataset) =>
+                    ImportImageFileDataset(volrendObj, (VolumeDataset dataset) =>
+                    {
+                        volrendObj.AddSegmentation(dataset);
+                    });
+                }
+                if (GUILayout.Button("Add segmentation (DICOM)"))
                 {
-                    volrendObj.AddSegmentation(dataset);
-                });
-            }
-            if (GUILayout.Button("Clear segmentations"))
-            {
-                volrendObj.ClearSegmentations();
+                    ImportDicomDataset(volrendObj, (VolumeDataset dataset) =>
+                    {
+                        volrendObj.AddSegmentation(dataset);
+                    });
+                }
+                if (GUILayout.Button("Clear segmentations"))
+                {
+                    volrendObj.ClearSegmentations();
+                }
             }
 
             // Other settings
