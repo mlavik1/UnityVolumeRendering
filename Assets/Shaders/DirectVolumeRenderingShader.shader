@@ -40,6 +40,7 @@
             #pragma multi_compile __ USE_MAIN_LIGHT
             #pragma multi_compile __ CUBIC_INTERPOLATION_ON
             #pragma multi_compile __ SECONDARY_VOLUME_ON
+            #pragma multi_compile MULTIVOLUME_NONE MULTIVOLUME_OVERLAY MULTIVOLUME_ISOLATE
             #pragma vertex vert
             #pragma fragment frag
 
@@ -215,11 +216,7 @@
             // Gets the density of the secondary volume at the specified position
             float getSecondaryDensity(float3 pos)
             {
-#if CUBIC_INTERPOLATION_ON
-                return interpolateTricubicFast(_SecondaryDataTex, float3(pos.x, pos.y, pos.z), _TextureSize);
-#else
                 return tex3Dlod(_SecondaryDataTex, float4(pos.x, pos.y, pos.z, 0.0f));
-#endif
             }
 
             // Gets the density at the specified position, without tricubic interpolation
@@ -344,12 +341,14 @@
                         continue;
 #endif
 
-#if SECONDARY_VOLUME_ON
-                    const float density2 = getSecondaryDensity(currPos);
-                    float4 src2 = getSecondaryTF1DColour(density2);
-                    //src.rgb = src.rgb * (1.0 - src2.a) + src2.rgb * src2.a;
-                    src = src2.a > 0.0 ? src2 : src;
-                    //src.a = src2.a > 0.0 ? src.a : 0.0;
+#if defined(MULTIVOLUME_OVERLAY) || defined(MULTIVOLUME_ISOLATE)
+                    const float secondaryDensity = getSecondaryDensity(currPos);
+                    float4 secondaryColour = getSecondaryTF1DColour(secondaryDensity);
+#if MULTIVOLUME_OVERLAY
+                    src = secondaryColour.a > 0.0 ? secondaryColour : src;
+#elif MULTIVOLUME_ISOLATE
+                    src.a = secondaryColour.a > 0.0 ? src.a : 0.0;
+#endif
 #endif
 
                     // Calculate gradient (needed for lighting and 2D transfer functions)
@@ -469,6 +468,23 @@
 #endif
 
                     const float density = getDensity(currPos);
+#if MULTIVOLUME_ISOLATE
+                    const float secondaryDensity = getSecondaryDensity(currPos);
+                    if (secondaryDensity <= 0.0)
+                        continue;
+#elif MULTIVOLUME_OVERLAY
+                    const float secondaryDensity = getSecondaryDensity(currPos);
+                    if (secondaryDensity > 0.0)
+                    {
+                        col = getSecondaryTF1DColour(secondaryDensity);
+                        float3 gradient = getGradient(currPos);
+                        float gradMag = length(gradient);
+                        float3 normal = gradient / gradMag;
+                        col.rgb = calculateLighting(col.rgb, normal, getLightDirection(-ray.direction), -ray.direction, 0.15);
+                        col.a = 1.0;
+                        break;
+                    }
+#endif
                     if (density > _MinVal && density < _MaxVal)
                     {
                         float3 gradient = getGradient(currPos);

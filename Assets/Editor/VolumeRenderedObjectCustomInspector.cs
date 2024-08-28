@@ -3,6 +3,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.IO;
+using UnityEngine.Events;
 
 namespace UnityVolumeRendering
 {
@@ -148,11 +149,25 @@ namespace UnityVolumeRendering
             {
                 if (GUILayout.Button("Load PET (NRRD, NIFTI)"))
                 {
-                    ImportPetScan(volrendObj);
+                    ImportImageFileDataset(volrendObj, (VolumeDataset dataset) =>
+                    {
+                        TransferFunction secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
+                        secondaryTransferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
+                        secondaryTransferFunction.GenerateTexture();
+                        volrendObj.SetOverlayDataset(dataset);
+                        volrendObj.SetSecondaryTransferFunction(secondaryTransferFunction);
+                    });
                 }
                 if (GUILayout.Button("Load PET (DICOM)"))
                 {
-                    ImportPetScanDicom(volrendObj);
+                    ImportDicomDataset(volrendObj, (VolumeDataset dataset) =>
+                    {
+                        TransferFunction secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
+                        secondaryTransferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
+                        secondaryTransferFunction.GenerateTexture();
+                        volrendObj.SetOverlayDataset(dataset);
+                        volrendObj.SetSecondaryTransferFunction(secondaryTransferFunction);
+                    });
                 }
             }
             else
@@ -198,12 +213,18 @@ namespace UnityVolumeRendering
             }
             if (GUILayout.Button("Add segmentation (NRRD, NIFTI)"))
             {
-                ImportSegmentation(volrendObj);
+                ImportImageFileDataset(volrendObj, (VolumeDataset dataset) =>
+                {
+                    volrendObj.AddSegmentation(dataset);
+                });
             }
-            /*if (GUILayout.Button("Add segmentation (DICOM)"))
+            if (GUILayout.Button("Add segmentation (DICOM)"))
             {
-                ImportSegmentationDicom(volrendObj);
-            }*/
+                ImportDicomDataset(volrendObj, (VolumeDataset dataset) =>
+                {
+                    volrendObj.AddSegmentation(dataset);
+                });
+            }
             if (GUILayout.Button("Clear segmentations"))
             {
                 volrendObj.ClearSegmentations();
@@ -224,7 +245,7 @@ namespace UnityVolumeRendering
                 volrendObj.SetSamplingRateMultiplier(EditorGUILayout.Slider("Sampling rate multiplier", volrendObj.GetSamplingRateMultiplier(), 0.2f, 2.0f));
             }
         }
-        private static async void ImportPetScan(VolumeRenderedObject targetObject)
+        private static async void ImportImageFileDataset(VolumeRenderedObject targetObject, UnityAction<VolumeDataset> onLoad)
         {
             string filePath = EditorUtility.OpenFilePanel("Select a folder to load", "", "");
             ImageFileFormat imageFileFormat = DatasetFormatUtilities.GetImageFileFormat(filePath);
@@ -241,66 +262,36 @@ namespace UnityVolumeRendering
 
             using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
             {
-                progressHandler.StartStage(1.0f, "Importing PET dataset");
+                progressHandler.StartStage(1.0f, "Importing dataset");
                 IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(imageFileFormat);
                 Task<VolumeDataset> importTask = importer.ImportAsync(filePath);
                 await importTask;
                 progressHandler.EndStage();
 
-                TransferFunction secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
-                secondaryTransferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
-                secondaryTransferFunction.GenerateTexture();
-                targetObject.SetOverlayDataset(importTask.Result);
-                targetObject.SetSecondaryTransferFunction(secondaryTransferFunction);
+                if (importTask.Result != null)
+                {
+                    onLoad.Invoke(importTask.Result);
+                }
             }
         }
 
-        private static async void ImportPetScanDicom(VolumeRenderedObject targetObject)
+        private static async void ImportDicomDataset(VolumeRenderedObject targetObject, UnityAction<VolumeDataset> onLoad)
         {
             string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
             if (Directory.Exists(dir))
             {
                 using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
                 {
-                    progressHandler.StartStage(1.0f, "Importing PET dataset");
+                    progressHandler.StartStage(1.0f, "Importing dataset");
                     Task<VolumeDataset[]> importTask = EditorDatasetImportUtils.ImportDicomDirectoryAsync(dir, progressHandler);
                     await importTask;
                     progressHandler.EndStage();
 
-                    Debug.Assert(importTask.Result.Length > 0);
-                    TransferFunction secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
-                    secondaryTransferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
-                    secondaryTransferFunction.GenerateTexture();
-                    targetObject.SetOverlayDataset(importTask.Result[0]);
-                    targetObject.SetSecondaryTransferFunction(secondaryTransferFunction);
+                    if (importTask.Result.Length > 0)
+                    {
+                        onLoad.Invoke(importTask.Result[0]);
+                    }
                 }
-            }
-        }
-
-        private static async void ImportSegmentation(VolumeRenderedObject targetObject)
-        {
-            string filePath = EditorUtility.OpenFilePanel("Select a folder to load", "", "");
-            ImageFileFormat imageFileFormat = DatasetFormatUtilities.GetImageFileFormat(filePath);
-            if (!File.Exists(filePath))
-            {
-                Debug.LogError($"File doesn't exist: {filePath}");
-                return;
-            }
-            if (imageFileFormat == ImageFileFormat.Unknown)
-            {
-                Debug.LogError($"Invalid file format: {Path.GetExtension(filePath)}");
-                return;
-            }
-
-            using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
-            {
-                progressHandler.StartStage(1.0f, "Importing segmentation dataset");
-                IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(imageFileFormat);
-                Task<VolumeDataset> importTask = importer.ImportAsync(filePath);
-                await importTask;
-                progressHandler.EndStage();
-
-                targetObject.AddSegmentation(importTask.Result);
             }
         }
     }
