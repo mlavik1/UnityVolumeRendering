@@ -135,6 +135,8 @@ namespace Nifti.NET
                 return Array.ConvertAll<short, float>(this.Data as short[], Convert.ToSingle);
             else if(type == typeof(ushort))
                 return Array.ConvertAll<ushort, float>(this.Data as ushort[], Convert.ToSingle);
+            else if (type == typeof(byte))
+                return Array.ConvertAll<byte, float>(this.Data as byte[], Convert.ToSingle);
             else
                 return null;
         }
