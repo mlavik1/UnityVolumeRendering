@@ -74,6 +74,11 @@ namespace UnityVolumeRendering
             }
         }
 
+        public void RecreateDataTexture()
+        {
+            dataTexture = AsyncHelper.RunSync<Texture3D>(() => CreateTextureInternalAsync(NullProgressHandler.instance));
+        }
+
         /// <summary>
         /// Gets the 3D data texture, containing the density values of the dataset.
         /// Will create the data texture if it does not exist, without blocking the main thread.
@@ -154,6 +159,11 @@ namespace UnityVolumeRendering
             if (maxDataValue == float.MinValue)
                 CalculateValueBounds(new NullProgressHandler());
             return maxDataValue;
+        }
+
+        public void RecalculateBounds()
+        {
+            CalculateValueBounds(new NullProgressHandler());
         }
 
         /// <summary>

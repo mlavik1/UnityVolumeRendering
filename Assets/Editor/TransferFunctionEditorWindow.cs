@@ -11,6 +11,8 @@ namespace UnityVolumeRendering
 
         private TransferFunctionEditor tfEditor = new TransferFunctionEditor();
 
+        private bool keepTf = false;
+
         public static void ShowWindow(VolumeRenderedObject volRendObj)
         {
             // Close all (if any) 2D TF editor windows
@@ -21,6 +23,21 @@ namespace UnityVolumeRendering
             TransferFunctionEditorWindow wnd = (TransferFunctionEditorWindow)EditorWindow.GetWindow(typeof(TransferFunctionEditorWindow));
             if (volRendObj)
                 wnd.volRendObject = volRendObj;
+            wnd.Show();
+            wnd.SetInitialPosition();
+        }
+
+        public static void ShowWindow(VolumeRenderedObject volRendObj, TransferFunction transferFunction)
+        {
+            // Close all (if any) 2D TF editor windows
+            TransferFunction2DEditorWindow[] tf2dWnds = Resources.FindObjectsOfTypeAll<TransferFunction2DEditorWindow>();
+            foreach (TransferFunction2DEditorWindow tf2dWnd in tf2dWnds)
+                tf2dWnd.Close();
+
+            TransferFunctionEditorWindow wnd = (TransferFunctionEditorWindow)EditorWindow.GetWindow(typeof(TransferFunctionEditorWindow));
+            wnd.volRendObject = volRendObj;
+            wnd.tf = transferFunction;
+            wnd.keepTf = true;
             wnd.Show();
             wnd.SetInitialPosition();
         }
@@ -48,8 +65,9 @@ namespace UnityVolumeRendering
 
             if (volRendObject == null)
                 return;
-                
-            tf = volRendObject.transferFunction;
+
+            if (!keepTf)
+                tf = volRendObject.transferFunction;
 
             Event currentEvent = new Event(Event.current);
 
@@ -62,7 +80,7 @@ namespace UnityVolumeRendering
             Rect outerRect = new Rect(0.0f, 0.0f, contentWidth, contentHeight);
             Rect tfEditorRect = new Rect(outerRect.x + 20.0f, outerRect.y + 20.0f, outerRect.width - 40.0f, outerRect.height - 50.0f);
 
-            tfEditor.SetVolumeObject(volRendObject);
+            tfEditor.SetTarget(volRendObject.dataset, tf);
             tfEditor.DrawOnGUI(tfEditorRect);
 
             // Draw horizontal zoom slider
@@ -99,8 +117,9 @@ namespace UnityVolumeRendering
                     TransferFunction newTF = TransferFunctionDatabase.LoadTransferFunction(filepath);
                     if(newTF != null)
                     {
-                        tf = newTF;
-                        volRendObject.SetTransferFunction(tf);
+                        tf.alphaControlPoints = newTF.alphaControlPoints;
+                        tf.colourControlPoints = newTF.colourControlPoints;
+                        tf.GenerateTexture();
                         tfEditor.ClearSelection();
                     }
                 }
@@ -108,11 +127,12 @@ namespace UnityVolumeRendering
              // Clear TF
             if(GUI.Button(new Rect(tfEditorRect.x + 150.0f, tfEditorRect.y + tfEditorRect.height + 20.0f, 70.0f, 30.0f), "Clear"))
             {
-                tf = ScriptableObject.CreateInstance<TransferFunction>();
+                tf.alphaControlPoints.Clear();
+                tf.colourControlPoints.Clear();
                 tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.2f, 0.0f));
                 tf.alphaControlPoints.Add(new TFAlphaControlPoint(0.8f, 1.0f));
                 tf.colourControlPoints.Add(new TFColourControlPoint(0.5f, new Color(0.469f, 0.354f, 0.223f, 1.0f)));
-                volRendObject.SetTransferFunction(tf);
+                tf.GenerateTexture();
                 tfEditor.ClearSelection();
             }
 

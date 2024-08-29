@@ -13,6 +13,8 @@
         _MinGradient("Gradient visibility threshold", Range(0.0, 1.0)) = 0.0
         _LightingGradientThresholdStart("Gradient threshold for lighting (end)", Range(0.0, 1.0)) = 0.0
         _LightingGradientThresholdEnd("Gradient threshold for lighting (start)", Range(0.0, 1.0)) = 0.0
+        _SecondaryDataTex ("Secondary Data Texture (Generated)", 3D) = "" {}
+        _SecondaryTFTex("Transfer Function Texture for secondary volume", 2D) = "" {}
         [HideInInspector] _ShadowVolumeTextureSize("Shadow volume dimensions", Vector) = (1, 1, 1)
         [HideInInspector] _TextureSize("Dataset dimensions", Vector) = (1, 1, 1)
 }
@@ -37,6 +39,8 @@
             #pragma multi_compile __ RAY_TERMINATE_ON
             #pragma multi_compile __ USE_MAIN_LIGHT
             #pragma multi_compile __ CUBIC_INTERPOLATION_ON
+            #pragma multi_compile __ SECONDARY_VOLUME_ON
+            #pragma multi_compile MULTIVOLUME_NONE MULTIVOLUME_OVERLAY MULTIVOLUME_ISOLATE
             #pragma vertex vert
             #pragma fragment frag
 
@@ -76,6 +80,8 @@
             sampler2D _NoiseTex;
             sampler2D _TFTex;
             sampler3D _ShadowVolume;
+            sampler3D _SecondaryDataTex;
+            sampler2D _SecondaryTFTex;
 
             float _MinVal;
             float _MaxVal;
@@ -191,6 +197,12 @@
                 return tex2Dlod(_TFTex, float4(density, gradientMagnitude, 0.0f, 0.0f));
             }
 
+            // Gets the colour from a secondary 1D Transfer Function (x = density)
+            float4 getSecondaryTF1DColour(float density)
+            {
+                return tex2Dlod(_SecondaryTFTex, float4(density, 0.0f, 0.0f, 0.0f));
+            }
+
             // Gets the density at the specified position
             float getDensity(float3 pos)
             {
@@ -199,6 +211,12 @@
 #else
                 return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f));
 #endif
+            }
+
+            // Gets the density of the secondary volume at the specified position
+            float getSecondaryDensity(float3 pos)
+            {
+                return tex3Dlod(_SecondaryDataTex, float4(pos.x, pos.y, pos.z, 0.0f));
             }
 
             // Gets the density at the specified position, without tricubic interpolation
@@ -323,6 +341,16 @@
                         continue;
 #endif
 
+#if defined(MULTIVOLUME_OVERLAY) || defined(MULTIVOLUME_ISOLATE)
+                    const float secondaryDensity = getSecondaryDensity(currPos);
+                    float4 secondaryColour = getSecondaryTF1DColour(secondaryDensity);
+#if MULTIVOLUME_OVERLAY
+                    src = secondaryColour.a > 0.0 ? secondaryColour : src;
+#elif MULTIVOLUME_ISOLATE
+                    src.a = secondaryColour.a > 0.0 ? src.a : 0.0;
+#endif
+#endif
+
                     // Calculate gradient (needed for lighting and 2D transfer functions)
 #if defined(TF2D_ON) || defined(LIGHTING_ON)
                     float3 gradient = getGradient(currPos);
@@ -440,6 +468,23 @@
 #endif
 
                     const float density = getDensity(currPos);
+#if MULTIVOLUME_ISOLATE
+                    const float secondaryDensity = getSecondaryDensity(currPos);
+                    if (secondaryDensity <= 0.0)
+                        continue;
+#elif MULTIVOLUME_OVERLAY
+                    const float secondaryDensity = getSecondaryDensity(currPos);
+                    if (secondaryDensity > 0.0)
+                    {
+                        col = getSecondaryTF1DColour(secondaryDensity);
+                        float3 gradient = getGradient(currPos);
+                        float gradMag = length(gradient);
+                        float3 normal = gradient / gradMag;
+                        col.rgb = calculateLighting(col.rgb, normal, getLightDirection(-ray.direction), -ray.direction, 0.15);
+                        col.a = 1.0;
+                        break;
+                    }
+#endif
                     if (density > _MinVal && density < _MaxVal)
                     {
                         float3 gradient = getGradient(currPos);

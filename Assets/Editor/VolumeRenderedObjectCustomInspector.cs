@@ -2,6 +2,8 @@
 using UnityEditor;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.IO;
+using UnityEngine.Events;
 
 namespace UnityVolumeRendering
 {
@@ -11,6 +13,8 @@ namespace UnityVolumeRendering
         private bool tfSettings = true;
         private bool lightSettings = true;
         private bool otherSettings = true;
+        private bool overlayVolumeSettings = false;
+        private bool segmentationSettings = false;
         private float currentProgress = 1.0f;
         private string currentProgressDescrition = "";
         private bool progressDirty = false;
@@ -137,6 +141,101 @@ namespace UnityVolumeRendering
                 }
             }
 
+            // Overlay volume
+            overlayVolumeSettings = EditorGUILayout.Foldout(overlayVolumeSettings, "PET/overlay volume");
+            if (overlayVolumeSettings)
+            {
+                OverlayType overlayType = volrendObj.GetOverlayType();
+                TransferFunction secondaryTransferFunction = volrendObj.GetSecondaryTransferFunction();
+                if (overlayType != OverlayType.Overlay)
+                {
+                    if (GUILayout.Button("Load PET (NRRD, NIFTI)"))
+                    {
+                        ImportImageFileDataset(volrendObj, (VolumeDataset dataset) =>
+                        {
+                            TransferFunction secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
+                            secondaryTransferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
+                            secondaryTransferFunction.GenerateTexture();
+                            volrendObj.SetOverlayDataset(dataset);
+                            volrendObj.SetSecondaryTransferFunction(secondaryTransferFunction);
+                        });
+                    }
+                    if (GUILayout.Button("Load PET (DICOM)"))
+                    {
+                        ImportDicomDataset(volrendObj, (VolumeDataset dataset) =>
+                        {
+                            TransferFunction secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
+                            secondaryTransferFunction.colourControlPoints = new List<TFColourControlPoint>() { new TFColourControlPoint(0.0f, Color.red), new TFColourControlPoint(1.0f, Color.red) };
+                            secondaryTransferFunction.GenerateTexture();
+                            volrendObj.SetOverlayDataset(dataset);
+                            volrendObj.SetSecondaryTransferFunction(secondaryTransferFunction);
+                        });
+                    }
+                }
+                else
+                {
+                    if (GUILayout.Button("Edit overlay transfer function"))
+                    {
+                        TransferFunctionEditorWindow.ShowWindow(volrendObj, secondaryTransferFunction);
+                    }
+
+                    if (GUILayout.Button("Remove secondary volume"))
+                    {
+                        volrendObj.SetOverlayDataset(null);
+                    }
+                }
+            }
+
+            // Segmentations
+            segmentationSettings = EditorGUILayout.Foldout(segmentationSettings, "Segmentations");
+            if (segmentationSettings)
+            {
+                List<SegmentationLabel> segmentationLabels = volrendObj.GetSegmentationLabels();
+                if (segmentationLabels != null && segmentationLabels.Count > 0)
+                {
+                    for (int i = 0; i < segmentationLabels.Count; i++)
+                    {
+                        EditorGUILayout.BeginHorizontal();
+                        SegmentationLabel segmentationlabel = segmentationLabels[i];
+                        EditorGUI.BeginChangeCheck();
+                        segmentationlabel.name = EditorGUILayout.TextField(segmentationlabel.name);
+                        segmentationlabel.colour = EditorGUILayout.ColorField(segmentationlabel.colour);
+                        bool changed = EditorGUI.EndChangeCheck();
+                        segmentationLabels[i] = segmentationlabel;
+                        if (GUILayout.Button("delete"))
+                        {
+                            volrendObj.RemoveSegmentation(segmentationlabel.id);
+                        }
+                        EditorGUILayout.EndHorizontal();
+                        if (changed)
+                        {
+                            volrendObj.UpdateSegmentationLabels();
+                        }
+                    }
+
+                    SegmentationRenderMode segmentationRendreMode = (SegmentationRenderMode)EditorGUILayout.EnumPopup("Render mode", volrendObj.GetSegmentationRenderMode());
+                    volrendObj.SetSegmentationRenderMode(segmentationRendreMode);
+                }
+                if (GUILayout.Button("Add segmentation (NRRD, NIFTI)"))
+                {
+                    ImportImageFileDataset(volrendObj, (VolumeDataset dataset) =>
+                    {
+                        volrendObj.AddSegmentation(dataset);
+                    });
+                }
+                if (GUILayout.Button("Add segmentation (DICOM)"))
+                {
+                    ImportDicomDataset(volrendObj, (VolumeDataset dataset) =>
+                    {
+                        volrendObj.AddSegmentation(dataset);
+                    });
+                }
+                if (GUILayout.Button("Clear segmentations"))
+                {
+                    volrendObj.ClearSegmentations();
+                }
+            }
+
             // Other settings
             GUILayout.Space(10);
             otherSettings = EditorGUILayout.Foldout(otherSettings, "Other Settings");
@@ -150,6 +249,55 @@ namespace UnityVolumeRendering
 
                 volrendObj.SetCubicInterpolationEnabled(GUILayout.Toggle(volrendObj.GetCubicInterpolationEnabled(), "Enable cubic interpolation (better quality)"));
                 volrendObj.SetSamplingRateMultiplier(EditorGUILayout.Slider("Sampling rate multiplier", volrendObj.GetSamplingRateMultiplier(), 0.2f, 2.0f));
+            }
+        }
+        private static async void ImportImageFileDataset(VolumeRenderedObject targetObject, UnityAction<VolumeDataset> onLoad)
+        {
+            string filePath = EditorUtility.OpenFilePanel("Select a folder to load", "", "");
+            ImageFileFormat imageFileFormat = DatasetFormatUtilities.GetImageFileFormat(filePath);
+            if (!File.Exists(filePath))
+            {
+                Debug.LogError($"File doesn't exist: {filePath}");
+                return;
+            }
+            if (imageFileFormat == ImageFileFormat.Unknown)
+            {
+                Debug.LogError($"Invalid file format: {Path.GetExtension(filePath)}");
+                return;
+            }
+
+            using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
+            {
+                progressHandler.StartStage(1.0f, "Importing dataset");
+                IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(imageFileFormat);
+                Task<VolumeDataset> importTask = importer.ImportAsync(filePath);
+                await importTask;
+                progressHandler.EndStage();
+
+                if (importTask.Result != null)
+                {
+                    onLoad.Invoke(importTask.Result);
+                }
+            }
+        }
+
+        private static async void ImportDicomDataset(VolumeRenderedObject targetObject, UnityAction<VolumeDataset> onLoad)
+        {
+            string dir = EditorUtility.OpenFolderPanel("Select a folder to load", "", "");
+            if (Directory.Exists(dir))
+            {
+                using (ProgressHandler progressHandler = new ProgressHandler(new EditorProgressView()))
+                {
+                    progressHandler.StartStage(1.0f, "Importing dataset");
+                    Task<VolumeDataset[]> importTask = EditorDatasetImportUtils.ImportDicomDirectoryAsync(dir, progressHandler);
+                    await importTask;
+                    progressHandler.EndStage();
+
+                    if (importTask.Result.Length > 0)
+                    {
+                        onLoad.Invoke(importTask.Result[0]);
+                    }
+                }
             }
         }
     }

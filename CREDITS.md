@@ -18,5 +18,7 @@ Texture downscaling, optimisation.
 Async loading
 - [Riccardo Lops](https://github.com/riccardolops)
 Modified shader to handle stereo rendering.
+- [Juan Pablo Montoya](https://github.com/JuanPabloMontoya271)
+Overlay Segmentations - initial implementation
 
 Feel free to add yourself to this list when contributing to this project.

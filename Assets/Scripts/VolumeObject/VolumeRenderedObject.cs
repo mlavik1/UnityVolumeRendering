@@ -1,4 +1,7 @@
-﻿using System.Threading;
+﻿using openDicom.Encoding;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -33,6 +36,21 @@ namespace UnityVolumeRendering
 
         [SerializeField, HideInInspector]
         private LightSource lightSource;
+
+        [SerializeField, HideInInspector]
+        private VolumeDataset secondaryDataset;
+
+        [SerializeField, HideInInspector]
+        private TransferFunction secondaryTransferFunction;
+
+        [SerializeField, HideInInspector]
+        private List<SegmentationLabel> segmentationLabels = new List<SegmentationLabel>();
+
+        [SerializeField, HideInInspector]
+        private OverlayType overlayType = OverlayType.None;
+
+        [SerializeField, HideInInspector]
+        private SegmentationRenderMode segmentationRenderMode = SegmentationRenderMode.OverlayColour;
 
         // Minimum and maximum gradient threshold for lighting contribution. Values below min will be unlit, and between min and max will be partly shaded.
         [SerializeField, HideInInspector]
@@ -80,6 +98,158 @@ namespace UnityVolumeRendering
             SlicingPlane slicingPlaneComp = sliceRenderingPlane.GetComponent<SlicingPlane>();
             slicingPlaneComp.targetObject = this;
             return slicingPlaneComp;
+        }
+
+        public OverlayType GetOverlayType()
+        {
+            return this.overlayType;
+        }
+
+        public TransferFunction GetSecondaryTransferFunction()
+        {
+            return this.secondaryTransferFunction;
+        }
+
+        public void SetSecondaryTransferFunction(TransferFunction tf)
+        {
+            this.secondaryTransferFunction = tf;
+            UpdateMaterialProperties();
+        }
+
+        public void SetOverlayDataset(VolumeDataset dataset)
+        {
+            if (dataset != null)
+            {
+                this.overlayType = OverlayType.Overlay;
+            }
+            else if(this.overlayType == OverlayType.Overlay)
+            {
+                this.overlayType = OverlayType.None;
+            }
+            this.secondaryDataset = dataset;
+            UpdateMaterialProperties();
+        }
+
+        public SegmentationRenderMode GetSegmentationRenderMode()
+        {
+            return segmentationRenderMode;
+        }
+
+        public void SetSegmentationRenderMode(SegmentationRenderMode mode)
+        {
+            if (mode != segmentationRenderMode)
+            {
+                segmentationRenderMode = mode;
+                UpdateMaterialProperties();
+            }
+        }
+
+        public List<SegmentationLabel> GetSegmentationLabels()
+        {
+            return segmentationLabels;
+        }
+
+        public void AddSegmentation(VolumeDataset dataset)
+        {
+            if (secondaryDataset != null && dataset.data.Length != secondaryDataset.data.Length)
+            {
+                Debug.LogError("Can't add segmentation with different dimension than original dataset.");
+                return;
+            }
+
+            overlayType = OverlayType.Segmentation;
+
+            int segmentationId = segmentationLabels.Count > 0 ? segmentationLabels.Max(l => l.id) + 1 : 1;
+
+            if (segmentationLabels.Count == 0)
+            {
+                secondaryDataset = dataset;
+            }
+            else
+            {
+                for (int i = 0; i < secondaryDataset.data.Length; i++)
+                {
+                    secondaryDataset.data[i] = dataset.data[i] > 0.0f ? (float)segmentationId : secondaryDataset.data[i];
+                }
+                secondaryDataset.RecalculateBounds();
+                secondaryDataset.RecreateDataTexture();
+                secondaryDataset.GetDataTexture().filterMode = FilterMode.Point;
+            }
+            SegmentationLabel segmentationLabel = new SegmentationLabel();
+            segmentationLabel.id = segmentationId;
+            segmentationLabel.name = dataset.name;
+            segmentationLabel.colour = Random.ColorHSV();
+            segmentationLabels.Add(segmentationLabel);
+            UpdateSegmentationLabels();
+        }
+
+        public void RemoveSegmentation(int id)
+        {
+            int segmentationIndex = segmentationLabels.FindIndex(s => s.id == id);
+            if (segmentationIndex != -1)
+            {
+                segmentationLabels.RemoveAt(segmentationIndex);
+            }
+            else
+            {
+                Debug.LogError($"Segmentation not found: {id}");
+            }
+            for (int i = 0; i < secondaryDataset.data.Length; i++)
+            {
+                secondaryDataset.data[i] = secondaryDataset.data[i] == id ? 0 : secondaryDataset.data[i];
+            }
+            secondaryDataset.RecalculateBounds();
+            secondaryDataset.RecreateDataTexture();
+            secondaryDataset.GetDataTexture().filterMode = FilterMode.Point;
+            UpdateSegmentationLabels();
+        }
+
+        public void ClearSegmentations()
+        {
+            if (overlayType == OverlayType.Segmentation)
+            {
+                secondaryDataset = null;
+                secondaryTransferFunction = null;
+                overlayType = OverlayType.None;
+            }
+            segmentationLabels.Clear();
+            UpdateMaterialProperties();
+        }
+
+        public void UpdateSegmentationLabels()
+        {
+            if (segmentationLabels.Count == 0)
+            {
+                UpdateMaterialProperties();
+                return;
+            }
+
+            segmentationLabels.OrderBy(l => l.id);
+            if (secondaryTransferFunction == null)
+            {
+                secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
+            }
+            secondaryTransferFunction.alphaControlPoints.Clear();
+            secondaryTransferFunction.colourControlPoints.Clear();
+            int maxSegmentationId = segmentationLabels[segmentationLabels.Count - 1].id;
+            float minDataValue = secondaryDataset.GetMinDataValue();
+            float maxDataValue = secondaryDataset.GetMaxDataValue();
+            secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(0.0f, 0.0f));
+            secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(1.0f, 1.0f));
+            for (int i = 0; i < segmentationLabels.Count; i++)
+            {
+                SegmentationLabel segmentationLabel = segmentationLabels[i];
+                float t = segmentationLabel.id / maxDataValue;
+                secondaryTransferFunction.colourControlPoints.Add(new TFColourControlPoint(t, segmentationLabel.colour));
+                if (i == 0)
+                {
+                    secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(t - 0.01f, 0.0f));
+                    secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(t, 1.0f));
+                }
+            }
+            secondaryTransferFunction.GenerateTexture();
+            secondaryTransferFunction.GetTexture().filterMode = FilterMode.Point;
+            UpdateMaterialProperties();
         }
 
         public void SetRenderMode(RenderMode mode)
@@ -317,11 +487,10 @@ namespace UnityVolumeRendering
             try
             {
                 bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
-                Texture3D gradientTexture = useGradientTexture ? await dataset.GetGradientTextureAsync(progressHandler) : null;
                 Texture3D dataTexture = await dataset.GetDataTextureAsync(progressHandler);
-                meshRenderer.sharedMaterial.SetTexture("_DataTex", dataTexture);
-                meshRenderer.sharedMaterial.SetTexture("_GradientTex", gradientTexture);
-                UpdateMatInternal();
+                Texture3D gradientTexture = useGradientTexture ? await dataset.GetGradientTextureAsync(progressHandler) : null;
+                Texture3D secondaryDataTexture = secondaryDataset ? await secondaryDataset?.GetDataTextureAsync(progressHandler) : null;
+                UpdateMatInternal(dataTexture, gradientTexture, secondaryDataTexture);
             }
             finally
             {
@@ -329,11 +498,38 @@ namespace UnityVolumeRendering
             }
         }
 
-        private void UpdateMatInternal()
+        private void UpdateMatInternal(Texture3D dataTexture, Texture3D gradientTexture, Texture3D secondaryDataTexture)
         {
-            if (meshRenderer.sharedMaterial.GetTexture("_DataTex") == null)
+            if (dataTexture != null)
             {
-                meshRenderer.sharedMaterial.SetTexture("_DataTex", dataset.GetDataTexture());
+                meshRenderer.sharedMaterial.SetTexture("_DataTex", dataTexture);
+            }
+
+            if (gradientTexture != null)
+            {
+                meshRenderer.sharedMaterial.SetTexture("_GradientTex", gradientTexture);
+            }
+
+            if (overlayType != OverlayType.None && secondaryDataTexture != null)
+            {
+                Texture2D secondaryTF = secondaryTransferFunction.GetTexture();
+                meshRenderer.sharedMaterial.SetTexture("_SecondaryDataTex", secondaryDataTexture);
+                meshRenderer.sharedMaterial.SetTexture("_SecondaryTFTex", secondaryTF);
+                if (overlayType == OverlayType.Segmentation && segmentationRenderMode == SegmentationRenderMode.Isolate)
+                {
+                    meshRenderer.sharedMaterial.EnableKeyword("MULTIVOLUME_ISOLATE");
+                    meshRenderer.sharedMaterial.DisableKeyword("MULTIVOLUME_OVERLAY");
+                }
+                else
+                {
+                    meshRenderer.sharedMaterial.EnableKeyword("MULTIVOLUME_OVERLAY");
+                    meshRenderer.sharedMaterial.DisableKeyword("MULTIVOLUME_ISOLATE");
+                }
+            }
+            else
+            {
+                meshRenderer.sharedMaterial.DisableKeyword("MULTIVOLUME_OVERLAY");
+                meshRenderer.sharedMaterial.DisableKeyword("MULTIVOLUME_ISOLATE");
             }
 
             if (meshRenderer.sharedMaterial.GetTexture("_NoiseTex") == null)

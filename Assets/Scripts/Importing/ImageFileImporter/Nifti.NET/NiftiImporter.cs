@@ -30,7 +30,10 @@ namespace UnityVolumeRendering
            
             // Create dataset
             VolumeDataset volumeDataset = ScriptableObject.CreateInstance<VolumeDataset>();
-            ImportInternal(volumeDataset, niftiFile, filePath);
+            bool succeeded = ImportInternal(volumeDataset, niftiFile, filePath);
+
+            if (!succeeded)
+                volumeDataset = null;
 
             return volumeDataset;
         }
@@ -55,16 +58,25 @@ namespace UnityVolumeRendering
                 return null;
             }
 
-            await Task.Run(() => ImportInternal(volumeDataset,niftiFile,filePath));
+            bool succeeded = await Task.Run(() => ImportInternal(volumeDataset,niftiFile,filePath));
+
+            if (!succeeded)
+                volumeDataset = null;
 
             return volumeDataset;
         }
-        private void ImportInternal(VolumeDataset volumeDataset,Nifti.NET.Nifti niftiFile,string filePath)
+        private bool ImportInternal(VolumeDataset volumeDataset,Nifti.NET.Nifti niftiFile,string filePath)
         {
             int dimX = niftiFile.Header.dim[1];
             int dimY = niftiFile.Header.dim[2];
             int dimZ = niftiFile.Header.dim[3];
             float[] pixelData = niftiFile.ToSingleArray();
+
+            if (pixelData == null)
+            {
+                Debug.LogError($"Failed to read data, of type: {niftiFile.Data?.GetType()}");
+                return false;
+            }
 
             Vector3 pixdim = new Vector3(niftiFile.Header.pixdim[1], niftiFile.Header.pixdim[2], niftiFile.Header.pixdim[3]);
             Vector3 size = new Vector3(dimX * pixdim.x, dimY * pixdim.y, dimZ * pixdim.z);
@@ -80,6 +92,8 @@ namespace UnityVolumeRendering
 
             volumeDataset.FixDimensions();
             volumeDataset.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
+
+            return true;
         }
     }
 }
