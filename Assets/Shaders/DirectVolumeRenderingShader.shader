@@ -343,10 +343,12 @@
 
 #if defined(MULTIVOLUME_OVERLAY) || defined(MULTIVOLUME_ISOLATE)
                     const float secondaryDensity = getSecondaryDensity(currPos);
-                    float4 secondaryColour = getSecondaryTF1DColour(secondaryDensity);
 #if MULTIVOLUME_OVERLAY
-                    src = secondaryColour.a > 0.0 ? secondaryColour : src;
+                    //float4 secondaryColour = getSecondaryTF1DColour(secondaryDensity);
+                    //src = secondaryColour.a > 0.0 ? secondaryColour : src;
+                    src = secondaryDensity > 0.0 ? getSecondaryTF1DColour(density) : src;
 #elif MULTIVOLUME_ISOLATE
+                    float4 secondaryColour = getSecondaryTF1DColour(secondaryDensity);
                     src.a = secondaryColour.a > 0.0 ? src.a : 0.0;
 #endif
 #endif

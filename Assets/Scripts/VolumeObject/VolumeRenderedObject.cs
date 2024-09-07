@@ -165,20 +165,28 @@ namespace UnityVolumeRendering
             {
                 secondaryDataset = dataset;
             }
-            else
+            float segMinDataValue = float.PositiveInfinity;
+            float segMaxDataValue = float.NegativeInfinity;
+            for (int i = 0; i < secondaryDataset.data.Length; i++)
             {
-                for (int i = 0; i < secondaryDataset.data.Length; i++)
+                if (dataset.data[i] > 0.0f)
                 {
-                    secondaryDataset.data[i] = dataset.data[i] > 0.0f ? (float)segmentationId : secondaryDataset.data[i];
+                    secondaryDataset.data[i] = (float)segmentationId;
+                    float originalDataVaue = this.dataset.data[i];
+                    segMinDataValue = Mathf.Min(segMinDataValue, originalDataVaue);
+                    segMaxDataValue = Mathf.Max(segMaxDataValue, originalDataVaue);
                 }
-                secondaryDataset.RecalculateBounds();
-                secondaryDataset.RecreateDataTexture();
-                secondaryDataset.GetDataTexture().filterMode = FilterMode.Point;
             }
+            secondaryDataset.RecalculateBounds();
+            secondaryDataset.RecreateDataTexture();
+            secondaryDataset.GetDataTexture().filterMode = FilterMode.Point;
+
             SegmentationLabel segmentationLabel = new SegmentationLabel();
             segmentationLabel.id = segmentationId;
             segmentationLabel.name = dataset.name;
             segmentationLabel.colour = Random.ColorHSV();
+            segmentationLabel.minDataValue = segMinDataValue;
+            segmentationLabel.maxDataValue = segMaxDataValue;
             segmentationLabels.Add(segmentationLabel);
             UpdateSegmentationLabels();
         }
@@ -225,7 +233,13 @@ namespace UnityVolumeRendering
             }
 
             segmentationLabels.OrderBy(l => l.id);
-            if (secondaryTransferFunction == null)
+            SegmentationTransferFunction segmentationTransferFunction = secondaryTransferFunction as SegmentationTransferFunction;
+            if (segmentationTransferFunction == null)
+            {
+                secondaryTransferFunction = segmentationTransferFunction = ScriptableObject.CreateInstance<SegmentationTransferFunction>();
+            }
+            segmentationTransferFunction.SetSegmentationLabels(segmentationLabels);
+            /*if (secondaryTransferFunction == null)
             {
                 secondaryTransferFunction = ScriptableObject.CreateInstance<TransferFunction>();
             }
@@ -248,7 +262,7 @@ namespace UnityVolumeRendering
                 }
             }
             secondaryTransferFunction.GenerateTexture();
-            secondaryTransferFunction.GetTexture().filterMode = FilterMode.Point;
+            secondaryTransferFunction.GetTexture().filterMode = FilterMode.Point;*/
             UpdateMaterialProperties();
         }
 

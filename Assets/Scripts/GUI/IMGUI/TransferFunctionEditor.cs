@@ -51,6 +51,13 @@ namespace UnityVolumeRendering
             this.transferFunction = transferFunction;
         }
 
+        public void SetTarget(TransferFunction transferFunction)
+        {
+            this.targetObject = null;
+            this.dataset = null;
+            this.transferFunction = transferFunction;
+        }
+
         public void DrawOnGUI(Rect rect)
         {
             GUI.skin.button.alignment = TextAnchor.MiddleCenter;
@@ -61,7 +68,7 @@ namespace UnityVolumeRendering
                 transferFunction = targetObject.transferFunction;
             }
 
-            if (dataset == null || transferFunction == null)
+            if (transferFunction == null)
             {
                 return;
             }
@@ -90,7 +97,7 @@ namespace UnityVolumeRendering
             tf.GenerateTexture();
 
             // Create histogram texture
-            if(histTex == null)
+            if(histTex == null && dataset != null)
             {
                 if(SystemInfo.supportsComputeShaders)
                     histTex = HistogramTextureGenerator.GenerateHistogramTextureOnGPU(dataset);

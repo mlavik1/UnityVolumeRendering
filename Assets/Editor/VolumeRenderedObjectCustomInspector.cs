@@ -196,15 +196,28 @@ namespace UnityVolumeRendering
                     for (int i = 0; i < segmentationLabels.Count; i++)
                     {
                         EditorGUILayout.BeginHorizontal();
-                        SegmentationLabel segmentationlabel = segmentationLabels[i];
-                        EditorGUI.BeginChangeCheck();
-                        segmentationlabel.name = EditorGUILayout.TextField(segmentationlabel.name);
-                        segmentationlabel.colour = EditorGUILayout.ColorField(segmentationlabel.colour);
-                        bool changed = EditorGUI.EndChangeCheck();
-                        segmentationLabels[i] = segmentationlabel;
+                        SegmentationLabel segmentationLabel = segmentationLabels[i];
+                        segmentationLabel.name = EditorGUILayout.TextField(segmentationLabel.name);
+                        segmentationLabel.colour = EditorGUILayout.ColorField(segmentationLabel.colour);
+                        if (GUILayout.Button("TF"))
+                        {
+                            if (segmentationLabel.transferFunction == null)
+                                segmentationLabel.transferFunction = ScriptableObject.CreateInstance<TransferFunction>();
+                            segmentationLabel.transferFunction.onUpdate = volrendObj.UpdateSegmentationLabels;
+                            float zoomMin = Mathf.InverseLerp(volrendObj.dataset.GetMinDataValue(), volrendObj.dataset.GetMaxDataValue(), segmentationLabel.minDataValue);
+                            float zoomMax = Mathf.InverseLerp(volrendObj.dataset.GetMinDataValue(), volrendObj.dataset.GetMaxDataValue(), segmentationLabel.maxDataValue);
+                            TransferFunctionEditorWindow wnd = TransferFunctionEditorWindow.ShowWindow(segmentationLabel.transferFunction);
+                            wnd.SetHorizontalZoom(zoomMin, zoomMax);
+                        }
+                        if (segmentationLabel.colour != segmentationLabels[i].colour)
+                            segmentationLabel.transferFunction = null;
+                        bool changed = segmentationLabel.colour != segmentationLabels[i].colour
+                            || segmentationLabel.name != segmentationLabels[i].name
+                            || segmentationLabel.transferFunction != segmentationLabels[i].transferFunction;
+                        segmentationLabels[i] = segmentationLabel;
                         if (GUILayout.Button("delete"))
                         {
-                            volrendObj.RemoveSegmentation(segmentationlabel.id);
+                            volrendObj.RemoveSegmentation(segmentationLabel.id);
                         }
                         EditorGUILayout.EndHorizontal();
                         if (changed)

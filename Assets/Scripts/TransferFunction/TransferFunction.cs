@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using UnityEngine.Events;
 
 namespace UnityVolumeRendering
 {
@@ -12,23 +13,25 @@ namespace UnityVolumeRendering
         [SerializeField]
         public List<TFAlphaControlPoint> alphaControlPoints = new List<TFAlphaControlPoint>();
 
+        public UnityAction onUpdate;
+
         private Texture2D texture = null;
         private Color[] tfCols;
 
         private const int TEXTURE_WIDTH = 1024;
         private const int TEXTURE_HEIGHT = 2;
 
-        public void AddControlPoint(TFColourControlPoint ctrlPoint)
+        public virtual void AddControlPoint(TFColourControlPoint ctrlPoint)
         {
             colourControlPoints.Add(ctrlPoint);
         }
 
-        public void AddControlPoint(TFAlphaControlPoint ctrlPoint)
+        public virtual void AddControlPoint(TFAlphaControlPoint ctrlPoint)
         {
             alphaControlPoints.Add(ctrlPoint);
         }
 
-        public Texture2D GetTexture()
+        public virtual Texture2D GetTexture()
         {
             if (texture == null)
                 GenerateTexture();
@@ -36,7 +39,7 @@ namespace UnityVolumeRendering
             return texture;
         }
 
-        public void GenerateTexture()
+        public virtual void GenerateTexture()
         {
             if (texture == null)
                 CreateTexture();
@@ -96,9 +99,11 @@ namespace UnityVolumeRendering
             texture.wrapMode = TextureWrapMode.Clamp;
             texture.SetPixels(tfCols);
             texture.Apply();
+
+            onUpdate?.Invoke();
         }
 
-        public Color GetColour(float x)
+        public virtual Color GetColour(float x)
         {
             int index = Mathf.RoundToInt(x * TEXTURE_WIDTH);
             return tfCols[index];

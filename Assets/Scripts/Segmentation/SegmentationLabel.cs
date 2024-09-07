@@ -8,5 +8,8 @@ namespace UnityVolumeRendering
         public int id;
         public string name;
         public Color colour;
+        public TransferFunction transferFunction;
+        public float minDataValue;
+        public float maxDataValue;
     }
 }
