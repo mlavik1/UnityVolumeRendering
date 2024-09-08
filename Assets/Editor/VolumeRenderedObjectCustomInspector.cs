@@ -220,14 +220,16 @@ namespace UnityVolumeRendering
                 {
                     ImportImageFileDataset(volrendObj, (VolumeDataset dataset) =>
                     {
-                        volrendObj.AddSegmentation(dataset);
+                        List<SegmentationLabel> labels = SegmentationBuilder.BuildSegmentations(dataset);
+                        volrendObj.AddSegmentation(dataset, labels);
                     });
                 }
                 if (GUILayout.Button("Add segmentation (DICOM)"))
                 {
                     ImportDicomDataset(volrendObj, (VolumeDataset dataset) =>
                     {
-                        volrendObj.AddSegmentation(dataset);
+                        List<SegmentationLabel> labels = SegmentationBuilder.BuildSegmentations(dataset);
+                        volrendObj.AddSegmentation(dataset, labels);
                     });
                 }
                 if (GUILayout.Button("Clear segmentations"))

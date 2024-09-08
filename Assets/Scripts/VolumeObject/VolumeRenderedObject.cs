@@ -150,7 +150,7 @@ namespace UnityVolumeRendering
             return segmentationLabels;
         }
 
-        public void AddSegmentation(VolumeDataset dataset)
+        public void AddSegmentation(VolumeDataset dataset, List<SegmentationLabel> labels)
         {
             if (secondaryDataset != null && dataset.data.Length != secondaryDataset.data.Length)
             {
@@ -161,37 +161,33 @@ namespace UnityVolumeRendering
             overlayType = OverlayType.Segmentation;
 
             int lastSegmentationId = segmentationLabels.Count > 0 ? segmentationLabels.Max(l => l.id) : 0;
-            int minSegmentationId = int.MaxValue;
-            int maxSegmentationId = int.MinValue;
 
             if (segmentationLabels.Count == 0)
             {
                 secondaryDataset = dataset;
             }
-            for (int i = 0; i < dataset.data.Length; i++)
+            else
             {
-                int value = Mathf.RoundToInt(dataset.data[i]);
-                if (value > 0)
+                for (int i = 0; i < dataset.data.Length; i++)
                 {
-                    minSegmentationId = Mathf.Min(minSegmentationId, value);
-                    maxSegmentationId = Mathf.Max(maxSegmentationId, value);
-                    secondaryDataset.data[i] = lastSegmentationId + value;
+                    int value = Mathf.RoundToInt(dataset.data[i]);
+                    if (value > 0)
+                    {
+                        secondaryDataset.data[i] = lastSegmentationId + value;
+                    }
                 }
             }
             secondaryDataset.RecalculateBounds();
             secondaryDataset.RecreateDataTexture();
             secondaryDataset.GetDataTexture().filterMode = FilterMode.Point;
 
-            for (int i = minSegmentationId; i <= maxSegmentationId; i++)
+            foreach (SegmentationLabel label in labels)
             {
-                int segmentationId = i + lastSegmentationId;
-                SegmentationLabel segmentationLabel = new SegmentationLabel();
-                segmentationLabel.id = segmentationId;
-                segmentationLabel.name = dataset.name;
-                segmentationLabel.colour = Random.ColorHSV();
+                SegmentationLabel segmentationLabel = label;
+                segmentationLabel.id = segmentationLabel.id + lastSegmentationId;
                 segmentationLabels.Add(segmentationLabel);
-                UpdateSegmentationLabels();
             }
+            UpdateSegmentationLabels();
         }
 
         public void RemoveSegmentation(int id)
