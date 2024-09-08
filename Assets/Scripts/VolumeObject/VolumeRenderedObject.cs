@@ -1,5 +1,6 @@
 ﻿using openDicom.Encoding;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -160,29 +161,28 @@ namespace UnityVolumeRendering
             overlayType = OverlayType.Segmentation;
 
             int lastSegmentationId = segmentationLabels.Count > 0 ? segmentationLabels.Max(l => l.id) : 0;
-            int maxSegmentationId = -1;
+            int minSegmentationId = int.MaxValue;
+            int maxSegmentationId = int.MinValue;
 
             if (segmentationLabels.Count == 0)
             {
                 secondaryDataset = dataset;
-                maxSegmentationId = Mathf.RoundToInt(dataset.GetMaxDataValue());
             }
-            else
+            for (int i = 0; i < dataset.data.Length; i++)
             {
-                for (int i = 0; i < dataset.data.Length; i++)
+                int value = Mathf.RoundToInt(dataset.data[i]);
+                if (value > 0)
                 {
-                    int value = Mathf.RoundToInt(dataset.data[i]);
-                    if (value > 0)
-                    {
-                        maxSegmentationId = Mathf.Max(maxSegmentationId, value);
-                        secondaryDataset.data[i] = maxSegmentationId + value;
-                    }
+                    minSegmentationId = Mathf.Min(minSegmentationId, value);
+                    maxSegmentationId = Mathf.Max(maxSegmentationId, value);
+                    secondaryDataset.data[i] = lastSegmentationId + value;
                 }
-                secondaryDataset.RecalculateBounds();
-                secondaryDataset.RecreateDataTexture();
-                secondaryDataset.GetDataTexture().filterMode = FilterMode.Point;
             }
-            for (int i = 1; i <= maxSegmentationId; i++)
+            secondaryDataset.RecalculateBounds();
+            secondaryDataset.RecreateDataTexture();
+            secondaryDataset.GetDataTexture().filterMode = FilterMode.Point;
+
+            for (int i = minSegmentationId; i <= maxSegmentationId; i++)
             {
                 int segmentationId = i + lastSegmentationId;
                 SegmentationLabel segmentationLabel = new SegmentationLabel();
