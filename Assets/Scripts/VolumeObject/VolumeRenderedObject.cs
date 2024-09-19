@@ -106,6 +106,12 @@ namespace UnityVolumeRendering
             return this.overlayType;
         }
 
+        public void SetOverlayType(OverlayType overlayType)
+        {
+            this.overlayType = overlayType;
+            this.UpdateMaterialProperties();
+        }
+
         public TransferFunction GetSecondaryTransferFunction()
         {
             return this.secondaryTransferFunction;
@@ -148,6 +154,12 @@ namespace UnityVolumeRendering
         public List<SegmentationLabel> GetSegmentationLabels()
         {
             return segmentationLabels;
+        }
+
+        public void SetSegmentationLabels(List<SegmentationLabel> labels)
+        {
+            this.segmentationLabels = labels;
+            UpdateSegmentationLabels();
         }
 
         public void AddSegmentation(VolumeDataset dataset, List<SegmentationLabel> labels)
