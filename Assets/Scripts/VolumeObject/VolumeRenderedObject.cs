@@ -254,17 +254,19 @@ namespace UnityVolumeRendering
             float minDataValue = secondaryDataset.GetMinDataValue();
             float maxDataValue = secondaryDataset.GetMaxDataValue();
             secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(0.0f, 0.0f));
-            secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(1.0f, 1.0f));
             for (int i = 0; i < segmentationLabels.Count; i++)
             {
                 SegmentationLabel segmentationLabel = segmentationLabels[i];
                 float t = segmentationLabel.id / maxDataValue;
+                float segmAlpha = segmentationLabel.colour.a;
                 secondaryTransferFunction.colourControlPoints.Add(new TFColourControlPoint(t, segmentationLabel.colour));
-                if (i == 0)
-                {
-                    secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(t - 0.01f, 0.0f));
-                    secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(t, 1.0f));
-                }
+                if (t > 0.0f)
+                    secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(Mathf.Max(t - 0.001f, 0.0f), segmAlpha));
+                secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(t, segmAlpha));
+                if (i == segmentationLabels.Count - 1)
+                    secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(1.0f, segmAlpha));
+                else
+                    secondaryTransferFunction.alphaControlPoints.Add(new TFAlphaControlPoint(t + 0.001f, segmAlpha));
             }
             secondaryTransferFunction.GenerateTexture();
             secondaryTransferFunction.GetTexture().filterMode = FilterMode.Point;

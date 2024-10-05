@@ -476,13 +476,17 @@
                     const float secondaryDensity = getSecondaryDensity(currPos);
                     if (secondaryDensity > 0.0)
                     {
-                        col = getSecondaryTF1DColour(secondaryDensity);
-                        float3 gradient = getGradient(currPos);
-                        float gradMag = length(gradient);
-                        float3 normal = gradient / gradMag;
-                        col.rgb = calculateLighting(col.rgb, normal, getLightDirection(-ray.direction), -ray.direction, 0.15);
-                        col.a = 1.0;
-                        break;
+                        float4 secondaryColour = getSecondaryTF1DColour(secondaryDensity);
+                        if (secondaryColour.a > 0.0)
+                        {
+                            col = secondaryColour;
+                            float3 gradient = getGradient(currPos);
+                            float gradMag = length(gradient);
+                            float3 normal = gradient / gradMag;
+                            col.rgb = calculateLighting(col.rgb, normal, getLightDirection(-ray.direction), -ray.direction, 0.15);
+                            col.a = 1.0;
+                            break;
+                        }
                     }
 #endif
                     if (density > _MinVal && density < _MaxVal)
