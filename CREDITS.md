@@ -20,5 +20,7 @@ Async loading
 Modified shader to handle stereo rendering.
 - [Juan Pablo Montoya](https://github.com/JuanPabloMontoya271)
 Overlay Segmentations - initial implementation
+- [Vijay Kalivarapu](https://github.com/kvijaykiran)
+Texture2D variable in TransferFunction changed to protected - to allow for custom texture creation
 
 Feel free to add yourself to this list when contributing to this project.
