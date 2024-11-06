@@ -339,7 +339,6 @@
                     float4 src = getTF1DColour(density);
                     if (src.a == 0.0)
                         continue;
-#endif
 
 #if defined(MULTIVOLUME_OVERLAY) || defined(MULTIVOLUME_ISOLATE)
                     const float secondaryDensity = getSecondaryDensity(currPos);
@@ -348,6 +347,7 @@
                     src = secondaryColour.a > 0.0 ? secondaryColour : src;
 #elif MULTIVOLUME_ISOLATE
                     src.a = secondaryColour.a > 0.0 ? src.a : 0.0;
+#endif
 #endif
 #endif
 
