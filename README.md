@@ -183,6 +183,6 @@ Thanks to [everyone who have contributed so far](CREDITS.md).
 
 See ACKNOWLEDGEMENTS.txt for libraries used by this project.
 
-Ricer IDE license kindly provided by JetBrains.
+Rider C# IDE license kindly provided by JetBrains.
 
 <img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" width="200px">
