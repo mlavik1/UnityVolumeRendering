@@ -35,6 +35,7 @@ namespace UnityVolumeRendering
             List<SegmentationLabel> result = new List<SegmentationLabel>();
             int minSegmentationId = int.MaxValue;
             int maxSegmentationId = int.MinValue;
+            HashSet<int> usedSegmentationIds = new HashSet<int>();
 
             for (int i = 0; i < dataset.data.Length; i++)
             {
@@ -43,6 +44,7 @@ namespace UnityVolumeRendering
                 {
                     minSegmentationId = Mathf.Min(minSegmentationId, value);
                     maxSegmentationId = Mathf.Max(maxSegmentationId, value);
+                    usedSegmentationIds.Add(value);
                 }
             }
 
@@ -50,6 +52,8 @@ namespace UnityVolumeRendering
 
             for (int segmentationId = minSegmentationId; segmentationId <= maxSegmentationId; segmentationId++)
             {
+                if (!usedSegmentationIds.Contains(segmentationId))
+                    continue;
                 SegmentationLabel segmentationLabel = new SegmentationLabel();
                 segmentationLabel.id = segmentationId;
                 segmentationLabel.name = dataset.datasetName;
