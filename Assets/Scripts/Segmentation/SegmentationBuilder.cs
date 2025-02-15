@@ -1,10 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UnityVolumeRendering
 {
     public class SegmentationBuilder
     {
+        public enum SegmentationClassType
+        {
+            TotalSegmentator,
+            TotalSegmentatorMR
+        }
+
         private static Dictionary<string, Color> segmentationColours = new Dictionary<string, Color>
         {
             { "liver", new Color(0.42f, 0.18f, 0.12f) },
@@ -30,12 +37,21 @@ namespace UnityVolumeRendering
             "rib_right_12", "sternum", "costal_cartilages"
         };
 
-        public static List<SegmentationLabel> BuildSegmentations(VolumeDataset dataset)
+        private static List<string> totalSegmentatorMRLabels = new List<string>
+            { "spleen", "kidney_right", "kidney_left", "gallbladder", "liver", "stomach", "pancreas", "adrenal_gland_right", "adrenal_gland_left", "lung_left", "lung_right", "esophagus",
+            "small_bowel", "duodenum", "colon", "urinary_bladder", "prostate", "sacrum", "vertebrae", "intervertebral_discs", "spinal_cord", "heart", "aorta", "inferior_vena_cava",
+            "portal_vein_and_splenic_vein", "iliac_artery_left", "iliac_artery_right", "iliac_vena_left", "iliac_vena_right", "humerus_left", "humerus_right", "scapula_left",
+            "scapula_right", "clavicula_left", "clavicula_right", "femur_left", "femur_right", "hip_left", "hip_right", "gluteus_maximus_left", "gluteus_maximus_right", "gluteus_medius_left",
+            "gluteus_medius_right", "gluteus_minimus_left", "gluteus_minimus_right", "autochthon_left", "autochthon_right", "iliopsoas_left", "iliopsoas_right", "brain"
+        };
+
+        public static List<SegmentationLabel> BuildSegmentations(VolumeDataset dataset, SegmentationClassType classType = SegmentationClassType.TotalSegmentator)
         {
             List<SegmentationLabel> result = new List<SegmentationLabel>();
             int minSegmentationId = int.MaxValue;
             int maxSegmentationId = int.MinValue;
             HashSet<int> usedSegmentationIds = new HashSet<int>();
+            List<string> labelList = classType == SegmentationClassType.TotalSegmentatorMR ? totalSegmentatorMRLabels : totalSegmentatorLabels;
 
             for (int i = 0; i < dataset.data.Length; i++)
             {
@@ -58,9 +74,9 @@ namespace UnityVolumeRendering
                 segmentationLabel.id = segmentationId;
                 segmentationLabel.name = dataset.datasetName;
                 segmentationLabel.colour = Random.ColorHSV();
-                if (multiLabel && segmentationId < totalSegmentatorLabels.Count + 1)
+                if (multiLabel && segmentationId < labelList.Count + 1)
                 {
-                    string labelName = totalSegmentatorLabels[segmentationId - 1];
+                    string labelName = labelList[segmentationId - 1];
                     if (segmentationColours.ContainsKey(labelName))
                     {
                         segmentationLabel.colour = segmentationColours[labelName];
