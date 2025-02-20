@@ -391,7 +391,7 @@ namespace UnityVolumeRendering
             if (gradientType != this.gradientType)
             {
                 this.gradientType = gradientType;
-                if (this.lightingEnabled)
+                if (NeedsGradients())
                 {
                     await dataset.RegenerateGradientTextureAsync(gradientType, progressHandler);
                     await UpdateMaterialPropertiesAsync();
@@ -533,7 +533,7 @@ namespace UnityVolumeRendering
 
             try
             {
-                bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
+                bool useGradientTexture = NeedsGradients();
                 Texture3D dataTexture = await dataset.GetDataTextureAsync(progressHandler);
                 Texture3D gradientTexture = useGradientTexture ? await dataset.GetGradientTextureAsync(progressHandler) : null;
                 Texture3D secondaryDataTexture = secondaryDataset ? await secondaryDataset?.GetDataTextureAsync(progressHandler) : null;
@@ -680,6 +680,11 @@ namespace UnityVolumeRendering
                 if (trans)
                     volumeContainerObject = trans.gameObject;
             }
+        }
+
+        private bool NeedsGradients()
+        {
+            return lightingEnabled || tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering;
         }
     }
 }

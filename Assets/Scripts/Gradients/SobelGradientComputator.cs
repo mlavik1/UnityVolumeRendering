@@ -67,7 +67,7 @@ namespace UnityVolumeRendering
 
             Vector3 gradient = new Vector3(dx, dy, dz);
 
-            float divident = maxRange * 3;
+            float divident = maxRange;
 
             return new Vector3(gradient.x / divident, gradient.y / divident, gradient.z / divident);
         }
