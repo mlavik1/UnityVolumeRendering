@@ -113,13 +113,36 @@ namespace UnityVolumeRendering
         {
             if (gradientTexture == null)
             {
-                gradientTexture = AsyncHelper.RunSync<Texture3D>(() => CreateGradientTextureInternalAsync(NullProgressHandler.instance));
+                gradientTexture = AsyncHelper.RunSync<Texture3D>(() => CreateGradientTextureInternalAsync(GradientTypeUtils.GetDefaultGradientType(), NullProgressHandler.instance));
                 return gradientTexture;
             }
             else
             {
                 return gradientTexture;
             }
+        }
+
+        public async Task<Texture3D> RegenerateGradientTextureAsync(GradientType gradientType, IProgressHandler progressHandler = null)
+        {
+            await createGradientTextureLock.WaitAsync();
+            try
+            {
+                if (progressHandler == null)
+                    progressHandler = new NullProgressHandler();
+                try
+                {
+                    gradientTexture = await CreateGradientTextureInternalAsync(gradientType, progressHandler != null ? progressHandler : NullProgressHandler.instance);
+                }
+                catch (System.Exception exception)
+                {
+                    Debug.LogException(exception);
+                }
+            }
+            finally
+            {
+                createGradientTextureLock.Release();
+            }
+            return gradientTexture;
         }
 
         /// <summary>
@@ -132,23 +155,7 @@ namespace UnityVolumeRendering
         {
             if (gradientTexture == null)
             {
-                await createGradientTextureLock.WaitAsync();
-                try
-                {
-                    if (progressHandler == null)
-                        progressHandler = new NullProgressHandler();
-                        try {
-                            gradientTexture = await CreateGradientTextureInternalAsync(progressHandler != null ? progressHandler : NullProgressHandler.instance);
-                        }
-                        catch(System.Exception exception)
-                        {
-                            Debug.LogException(exception);
-                        }
-                }
-                finally
-                {
-                    createGradientTextureLock.Release();
-                }
+                gradientTexture = await RegenerateGradientTextureAsync(GradientTypeUtils.GetDefaultGradientType(), progressHandler);
             }
             return gradientTexture;
         }
@@ -338,7 +345,7 @@ namespace UnityVolumeRendering
             return texture;
         }
 
-        private async Task<Texture3D> CreateGradientTextureInternalAsync(IProgressHandler progressHandler)
+        private async Task<Texture3D> CreateGradientTextureInternalAsync(GradientType gradientType, IProgressHandler progressHandler)
         {
             Debug.Log("Async gradient generation. Hold on.");
 
@@ -370,7 +377,7 @@ namespace UnityVolumeRendering
                 Texture3D textureTmp = new Texture3D(dimX, dimY, dimZ, texformat, false);
                 textureTmp.wrapMode = TextureWrapMode.Clamp;
 
-                GradientComputator gradientComputator = new SobelGradientComputator(this);
+                GradientComputator gradientComputator = gradientType == GradientType.Sobel ? new SobelGradientComputator(this) : new CentralDifferenceGradientComputator(this);
 
                 for (int x = 0; x < dimX; x++)
                 {
@@ -398,7 +405,7 @@ namespace UnityVolumeRendering
 
             progressHandler.StartStage(0.6f, "Creating gradient texture");
             await Task.Run(() => {
-                GradientComputator gradientComputator = new SobelGradientComputator(this);
+                GradientComputator gradientComputator = gradientType == GradientType.Sobel ? new SobelGradientComputator(this) : new CentralDifferenceGradientComputator(this);
 
                 for (int z = 0; z < dimZ; z++)
                 {

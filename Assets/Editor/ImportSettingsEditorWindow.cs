@@ -43,6 +43,14 @@ namespace UnityVolumeRendering
             PlayerPrefs.SetInt("ClampHounsfield", clampHounsfield ? 1 : 0);
             EditorGUILayout.EndHorizontal();
 
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Default gradient computation method");
+            GradientType gradientType = GradientType.CentralDifference;
+            Enum.TryParse(PlayerPrefs.GetString("DefaultGradientType"), out gradientType);
+            gradientType = (GradientType)EditorGUILayout.EnumPopup(gradientType, "");
+            PlayerPrefs.SetString("DefaultGradientType", gradientType.ToString());
+            EditorGUILayout.EndHorizontal();
+
             EditorGUILayout.Space();
             EditorGUILayout.Space();
 

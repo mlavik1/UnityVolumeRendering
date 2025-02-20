@@ -32,56 +32,26 @@ namespace UnityVolumeRendering
             return result;
         }
 
-        private static readonly float[,,] kernelx = {
+        private static readonly float[,,] kernelx = new float[,,]
         {
-            {-1, 0, 1},
-            {-2, 0, 2},
-            {-1, 0, 1}
-        },
-        {
-            {-2, 0, 2},
-            {-4, 0, 4},
-            {-2, 0, 2}
-        },
-        {
-            {-1, 0, 1},
-            {-2, 0, 2},
-            {-1, 0, 1}
-        }};
+            { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } },
+            { { -2, 0, 2 }, { -4, 0, 4 }, { -2, 0, 2 } },
+            { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } }
+        };
 
-        private static readonly float[,,] kernely = {
+        private static readonly float[,,] kernely = new float[,,]
         {
-            {-1, -2, -1},
-            {0, 0, 0},
-            {1, 2, 1}
-        },
-        {
-            {-2, -4, -2},
-            {0, 0, 0},
-            {2, 4, 2}
-        },
-        {
-            {-1, -2, -1},
-            {0, 0, 0},
-            {1, 2, 1}
-        }};
+            { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } },
+            { { -2, -4, -2 }, { 0, 0, 0 }, { 2, 4, 2 } },
+            { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } }
+        };
 
-        private static readonly float[,,] kernelz = {
+        private static readonly float[,,] kernelz = new float[,,]
         {
-            {-1, -2, -1},
-            {-2, -4, -2},
-            {-1, -2, -1}
-        },
-        {
-            {0, 0, 0},
-            {0, 0, 0},
-            {0, 0, 0}
-        },
-        {
-            {1, 2, 1},
-            {2, 4, 2},
-            {1, 2, 1}
-        }};
+            { { -1, -2, -1 }, { -2, -4, -2 }, { -1, -2, -1 } },
+            { {  0,  0,  0 }, {  0,  0,  0 }, {  0,  0,  0 } },
+            { {  1,  2,  1 }, {  2,  4,  2 }, {  1,  2,  1 } }
+        };
 
         public override Vector3 ComputeGradient(int x, int y, int z, float minValue, float maxRange)
         {
@@ -97,7 +67,9 @@ namespace UnityVolumeRendering
 
             Vector3 gradient = new Vector3(dx, dy, dz);
 
-            return new Vector3(gradient.x / maxRange, gradient.y / maxRange, gradient.z / maxRange);
+            float divident = maxRange * 3;
+
+            return new Vector3(gradient.x / divident, gradient.y / divident, gradient.z / divident);
         }
     }
 }

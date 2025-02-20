@@ -77,6 +77,9 @@ namespace UnityVolumeRendering
         [SerializeField, HideInInspector]
         private float samplingRateMultiplier = 1.0f;
 
+        [SerializeField, HideInInspector]
+        private GradientType gradientType = GradientType.CentralDifference;
+
         private CrossSectionManager crossSectionManager;
 
         private SemaphoreSlim updateMatLock = new SemaphoreSlim(1, 1);
@@ -370,6 +373,26 @@ namespace UnityVolumeRendering
             {
                 lightSource = source;
                 UpdateMaterialProperties();
+            }
+        }
+
+        public GradientType GetGradientType()
+        {
+            return this.gradientType;
+        }
+
+        public void SetGradientType(GradientType gradientType)
+        {
+             _ = SetGradientTypeAsync(gradientType);
+        }
+
+        public async Task SetGradientTypeAsync(GradientType gradientType, IProgressHandler progressHandler = null)
+        {
+            if (gradientType != this.gradientType)
+            {
+                this.gradientType = gradientType;
+                await dataset.RegenerateGradientTextureAsync(gradientType, progressHandler);
+                await UpdateMaterialPropertiesAsync();
             }
         }
 

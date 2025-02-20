@@ -112,6 +112,14 @@ namespace UnityVolumeRendering
                 else
                     volrendObj.SetLightingEnabled(false);
 
+                GradientType oldGradientType = volrendObj.GetGradientType();
+                GradientType newGradientType = (GradientType)EditorGUILayout.EnumPopup("Gradient", oldGradientType);
+
+                if (newGradientType != oldGradientType)
+                {
+                    volrendObj.SetGradientTypeAsync(newGradientType, new ProgressHandler(this));
+                }
+
                 if (volrendObj.GetLightingEnabled() || volrendObj.GetRenderMode() == RenderMode.IsosurfaceRendering)
                 {
                     LightSource oldLightSource = volrendObj.GetLightSource();
