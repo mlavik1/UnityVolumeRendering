@@ -137,7 +137,13 @@ namespace UnityVolumeRendering
                 {
                     if (progressHandler == null)
                         progressHandler = new NullProgressHandler();
-                    gradientTexture = await CreateGradientTextureInternalAsync(progressHandler != null ? progressHandler : NullProgressHandler.instance);
+                        try {
+                            gradientTexture = await CreateGradientTextureInternalAsync(progressHandler != null ? progressHandler : NullProgressHandler.instance);
+                        }
+                        catch(System.Exception exception)
+                        {
+                            Debug.LogException(exception);
+                        }
                 }
                 finally
                 {
@@ -418,7 +424,94 @@ namespace UnityVolumeRendering
             return texture;
 
         }
-        public Vector3 GetGrad(int x, int y, int z, float minValue, float maxRange)
+
+        private float Convolve(int x, int y, int z, float[,,] matrix)
+        {
+            float result = 0;
+            for (int iz = 0; iz <=2; iz++)
+            {
+                for (int iy = 0; iy <=2; iy++)
+                {
+                    for (int ix = 0; ix <=2; ix++)
+                    {
+                        float matrixValue = matrix[iz, iy, ix];
+                        float dataValue = GetData(x + ix - 1, y + iy - 1, z + iz - 1);
+                        result += matrixValue * dataValue;
+                    }
+                }
+            }
+            return result;
+        }
+
+        float[,,] kernelx = {
+        {
+            {-1, 0, 1}, 
+            {-2, 0, 2}, 
+            {-1, 0, 1}
+        },
+        {
+            {-2, 0, 2}, 
+            {-4, 0, 4}, 
+            {-2, 0, 2}
+        },
+        {
+            {-1, 0, 1}, 
+            {-2, 0, 2}, 
+            {-1, 0, 1}
+        }};
+
+        float[,,] kernely = {
+        {
+            {-1, -2, -1}, 
+            {0, 0, 0}, 
+            {1, 2, 1}
+        },
+        {
+            {-2, -4, -2}, 
+            {0, 0, 0}, 
+            {2, 4, 2}
+        },
+        {
+            {-1, -2, -1}, 
+            {0, 0, 0}, 
+            {1, 2, 1}
+        }};
+
+        float[,,] kernelz = {
+        {
+            {-1, -2, -1}, 
+            {-2, -4, -2}, 
+            {-1, -2, -1}
+        },
+        {
+            {0, 0, 0}, 
+            {0, 0, 0}, 
+            {0, 0, 0}
+        },
+        {
+            {1, 2, 1}, 
+            {2, 4, 2}, 
+            {1, 2, 1}
+        }};
+
+        public Vector3 GetGradSobel(int x, int y, int z, float minValue, float maxRange)
+        {
+            // TODO
+            if (x < 2 || y < 2 || z < 2 || x > dimX - 3 || y > dimY - 3 || z > dimZ - 3)
+            {
+                return Vector3.zero;
+            }
+
+            float dx = Convolve(x, y, z, kernelx);
+            float dy = Convolve(x, y, z, kernely);
+            float dz = Convolve(x, y, z, kernelz);
+
+            Vector3 gradient = new Vector3(dx, dy, dz);
+
+            return new Vector3(gradient.x / maxRange, gradient.y / maxRange, gradient.z / maxRange);
+        }
+
+        public Vector3 GetGradSimple(int x, int y, int z, float minValue, float maxRange)
         {
             float x1 = data[Math.Min(x + 1, dimX - 1) + y * dimX + z * (dimX * dimY)] - minValue;
             float x2 = data[Math.Max(x - 1, 0) + y * dimX + z * (dimX * dimY)] - minValue;
@@ -428,6 +521,11 @@ namespace UnityVolumeRendering
             float z2 = data[x + y * dimX + Math.Max(z - 1, 0) * (dimX * dimY)] - minValue;
 
             return new Vector3((x2 - x1) / maxRange, (y2 - y1) / maxRange, (z2 - z1) / maxRange);
+        }
+
+        public Vector3 GetGrad(int x, int y, int z, float minValue, float maxRange)
+        {
+            return GetGradSobel(x, y, z, minValue, maxRange);
         }
 
         public float GetAvgerageVoxelValues(int x, int y, int z)
