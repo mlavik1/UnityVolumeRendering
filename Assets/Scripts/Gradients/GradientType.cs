@@ -15,6 +15,7 @@ namespace UnityVolumeRendering
         {
             GradientType gradientType = GradientType.CentralDifference;
             Enum.TryParse(PlayerPrefs.GetString("DefaultGradientType"), out gradientType);
+            Debug.Log(gradientType);
             return gradientType;
         }
     }

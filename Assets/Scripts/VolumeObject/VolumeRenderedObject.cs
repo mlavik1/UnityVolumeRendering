@@ -391,8 +391,11 @@ namespace UnityVolumeRendering
             if (gradientType != this.gradientType)
             {
                 this.gradientType = gradientType;
-                await dataset.RegenerateGradientTextureAsync(gradientType, progressHandler);
-                await UpdateMaterialPropertiesAsync();
+                if (this.lightingEnabled)
+                {
+                    await dataset.RegenerateGradientTextureAsync(gradientType, progressHandler);
+                    await UpdateMaterialPropertiesAsync();
+                }
             }
         }
 
