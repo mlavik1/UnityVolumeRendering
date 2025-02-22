@@ -377,7 +377,7 @@ namespace UnityVolumeRendering
                 Texture3D textureTmp = new Texture3D(dimX, dimY, dimZ, texformat, false);
                 textureTmp.wrapMode = TextureWrapMode.Clamp;
 
-                GradientComputator gradientComputator = gradientType == GradientType.Sobel ? new SobelGradientComputator(this) : new CentralDifferenceGradientComputator(this);
+                GradientComputator gradientComputator = GradientComputatorFactory.CreateGradientComputator(this, gradientType);
 
                 for (int x = 0; x < dimX; x++)
                 {
@@ -405,7 +405,7 @@ namespace UnityVolumeRendering
 
             progressHandler.StartStage(0.6f, "Creating gradient texture");
             await Task.Run(() => {
-                GradientComputator gradientComputator = gradientType == GradientType.Sobel ? new SobelGradientComputator(this) : new CentralDifferenceGradientComputator(this);
+                GradientComputator gradientComputator = GradientComputatorFactory.CreateGradientComputator(this, gradientType);
 
                 for (int z = 0; z < dimZ; z++)
                 {

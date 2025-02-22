@@ -1,11 +1,14 @@
+using itk.simple;
+using openDicom.Image;
 using System;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace UnityVolumeRendering
 {
     public class CentralDifferenceGradientComputator : GradientComputator
     {
-        public CentralDifferenceGradientComputator(VolumeDataset dataset) : base(dataset)
+        public CentralDifferenceGradientComputator(VolumeDataset dataset, bool smootheDataValues) : base(dataset, smootheDataValues)
         {
         }
 

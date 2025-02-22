@@ -1,11 +1,12 @@
-using System;
+﻿using System;
+using System.Drawing;
 using UnityEngine;
 
 namespace UnityVolumeRendering
 {
     public class SobelGradientComputator : GradientComputator
     {
-        public SobelGradientComputator(VolumeDataset dataset) : base(dataset)
+        public SobelGradientComputator(VolumeDataset dataset, bool smootheDataValues) : base(dataset, smootheDataValues)
         {
         }
 

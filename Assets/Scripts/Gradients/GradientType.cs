@@ -6,7 +6,9 @@ namespace UnityVolumeRendering
     public enum GradientType
     {
         CentralDifference,
-        Sobel
+        SmoothedCentralDifference,
+        Sobel,
+        SmoothedSobel
     }
 
     public class GradientTypeUtils
@@ -15,7 +17,6 @@ namespace UnityVolumeRendering
         {
             GradientType gradientType = GradientType.CentralDifference;
             Enum.TryParse(PlayerPrefs.GetString("DefaultGradientType"), out gradientType);
-            Debug.Log(gradientType);
             return gradientType;
         }
     }
