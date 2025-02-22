@@ -153,10 +153,6 @@ namespace UnityVolumeRendering
             // Cast to 32-bit float
             image = SimpleITK.Cast(image, PixelIDValueEnum.sitkFloat32);
 
-            //SmoothingRecursiveGaussianImageFilter filter = new SmoothingRecursiveGaussianImageFilter();
-            //filter.SetSigma(2);
-            //image = filter.Execute(image);
-
             size = image.GetSize();
 
             int numPixels = 1;
