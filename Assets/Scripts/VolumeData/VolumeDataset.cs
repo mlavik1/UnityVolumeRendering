@@ -113,13 +113,36 @@ namespace UnityVolumeRendering
         {
             if (gradientTexture == null)
             {
-                gradientTexture = AsyncHelper.RunSync<Texture3D>(() => CreateGradientTextureInternalAsync(NullProgressHandler.instance));
+                gradientTexture = AsyncHelper.RunSync<Texture3D>(() => CreateGradientTextureInternalAsync(GradientTypeUtils.GetDefaultGradientType(), NullProgressHandler.instance));
                 return gradientTexture;
             }
             else
             {
                 return gradientTexture;
             }
+        }
+
+        public async Task<Texture3D> RegenerateGradientTextureAsync(GradientType gradientType, IProgressHandler progressHandler = null)
+        {
+            await createGradientTextureLock.WaitAsync();
+            try
+            {
+                if (progressHandler == null)
+                    progressHandler = new NullProgressHandler();
+                try
+                {
+                    gradientTexture = await CreateGradientTextureInternalAsync(gradientType, progressHandler != null ? progressHandler : NullProgressHandler.instance);
+                }
+                catch (System.Exception exception)
+                {
+                    Debug.LogException(exception);
+                }
+            }
+            finally
+            {
+                createGradientTextureLock.Release();
+            }
+            return gradientTexture;
         }
 
         /// <summary>
@@ -132,17 +155,7 @@ namespace UnityVolumeRendering
         {
             if (gradientTexture == null)
             {
-                await createGradientTextureLock.WaitAsync();
-                try
-                {
-                    if (progressHandler == null)
-                        progressHandler = new NullProgressHandler();
-                    gradientTexture = await CreateGradientTextureInternalAsync(progressHandler != null ? progressHandler : NullProgressHandler.instance);
-                }
-                finally
-                {
-                    createGradientTextureLock.Release();
-                }
+                gradientTexture = await RegenerateGradientTextureAsync(GradientTypeUtils.GetDefaultGradientType(), progressHandler);
             }
             return gradientTexture;
         }
@@ -332,7 +345,7 @@ namespace UnityVolumeRendering
             return texture;
         }
 
-        private async Task<Texture3D> CreateGradientTextureInternalAsync(IProgressHandler progressHandler)
+        private async Task<Texture3D> CreateGradientTextureInternalAsync(GradientType gradientType, IProgressHandler progressHandler)
         {
             Debug.Log("Async gradient generation. Hold on.");
 
@@ -364,6 +377,8 @@ namespace UnityVolumeRendering
                 Texture3D textureTmp = new Texture3D(dimX, dimY, dimZ, texformat, false);
                 textureTmp.wrapMode = TextureWrapMode.Clamp;
 
+                GradientComputator gradientComputator = GradientComputatorFactory.CreateGradientComputator(this, gradientType);
+
                 for (int x = 0; x < dimX; x++)
                 {
                     progressHandler.ReportProgress(x, dimX, "Calculating gradients for slice");
@@ -372,7 +387,7 @@ namespace UnityVolumeRendering
                         for (int z = 0; z < dimZ; z++)
                         {
                             int iData = x + y * dimX + z * (dimX * dimY);
-                            Vector3 grad = GetGrad(x, y, z, minValue, maxRange);
+                            Vector3 grad = gradientComputator.ComputeGradient(x, y, z, minValue, maxRange);
 
                             textureTmp.SetPixel(x, y, z, new Color(grad.x, grad.y, grad.z, (float)(data[iData] - minValue) / maxRange));
                         }
@@ -390,6 +405,8 @@ namespace UnityVolumeRendering
 
             progressHandler.StartStage(0.6f, "Creating gradient texture");
             await Task.Run(() => {
+                GradientComputator gradientComputator = GradientComputatorFactory.CreateGradientComputator(this, gradientType);
+
                 for (int z = 0; z < dimZ; z++)
                 {
                     progressHandler.ReportProgress(z, dimZ, "Calculating gradients for slice");
@@ -398,7 +415,7 @@ namespace UnityVolumeRendering
                         for (int x = 0; x < dimX; x++)
                         {
                             int iData = x + y * dimX + z * (dimX * dimY);
-                            Vector3 grad = GetGrad(x, y, z, minValue, maxRange);
+                            Vector3 grad = gradientComputator.ComputeGradient(x, y, z, minValue, maxRange);
 
                             cols[iData] = new Color(grad.x, grad.y, grad.z, (float)(data[iData] - minValue) / maxRange);
                         }
@@ -417,17 +434,6 @@ namespace UnityVolumeRendering
             Debug.Log("Gradient gereneration done.");
             return texture;
 
-        }
-        public Vector3 GetGrad(int x, int y, int z, float minValue, float maxRange)
-        {
-            float x1 = data[Math.Min(x + 1, dimX - 1) + y * dimX + z * (dimX * dimY)] - minValue;
-            float x2 = data[Math.Max(x - 1, 0) + y * dimX + z * (dimX * dimY)] - minValue;
-            float y1 = data[x + Math.Min(y + 1, dimY - 1) * dimX + z * (dimX * dimY)] - minValue;
-            float y2 = data[x + Math.Max(y - 1, 0) * dimX + z * (dimX * dimY)] - minValue;
-            float z1 = data[x + y * dimX + Math.Min(z + 1, dimZ - 1) * (dimX * dimY)] - minValue;
-            float z2 = data[x + y * dimX + Math.Max(z - 1, 0) * (dimX * dimY)] - minValue;
-
-            return new Vector3((x2 - x1) / maxRange, (y2 - y1) / maxRange, (z2 - z1) / maxRange);
         }
 
         public float GetAvgerageVoxelValues(int x, int y, int z)

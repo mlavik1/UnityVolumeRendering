@@ -10,6 +10,7 @@ namespace UnityVolumeRendering
         {
             GameObject outerObject = new GameObject("VolumeRenderedObject_" + dataset.datasetName);
             VolumeRenderedObject volObj = outerObject.AddComponent<VolumeRenderedObject>();
+            volObj.SetGradientType(GradientTypeUtils.GetDefaultGradientType());
 
             GameObject meshContainer = GameObject.Instantiate((GameObject)Resources.Load("VolumeContainer"));
             volObj.volumeContainerObject = meshContainer;
@@ -25,6 +26,7 @@ namespace UnityVolumeRendering
         {
             GameObject outerObject = new GameObject("VolumeRenderedObject_" + dataset.datasetName);
             VolumeRenderedObject volObj = outerObject.AddComponent<VolumeRenderedObject>();
+            volObj.SetGradientType(GradientTypeUtils.GetDefaultGradientType());
 
             GameObject meshContainer = GameObject.Instantiate((GameObject)Resources.Load("VolumeContainer"));
             volObj.volumeContainerObject = meshContainer;

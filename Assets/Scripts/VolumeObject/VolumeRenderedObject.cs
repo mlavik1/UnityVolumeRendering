@@ -77,6 +77,9 @@ namespace UnityVolumeRendering
         [SerializeField, HideInInspector]
         private float samplingRateMultiplier = 1.0f;
 
+        [SerializeField, HideInInspector]
+        private GradientType gradientType = GradientType.CentralDifference;
+
         private CrossSectionManager crossSectionManager;
 
         private SemaphoreSlim updateMatLock = new SemaphoreSlim(1, 1);
@@ -373,6 +376,29 @@ namespace UnityVolumeRendering
             }
         }
 
+        public GradientType GetGradientType()
+        {
+            return this.gradientType;
+        }
+
+        public void SetGradientType(GradientType gradientType)
+        {
+             _ = SetGradientTypeAsync(gradientType);
+        }
+
+        public async Task SetGradientTypeAsync(GradientType gradientType, IProgressHandler progressHandler = null)
+        {
+            if (gradientType != this.gradientType)
+            {
+                this.gradientType = gradientType;
+                if (NeedsGradients())
+                {
+                    await dataset.RegenerateGradientTextureAsync(gradientType, progressHandler);
+                    await UpdateMaterialPropertiesAsync();
+                }
+            }
+        }
+
         public void SetGradientLightingThreshold(Vector2 threshold)
         {
             if (gradientLightingThreshold != threshold)
@@ -507,7 +533,7 @@ namespace UnityVolumeRendering
 
             try
             {
-                bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
+                bool useGradientTexture = NeedsGradients();
                 Texture3D dataTexture = await dataset.GetDataTextureAsync(progressHandler);
                 Texture3D gradientTexture = useGradientTexture ? await dataset.GetGradientTextureAsync(progressHandler) : null;
                 Texture3D secondaryDataTexture = secondaryDataset ? await secondaryDataset?.GetDataTextureAsync(progressHandler) : null;
@@ -654,6 +680,11 @@ namespace UnityVolumeRendering
                 if (trans)
                     volumeContainerObject = trans.gameObject;
             }
+        }
+
+        private bool NeedsGradients()
+        {
+            return lightingEnabled || tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering;
         }
     }
 }
