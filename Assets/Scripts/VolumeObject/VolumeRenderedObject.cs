@@ -55,7 +55,7 @@ namespace UnityVolumeRendering
 
         // Minimum and maximum gradient threshold for lighting contribution. Values below min will be unlit, and between min and max will be partly shaded.
         [SerializeField, HideInInspector]
-        private Vector2 gradientLightingThreshold = new Vector2(0.02f, 0.15f);
+        private Vector2 gradientLightingThreshold = new Vector2(0.005f, 0.02f);
 
         // Gradient magnitude threshold. Voxels with gradient magnitude less than this will not be rendered in isosurface rendering mode.
         [SerializeField, HideInInspector]
