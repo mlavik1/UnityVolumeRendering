@@ -1,7 +1,4 @@
-using itk.simple;
-using openDicom.Image;
 using System;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace UnityVolumeRendering

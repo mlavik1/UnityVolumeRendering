@@ -1,4 +1,6 @@
+#if UVR_USE_SIMPLEITK
 using itk.simple;
+#endif
 using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
