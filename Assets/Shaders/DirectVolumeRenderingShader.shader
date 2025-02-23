@@ -332,7 +332,7 @@
                     	continue;
 #endif
 
-#if CUBIC_INTERPOLATION_ON
+#if CUBIC_INTERPOLATION_ON && !defined(MULTIVOLUME_OVERLAY) && !defined(MULTIVOLUME_ISOLATE)
                     // Optimisation: First get density without tricubic interpolation, before doing an early return
                     if (getTF1DColour(getDensityNoTricubic(currPos)).a == 0.0)
                         continue;
