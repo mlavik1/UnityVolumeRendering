@@ -347,8 +347,10 @@
                     // Apply 1D transfer function
 #if !TF2D_ON
                     float4 src = getTF1DColour(density);
+#if !defined(MULTIVOLUME_OVERLAY) && !defined(MULTIVOLUME_ISOLATE)
                     if (src.a == 0.0)
                         continue;
+#endif
 
 #if defined(MULTIVOLUME_OVERLAY) || defined(MULTIVOLUME_ISOLATE)
                     const float secondaryDensity = getSecondaryDensity(currPos);
