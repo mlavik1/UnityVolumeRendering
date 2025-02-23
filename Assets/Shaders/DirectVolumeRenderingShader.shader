@@ -159,7 +159,15 @@
                 // Check if camera is inside AABB
                 const float3 farPos = ray.startPos + ray.direction * ray.aabbInters.y - float3(0.5f, 0.5f, 0.5f);
                 float4 clipPos = UnityObjectToClipPos(float4(farPos, 1.0f));
-                ray.aabbInters += min(clipPos.w, 0.0);
+                if(unity_OrthoParams.w == 0)
+                {
+                    float3 viewDir = ObjSpaceViewDir(float4(vertexLocal, 0.0f));
+                    float viewDist = length(viewDir);
+                    if (ray.aabbInters.y > viewDist)
+                    {
+                        ray.aabbInters.y = viewDist;
+                    }
+                }
 
                 ray.endPos = ray.startPos + ray.direction * ray.aabbInters.y;
                 return ray;
