@@ -75,13 +75,13 @@
 #endif
             };
 
-            sampler3D _DataTex;
-            sampler3D _GradientTex;
-            sampler2D _NoiseTex;
-            sampler2D _TFTex;
-            sampler3D _ShadowVolume;
-            sampler3D _SecondaryDataTex;
-            sampler2D _SecondaryTFTex;
+            Texture3D _DataTex;           SamplerState sampler_DataTex;
+            Texture3D _GradientTex;       SamplerState sampler_GradientTex;
+            Texture2D _NoiseTex;          SamplerState sampler_NoiseTex;
+            Texture2D _TFTex;             SamplerState sampler_TFTex;
+            Texture3D _ShadowVolume;      SamplerState sampler_ShadowVolume;
+            Texture3D _SecondaryDataTex;  SamplerState sampler_SecondaryDataTex;
+            Texture2D _SecondaryTFTex;    SamplerState sampler_SecondaryTFTex;
 
             float _MinVal;
             float _MaxVal;
@@ -196,50 +196,50 @@
             // Gets the colour from a 1D Transfer Function (x = density)
             float4 getTF1DColour(float density)
             {
-                return tex2Dlod(_TFTex, float4(density, 0.0f, 0.0f, 0.0f));
+                return _TFTex.SampleLevel(sampler_TFTex, float2(density, 0.0), 0);
             }
 
             // Gets the colour from a 2D Transfer Function (x = density, y = gradient magnitude)
             float4 getTF2DColour(float density, float gradientMagnitude)
             {
-                return tex2Dlod(_TFTex, float4(density, gradientMagnitude, 0.0f, 0.0f));
+                return _TFTex.SampleLevel(sampler_TFTex, float2(density, gradientMagnitude), 0);
             }
 
             // Gets the colour from a secondary 1D Transfer Function (x = density)
             float4 getSecondaryTF1DColour(float density)
             {
-                return tex2Dlod(_SecondaryTFTex, float4(density, 0.0f, 0.0f, 0.0f));
+                return _SecondaryTFTex.SampleLevel(sampler_SecondaryTFTex, float2(density, 0.0), 0);
             }
 
             // Gets the density at the specified position
             float getDensity(float3 pos)
             {
 #if CUBIC_INTERPOLATION_ON
-                return interpolateTricubicFast(_DataTex, float3(pos.x, pos.y, pos.z), _TextureSize);
+                return interpolateTricubicFast(_DataTex, sampler_DataTex, pos, _TextureSize);
 #else
-                return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f));
+                return _DataTex.SampleLevel(sampler_DataTex, pos, 0).r;
 #endif
             }
 
             // Gets the density of the secondary volume at the specified position
             float getSecondaryDensity(float3 pos)
             {
-                return tex3Dlod(_SecondaryDataTex, float4(pos.x, pos.y, pos.z, 0.0f));
+                return _SecondaryDataTex.SampleLevel(sampler_SecondaryDataTex, pos, 0).r;
             }
 
             // Gets the density at the specified position, without tricubic interpolation
             float getDensityNoTricubic(float3 pos)
             {
-                return tex3Dlod(_DataTex, float4(pos.x, pos.y, pos.z, 0.0f));
+                return _DataTex.SampleLevel(sampler_DataTex, pos, 0).r;
             }
 
             // Gets the gradient at the specified position
             float3 getGradient(float3 pos)
             {
 #if CUBIC_INTERPOLATION_ON
-                return interpolateTricubicFast(_GradientTex, float3(pos.x, pos.y, pos.z), _TextureSize).rgb;
+                return interpolateTricubicFast(_GradientTex, sampler_GradientTex, pos, _TextureSize).rgb;
 #else
-                return tex3Dlod(_GradientTex, float4(pos.x, pos.y, pos.z, 0.0f)).rgb;
+                return _GradientTex.SampleLevel(sampler_GradientTex, pos, 0).rgb;
 #endif
             }
 
@@ -271,12 +271,17 @@
                 return float3(min(result.r, 1.0f), min(result.g, 1.0f), min(result.b, 1.0f));
             }
 
+            float getNoise(float2 uv)
+            {
+                return _NoiseTex.Sample(sampler_NoiseTex, uv).r;
+            }
+
             float calculateShadow(float3 pos, float3 lightDir)
             {
 #if CUBIC_INTERPOLATION_ON
-                return interpolateTricubicFast(_ShadowVolume, float3(pos.x, pos.y, pos.z), _ShadowVolumeTextureSize);
+                return interpolateTricubicFast(_ShadowVolume, sampler_ShadowVolume, float3(pos.x, pos.y, pos.z), _ShadowVolumeTextureSize);
 #else
-                return tex3Dlod(_ShadowVolume, float4(pos.x, pos.y, pos.z, 0.0f));
+                return _ShadowVolume.SampleLevel(sampler_ShadowVolume, pos, 0).r;
 #endif
             }
 
@@ -317,7 +322,7 @@
                 float3 lightDir = normalize(ObjSpaceViewDir(float4(float3(0.0f, 0.0f, 0.0f), 0.0f)));
 
                 // Create a small random offset in order to remove artifacts
-                ray.startPos += (JITTER_FACTOR * ray.direction * raymarchInfo.stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
+                ray.startPos += (JITTER_FACTOR * ray.direction * raymarchInfo.stepSize) * getNoise(float2(i.uv.x, i.uv.y)).r;
 
                 float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
                 float tDepth = raymarchInfo.numStepsRecip * (raymarchInfo.numSteps - 1);
@@ -467,7 +472,7 @@
                 RaymarchInfo raymarchInfo = initRaymarch(ray, samplingRate);
 
                 // Create a small random offset in order to remove artifacts
-                ray.startPos = ray.startPos + (JITTER_FACTOR * ray.direction * raymarchInfo.stepSize) * tex2D(_NoiseTex, float2(i.uv.x, i.uv.y)).r;
+                ray.startPos = ray.startPos + (JITTER_FACTOR * ray.direction * raymarchInfo.stepSize) * getNoise(float2(i.uv.x, i.uv.y)).r;
 
                 float4 col = float4(0,0,0,0);
                 for (int iStep = 0; iStep < raymarchInfo.numSteps; iStep++)

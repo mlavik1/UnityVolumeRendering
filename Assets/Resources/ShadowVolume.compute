@@ -3,8 +3,8 @@
 #pragma multi_compile __ CUBIC_INTERPOLATION_ON
 #pragma multi_compile __ CROSS_SECTION_ON
 
-sampler3D _VolumeTexture;
-sampler2D _TFTex;
+Texture3D _VolumeTexture;           SamplerState sampler_VolumeTexture;
+Texture2D _TFTex;           SamplerState sampler_TFTex;
 
 float _MinVal;
 float _MaxVal;
@@ -21,14 +21,15 @@ RWTexture3D<float> _ShadowVolume;
 
 float getDensity(float3 pos)
 {
-    return interpolateTricubicFast(_VolumeTexture, float3(pos.x, pos.y, pos.z), _TextureSize).r;
+    return interpolateTricubicFast(_VolumeTexture, sampler_VolumeTexture, float3(pos.x, pos.y, pos.z), _TextureSize).r;
 }
 
 // Gets the colour from a 1D Transfer Function (x = density)
 float4 getTF1DColour(float density)
 {
-    return tex2Dlod(_TFTex, float4(density, 0.0f, 0.0f, 0.0f));
+    return _TFTex.SampleLevel(sampler_TFTex, float2(density, 0.0), 0);
 }
+
 
 float calculateShadow(float3 startPos, float3 lightDir)
 {
