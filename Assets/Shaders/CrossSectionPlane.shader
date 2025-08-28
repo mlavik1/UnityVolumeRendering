@@ -36,7 +36,7 @@
                 float4 vertex : SV_POSITION;
             };
 
-            sampler2D _MainTex;
+            Texture2D _MainTex;             SamplerState sampler_MainTex;
             float4 _MainTex_ST;
 
             v2f vert (appdata v)
@@ -52,7 +52,7 @@
             fixed4 frag (v2f i) : SV_Target
             {
                 // sample the texture
-                fixed4 col = tex2D(_MainTex, i.uv);
+                fixed4 col = _MainTex.Sample(sampler_MainTex, i.uv);
                 return col;
             }
             ENDCG

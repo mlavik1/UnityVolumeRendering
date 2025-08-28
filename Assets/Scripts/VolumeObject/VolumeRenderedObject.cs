@@ -510,8 +510,7 @@ namespace UnityVolumeRendering
         {
             if (meshRenderer.sharedMaterial == null)
             {
-                meshRenderer.sharedMaterial = new Material(Shader.Find("VolumeRendering/DirectVolumeRenderingShader"));
-                meshRenderer.sharedMaterial.SetTexture("_DataTex", dataset.GetDataTexture());
+                meshRenderer.sharedMaterial = MaterialFactory.CreateMaterialDVR(dataset);
             }
             if (transferFunction == null)
             {

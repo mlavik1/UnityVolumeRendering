@@ -1,11 +1,32 @@
 ﻿using System;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UnityVolumeRendering
 {
     public class VolumeObjectFactory
     {
+        public static Material CreateVolumeRenderingMaterial()
+        {
+            Shader shader = null;
+
+            if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("Universal"))
+            {
+                shader = Shader.Find("VolumeRendering/URP/VolumeRendering");
+            }
+            else if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("HD"))
+            {
+                shader = Shader.Find("VolumeRendering/HDRP/VolumeRendering");
+            }
+            else
+            {
+                shader = Shader.Find("VolumeRendering/Builtin/VolumeRendering");
+            }
+
+            return new Material(shader);
+        }
+
         public static VolumeRenderedObject CreateObject(VolumeDataset dataset)
         {
             GameObject outerObject = new GameObject("VolumeRenderedObject_" + dataset.datasetName);
@@ -15,6 +36,7 @@ namespace UnityVolumeRendering
             GameObject meshContainer = GameObject.Instantiate((GameObject)Resources.Load("VolumeContainer"));
             volObj.volumeContainerObject = meshContainer;
             MeshRenderer meshRenderer = meshContainer.GetComponent<MeshRenderer>();
+            meshRenderer.material = CreateVolumeRenderingMaterial();
 
             CreateObjectInternal(dataset, meshContainer, meshRenderer, volObj, outerObject);
 
@@ -31,6 +53,7 @@ namespace UnityVolumeRendering
             GameObject meshContainer = GameObject.Instantiate((GameObject)Resources.Load("VolumeContainer"));
             volObj.volumeContainerObject = meshContainer;
             MeshRenderer meshRenderer = meshContainer.GetComponent<MeshRenderer>();
+            meshRenderer.material = CreateVolumeRenderingMaterial();
 
             CreateObjectInternal(dataset,meshContainer, meshRenderer,volObj,outerObject) ;
 
