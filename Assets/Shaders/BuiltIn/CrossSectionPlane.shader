@@ -1,4 +1,4 @@
-﻿Shader "VolumeRendering/CrossSectionPlane"
+﻿Shader "VolumeRendering/Builtin/CrossSectionPlane"
 {
     Properties
     {

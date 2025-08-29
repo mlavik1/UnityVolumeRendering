@@ -9,20 +9,7 @@ namespace UnityVolumeRendering
     {
         public static Material CreateVolumeRenderingMaterial()
         {
-            Shader shader = null;
-
-            if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("Universal"))
-            {
-                shader = Shader.Find("VolumeRendering/URP/VolumeRendering");
-            }
-            else if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("HD"))
-            {
-                shader = Shader.Find("VolumeRendering/HDRP/VolumeRendering");
-            }
-            else
-            {
-                shader = Shader.Find("VolumeRendering/Builtin/VolumeRendering");
-            }
+            Shader shader = ShaderFactory.GetVolumeRenderingShader();
 
             return new Material(shader);
         }
@@ -103,6 +90,7 @@ namespace UnityVolumeRendering
         public static void SpawnCrossSectionPlane(VolumeRenderedObject volobj)
         {
             GameObject quad = GameObject.Instantiate((GameObject)Resources.Load("CrossSectionPlane"));
+            quad.GetComponent<MeshRenderer>().material = new Material(ShaderFactory.GetCrossSectionPlaneShader());
             quad.transform.rotation = Quaternion.Euler(270.0f, 0.0f, 0.0f);
             CrossSectionPlane csplane = quad.gameObject.GetComponent<CrossSectionPlane>();
             csplane.SetTargetObject(volobj);
