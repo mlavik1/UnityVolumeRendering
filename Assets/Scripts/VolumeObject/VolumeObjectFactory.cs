@@ -104,6 +104,7 @@ namespace UnityVolumeRendering
         public static void SpawnCutoutBox(VolumeRenderedObject volobj)
         {
             GameObject obj = GameObject.Instantiate((GameObject)Resources.Load("CutoutBox"));
+            obj.GetComponent<MeshRenderer>().material = new Material(ShaderFactory.GetCrossSectionPlaneShader());
             obj.transform.rotation = Quaternion.Euler(270.0f, 0.0f, 0.0f);
             CutoutBox cbox = obj.gameObject.GetComponent<CutoutBox>();
             cbox.SetTargetObject(volobj);
@@ -116,6 +117,7 @@ namespace UnityVolumeRendering
         public static void SpawnCutoutSphere(VolumeRenderedObject volobj)
         {
             GameObject obj = GameObject.Instantiate((GameObject)Resources.Load("CutoutSphere"));
+            obj.GetComponent<MeshRenderer>().material = new Material(ShaderFactory.GetCrossSectionSphereShader());
             obj.transform.rotation = Quaternion.Euler(270.0f, 0.0f, 0.0f);
             CutoutSphere cSphere = obj.gameObject.GetComponent<CutoutSphere>();
             cSphere.SetTargetObject(volobj);

@@ -1,14 +1,16 @@
-Shader "Custom/RimOutlineShader" {
+Shader "VolumeRendering/Builtin/CrossSectionSphere" {
     Properties{
         _RimColor("Rim Color", Color) = (1, 1, 1, 1)
         _RimThickness("Rim Thickness", Range(0, 1)) = 0.1
     }
 
-        SubShader{
+        SubShader
+        {
             Tags { "Queue" = "Transparent" "RenderType" = "Transparent" }
             LOD 100
 
-            Pass {
+            Pass
+            {
                 Blend SrcAlpha OneMinusSrcAlpha
 
                 CGPROGRAM
@@ -19,20 +21,23 @@ Shader "Custom/RimOutlineShader" {
                 float _RimThickness;
                 float4 _RimColor;
 
-                struct appdata {
+                struct appdata
+                {
                     UNITY_VERTEX_INPUT_INSTANCE_ID
                     float4 vertex : POSITION;
                     float3 normal : NORMAL;
                 };
 
-                struct v2f {
+                struct v2f
+                {
                     UNITY_VERTEX_OUTPUT_STEREO
                     float3 worldNormal : TEXCOORD0;
                     float3 worldPos : TEXCOORD1;
                     float4 vertex : SV_POSITION;
                 };
 
-                v2f vert(appdata v) {
+                v2f vert(appdata v)
+                {
                     v2f o;
                     UNITY_SETUP_INSTANCE_ID(v);
                     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
@@ -43,7 +48,8 @@ Shader "Custom/RimOutlineShader" {
                     return o;
                 }
 
-                fixed4 frag(v2f i) : SV_Target{
+                fixed4 frag(v2f i) : SV_Target
+                {
                     // Calculate the rim effect
                     float3 viewDirection = normalize(_WorldSpaceCameraPos - i.worldPos);
                     float rim = 1.0 - saturate(dot(viewDirection, i.worldNormal));

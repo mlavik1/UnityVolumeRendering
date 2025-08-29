@@ -7,7 +7,8 @@
     }
     SubShader
     {
-        PackageRequirements {
+        PackageRequirements
+        {
             "com.unity.render-pipelines.universal":"[10.0,10.5.3]"
         }
 
@@ -21,7 +22,7 @@
             #pragma vertex vert
             #pragma fragment frag
             
-            #include "UnityCG.cginc"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             struct appdata
             {
@@ -74,7 +75,7 @@
                 else
                 {
                     // Sample the volume texture.
-                    float dataVal = _TFTex.Sample(_DataTex, dataCoord);
+                    float dataVal = _DataTex.Sample(sampler_DataTex, dataCoord);
                     float4 col = _TFTex.Sample(sampler_TFTex, float2(dataVal, 0.0));
                     col.a = 1.0f;
                     return col;

@@ -1,8 +1,9 @@
-﻿Shader "VolumeRendering/URP/CrossSectionPlane"
+﻿Shader "VolumeRendering/URP/TransferFunctionShader"
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
+        _HistTex ("Histogram Texture", 2D) = "white" {}
+        _TFTex("Transfer Function Texture", 2D) = "white" {}
     }
     SubShader
     {
@@ -11,36 +12,35 @@
             "com.unity.render-pipelines.universal":"[10.0,10.5.3]"
         }
 
-        Tags { "Queue"="Transparent" "RenderType"="Transparent" "RenderPipeline" = "UniversalPipeline" }
+        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
         LOD 100
-        ZWrite Off
+
         Blend SrcAlpha OneMinusSrcAlpha
-        CULL Off
 
         Pass
         {
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-
+            
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             struct appdata
             {
-                UNITY_VERTEX_INPUT_INSTANCE_ID
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
             };
 
             struct v2f
             {
-                UNITY_VERTEX_OUTPUT_STEREO
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
             };
 
-            Texture2D _MainTex;             SamplerState sampler_MainTex;
-            float4 _MainTex_ST;
+            Texture2D _HistTex;             SamplerState sampler_HistTex;
+            Texture2D _TFTex;               SamplerState sampler_TFTex;
+
+            float4 _TFTex_ST;
 
             v2f vert (appdata v)
             {
@@ -50,11 +50,20 @@
                 o.uv = v.uv;
                 return o;
             }
-
+            
             fixed4 frag (v2f i) : SV_Target
             {
-                // sample the texture
-                fixed4 col = _MainTex.Sample(sampler_MainTex, i.uv);
+                float density = i.uv.x;
+                float histY = _HistTex.Sample(sampler_HistTex, float2(density, 0.0f)).r;
+                fixed4 tfCol = _TFTex.Sample(sampler_TFTex, float2(density, 0.0f));
+                float4 histCol = histY > i.uv.y ? float4(1.0f, 1.0f, 1.0f, 1.0f) : float4(0.0f, 0.0f, 0.0f, 0.0f);
+                
+                float alpha = tfCol.a;
+                if (i.uv.y > alpha)
+                    tfCol.a = 0.0f;
+
+                float4 col = histCol * 0.5f + tfCol * 0.7f;
+                
                 return col;
             }
             ENDCG
