@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UIElements;
 
 namespace UnityVolumeRendering
 {
@@ -7,50 +8,59 @@ namespace UnityVolumeRendering
     {
         public static Shader GetVolumeRenderingShader()
         {
+            Shader shader = null;
             if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("Universal"))
             {
-                return Shader.Find("VolumeRendering/URP/VolumeRendering");
+                shader = Shader.Find("VolumeRendering/URP/VolumeRendering");
             }
             else if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("HD"))
             {
-                return Shader.Find("VolumeRendering/HDRP/VolumeRendering");
+                shader = Shader.Find("VolumeRendering/HDRP/VolumeRendering");
             }
             else
             {
-                return Shader.Find("VolumeRendering/Builtin/VolumeRendering");
+                shader = Shader.Find("VolumeRendering/Builtin/VolumeRendering");
             }
+            Debug.Assert(shader != null, "Could not get volume rendering shader");
+            return shader;
         }
 
         public static Shader GetCrossSectionPlaneShader()
         {
+            Shader shader = null;
             if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("Universal"))
             {
-                return Shader.Find("VolumeRendering/URP/CrossSectionPlane");
+                shader = Shader.Find("VolumeRendering/URP/CrossSectionPlane");
             }
             else if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("HD"))
             {
-                return Shader.Find("VolumeRendering/HDRP/CrossSectionPlane");
+                shader = Shader.Find("VolumeRendering/HDRP/CrossSectionPlane");
             }
             else
             {
-                return Shader.Find("VolumeRendering/Builtin/CrossSectionPlane");
+                shader = Shader.Find("VolumeRendering/Builtin/CrossSectionPlane");
             }
+            Debug.Assert(shader != null, "Could not get volume rendering shader");
+            return shader;
         }
 
         public static Shader GetSliceRenderingShader()
         {
+            Shader shader = null;
             if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("Universal"))
             {
-                return Shader.Find("VolumeRendering/URP/SliceRenderingShader");
+                shader = Shader.Find("VolumeRendering/URP/SliceRenderingShader");
             }
             else if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("HD"))
             {
-                return Shader.Find("VolumeRendering/HDRP/SliceRenderingShader");
+                shader = Shader.Find("VolumeRendering/HDRP/SliceRenderingShader");
             }
             else
             {
-                return Shader.Find("VolumeRendering/Builtin/SliceRenderingShader");
+                shader = Shader.Find("VolumeRendering/Builtin/SliceRenderingShader");
             }
+            Debug.Assert(shader != null, "Could not get volume rendering shader");
+            return shader;
         }
     }
 }
