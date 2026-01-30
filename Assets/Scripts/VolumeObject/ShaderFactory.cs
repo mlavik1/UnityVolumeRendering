@@ -5,137 +5,97 @@ namespace UnityVolumeRendering
 {
     public class ShaderFactory
     {
-        public static Shader GetVolumeRenderingShader()
+        /// <summary>
+        /// Helper method to get the appropriate shader based on the current render pipeline.
+        /// </summary>
+        /// <param name="builtinPath">Shader path for Built-in render pipeline.</param>
+        /// <param name="urpPath">Shader path for Universal Render Pipeline (URP).</param>
+        /// <param name="hdrpPath">Shader path for High Definition Render Pipeline (HDRP).</param>
+        /// <returns>The shader for the current render pipeline.</returns>
+        private static Shader GetShaderByPipeline(string builtinPath, string urpPath, string hdrpPath)
         {
             Shader shader = null;
-            if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("Universal"))
+
+            switch (RenderPipelineHelper.GetCurrentPipelineType())
             {
-                shader = Shader.Find("VolumeRendering/URP/VolumeRendering");
+                case RenderPipelineType.URP:
+                    shader = Shader.Find(urpPath);
+                    break;
+                case RenderPipelineType.HDRP:
+                    shader = Shader.Find(hdrpPath);
+                    break;
+                case RenderPipelineType.BuiltIn:
+                case RenderPipelineType.Unknown:
+                default:
+                    shader = Shader.Find(builtinPath);
+                    break;
             }
-            else if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("HD"))
-            {
-                shader = Shader.Find("VolumeRendering/HDRP/VolumeRendering");
-            }
-            else
-            {
-                shader = Shader.Find("VolumeRendering/Builtin/VolumeRendering");
-            }
-            Debug.Assert(shader != null, "Could not get shader");
+
+            Debug.Assert(shader != null, $"Could not find shader. Searched: BuiltIn='{builtinPath}', URP='{urpPath}', HDRP='{hdrpPath}'");
             return shader;
+        }
+
+        public static Shader GetVolumeRenderingShader()
+        {
+            return GetShaderByPipeline(
+                "VolumeRendering/Builtin/VolumeRendering",
+                "VolumeRendering/URP/VolumeRendering",
+                "VolumeRendering/HDRP/VolumeRendering"
+            );
         }
 
         public static Shader GetCrossSectionPlaneShader()
         {
-            Shader shader = null;
-            if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("Universal"))
-            {
-                shader = Shader.Find("VolumeRendering/URP/CrossSectionPlane");
-            }
-            else if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("HD"))
-            {
-                shader = Shader.Find("VolumeRendering/HDRP/CrossSectionPlane");
-            }
-            else
-            {
-                shader = Shader.Find("VolumeRendering/Builtin/CrossSectionPlane");
-            }
-            Debug.Assert(shader != null, "Could not get shader");
-            return shader;
+            return GetShaderByPipeline(
+                "VolumeRendering/Builtin/CrossSectionPlane",
+                "VolumeRendering/URP/CrossSectionPlane",
+                "VolumeRendering/HDRP/CrossSectionPlane"
+            );
         }
 
         public static Shader GetCrossSectionSphereShader()
         {
-            Shader shader = null;
-            if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("Universal"))
-            {
-                shader = Shader.Find("VolumeRendering/URP/CrossSectionSphere");
-            }
-            else if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("HD"))
-            {
-                shader = Shader.Find("VolumeRendering/HDRP/CrossSectionSphere");
-            }
-            else
-            {
-                shader = Shader.Find("VolumeRendering/Builtin/CrossSectionSphere");
-            }
-            Debug.Assert(shader != null, "Could not get shader");
-            return shader;
+            return GetShaderByPipeline(
+                "VolumeRendering/Builtin/CrossSectionSphere",
+                "VolumeRendering/URP/CrossSectionSphere",
+                "VolumeRendering/HDRP/CrossSectionSphere"
+            );
         }
 
         public static Shader GetSliceRenderingShader()
         {
-            Shader shader = null;
-            if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("Universal"))
-            {
-                shader = Shader.Find("VolumeRendering/URP/SliceRenderingShader");
-            }
-            else if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("HD"))
-            {
-                shader = Shader.Find("VolumeRendering/HDRP/SliceRenderingShader");
-            }
-            else
-            {
-                shader = Shader.Find("VolumeRendering/Builtin/SliceRenderingShader");
-            }
-            Debug.Assert(shader != null, "Could not get shader");
-            return shader;
+            return GetShaderByPipeline(
+                "VolumeRendering/Builtin/SliceRenderingShader",
+                "VolumeRendering/URP/SliceRenderingShader",
+                "VolumeRendering/HDRP/SliceRenderingShader"
+            );
         }
 
         public static Shader GetTransferFunctionShader()
         {
-            Shader shader = null;
-            if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("Universal"))
-            {
-                shader = Shader.Find("VolumeRendering/URP/TransferFunctionShader");
-            }
-            else if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("HD"))
-            {
-                shader = Shader.Find("VolumeRendering/HDRP/TransferFunctionShader");
-            }
-            else
-            {
-                shader = Shader.Find("VolumeRendering/Builtin/TransferFunctionShader");
-            }
-            Debug.Assert(shader != null, "Could not get shader");
-            return shader;
+            return GetShaderByPipeline(
+                "VolumeRendering/Builtin/TransferFunctionShader",
+                "VolumeRendering/URP/TransferFunctionShader",
+                "VolumeRendering/HDRP/TransferFunctionShader"
+            );
         }
 
         public static Shader GetTransferFunction2DShader()
         {
-            Shader shader = null;
-            if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("Universal"))
-            {
-                shader = Shader.Find("VolumeRendering/URP/TransferFunction2DShader");
-            }
-            else if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("HD"))
-            {
-                shader = Shader.Find("VolumeRendering/HDRP/TransferFunction2DShader");
-            }
-            else
-            {
-                shader = Shader.Find("VolumeRendering/Builtin/TransferFunction2DShader");
-            }
-            Debug.Assert(shader != null, "Could not get shader");
-            return shader;
+            return GetShaderByPipeline(
+                "VolumeRendering/Builtin/TransferFunction2DShader",
+                "VolumeRendering/URP/TransferFunction2DShader",
+                "VolumeRendering/HDRP/TransferFunction2DShader"
+            );
         }
 
         public static Shader GetTransferFunctionPaletteShader()
         {
-            Shader shader = null;
-            if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("Universal"))
-            {
-                shader = Shader.Find("VolumeRendering/URP/TransferFunctionPaletteShader");
-            }
-            else if (GraphicsSettings.currentRenderPipeline && GraphicsSettings.currentRenderPipeline.name.Contains("HD"))
-            {
-                shader = Shader.Find("VolumeRendering/HDRP/TransferFunctionPaletteShader");
-            }
-            else
-            {
-                shader = Shader.Find("VolumeRendering/Builtin/TransferFunctionPaletteShader");
-            }
-            Debug.Assert(shader != null, "Could not get shader");
-            return shader;
+            return GetShaderByPipeline(
+                "VolumeRendering/Builtin/TransferFunctionPaletteShader",
+                "VolumeRendering/URP/TransferFunctionPaletteShader",
+                "VolumeRendering/HDRP/TransferFunctionPaletteShader"
+            );
         }
     }
 }
