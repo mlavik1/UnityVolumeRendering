@@ -1,4 +1,4 @@
-﻿Shader "VolumeRendering/URP/VolumeRendering"
+Shader "VolumeRendering/HDRP/VolumeRendering"
 {
     Properties
     {
@@ -20,7 +20,7 @@
 }
     SubShader
     {
-        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
+        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "HDRenderPipeline" }
         LOD 100
         Cull Front
         ZTest LEqual
@@ -44,8 +44,7 @@
             #pragma vertex vert
             #pragma fragment frag
 
-            #include "../Include/URPIncludes.hlsl"
-            #include "../Include/BackwardsCompatibility.hlsl"
+            #include "../Include/HDRPIncludes.hlsl"
             #include "../Include/VolumeRendering.hlsl"
 
             #define AMBIENT_LIGHTING_FACTOR 0.2

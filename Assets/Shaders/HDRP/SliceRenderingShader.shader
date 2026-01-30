@@ -1,4 +1,4 @@
-﻿Shader "VolumeRendering/URP/SliceRenderingShader"
+Shader "VolumeRendering/HDRP/SliceRenderingShader"
 {
     Properties
     {
@@ -7,7 +7,7 @@
     }
     SubShader
     {
-        Tags { "Queue" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
+        Tags { "Queue" = "Transparent" "RenderPipeline" = "HDRenderPipeline" }
         LOD 100
         Cull Off
 
@@ -16,8 +16,8 @@
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            
-            #include "../Include/URPIncludes.hlsl"
+
+            #include "../Include/HDRPIncludes.hlsl"
 
             struct appdata
             {
@@ -57,7 +57,7 @@
                 o.uv = v.uv;
                 return o;
             }
-            
+
             half4 frag (v2f i) : SV_Target
             {
                 float3 dataCoord = i.relVert + float3(0.5f, 0.5f, 0.5f);

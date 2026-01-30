@@ -18,7 +18,7 @@
             #pragma vertex vert
             #pragma fragment frag
 
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "../Include/URPIncludes.hlsl"
 
             struct appdata
             {

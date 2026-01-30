@@ -1,4 +1,4 @@
-﻿Shader "VolumeRendering/URP/TransferFunctionPaletteShader"
+Shader "VolumeRendering/HDRP/TransferFunctionPaletteShader"
 {
     Properties
     {
@@ -6,7 +6,7 @@
     }
     SubShader
     {
-        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
+        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "HDRenderPipeline" }
         LOD 100
 
         Blend SrcAlpha OneMinusSrcAlpha
@@ -17,7 +17,7 @@
             #pragma vertex vert
             #pragma fragment frag
 
-            #include "../Include/URPIncludes.hlsl"
+            #include "../Include/HDRPIncludes.hlsl"
 
             struct appdata
             {
@@ -45,7 +45,7 @@
                 o.uv = v.uv;
                 return o;
             }
-            
+
             half4 frag (v2f i) : SV_Target
             {
                 half4 col = _TFTex.Sample(sampler_TFTex, float2(i.uv.x, 0.0f));

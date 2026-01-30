@@ -1,15 +1,16 @@
-﻿Shader "VolumeRendering/URP/TransferFunctionPaletteShader"
+Shader "VolumeRendering/HDRP/CrossSectionPlane"
 {
     Properties
     {
-        _TFTex("Transfer Function Texture", 2D) = "white" {}
+        _MainTex ("Texture", 2D) = "white" {}
     }
     SubShader
     {
-        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
+        Tags { "Queue"="Transparent" "RenderType"="Transparent" "RenderPipeline" = "HDRenderPipeline" }
         LOD 100
-
+        ZWrite Off
         Blend SrcAlpha OneMinusSrcAlpha
+        CULL Off
 
         Pass
         {
@@ -17,7 +18,7 @@
             #pragma vertex vert
             #pragma fragment frag
 
-            #include "../Include/URPIncludes.hlsl"
+            #include "../Include/HDRPIncludes.hlsl"
 
             struct appdata
             {
@@ -33,9 +34,8 @@
                 float4 vertex : SV_POSITION;
             };
 
-            Texture2D _TFTex;             SamplerState sampler_TFTex;
-
-            float4 _TFTex_ST;
+            Texture2D _MainTex;             SamplerState sampler_MainTex;
+            float4 _MainTex_ST;
 
             v2f vert (appdata v)
             {
@@ -45,16 +45,11 @@
                 o.uv = v.uv;
                 return o;
             }
-            
+
             half4 frag (v2f i) : SV_Target
             {
-                half4 col = _TFTex.Sample(sampler_TFTex, float2(i.uv.x, 0.0f));
-                col.a = 1.0f;
-#if !UNITY_COLORSPACE_GAMMA
-#define INVERSA_GAMMA 0.4545454
-                col.rgb = pow(col.rgb, half3(INVERSA_GAMMA, INVERSA_GAMMA, INVERSA_GAMMA));
-#endif
-
+                // sample the texture
+                half4 col = _MainTex.Sample(sampler_MainTex, i.uv);
                 return col;
             }
             ENDHLSL

@@ -1,4 +1,4 @@
-Shader "VolumeRendering/URP/CrossSectionSphere" {
+Shader "VolumeRendering/HDRP/CrossSectionSphere" {
     Properties{
         _RimColor("Rim Color", Color) = (1, 1, 1, 1)
         _RimThickness("Rim Thickness", Range(0, 1)) = 0.1
@@ -6,7 +6,7 @@ Shader "VolumeRendering/URP/CrossSectionSphere" {
 
         SubShader
         {
-            Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
+            Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "HDRenderPipeline" }
             LOD 100
 
             Pass
@@ -16,7 +16,7 @@ Shader "VolumeRendering/URP/CrossSectionSphere" {
                 HLSLPROGRAM
                 #pragma vertex vert
                 #pragma fragment frag
-                #include "../Include/URPIncludes.hlsl"
+                #include "../Include/HDRPIncludes.hlsl"
 
                 float _RimThickness;
                 float4 _RimColor;
