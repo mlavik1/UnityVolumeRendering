@@ -7,11 +7,6 @@
     }
     SubShader
     {
-        PackageRequirements
-        {
-            "com.unity.render-pipelines.universal":"[10.0,10.5.3]"
-        }
-
         Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
         LOD 100
 
@@ -19,7 +14,7 @@
 
         Pass
         {
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             
@@ -51,22 +46,22 @@
                 return o;
             }
             
-            fixed4 frag (v2f i) : SV_Target
+            half4 frag (v2f i) : SV_Target
             {
                 float density = i.uv.x;
                 float histY = _HistTex.Sample(sampler_HistTex, float2(density, 0.0f)).r;
-                fixed4 tfCol = _TFTex.Sample(sampler_TFTex, float2(density, 0.0f));
-                float4 histCol = histY > i.uv.y ? float4(1.0f, 1.0f, 1.0f, 1.0f) : float4(0.0f, 0.0f, 0.0f, 0.0f);
-                
+                half4 tfCol = _TFTex.Sample(sampler_TFTex, float2(density, 0.0f));
+                half4 histCol = histY > i.uv.y ? half4(1.0f, 1.0f, 1.0f, 1.0f) : half4(0.0f, 0.0f, 0.0f, 0.0f);
+
                 float alpha = tfCol.a;
                 if (i.uv.y > alpha)
                     tfCol.a = 0.0f;
 
-                float4 col = histCol * 0.5f + tfCol * 0.7f;
-                
+                half4 col = histCol * 0.5f + tfCol * 0.7f;
+
                 return col;
             }
-            ENDCG
+            ENDHLSL
         }
     }
 }

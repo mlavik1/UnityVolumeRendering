@@ -7,18 +7,13 @@
     }
     SubShader
     {
-        PackageRequirements
-        {
-            "com.unity.render-pipelines.universal":"[10.0,10.5.3]"
-        }
-
         Tags { "Queue" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
         LOD 100
         Cull Off
 
         Pass
         {
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             
@@ -63,25 +58,25 @@
                 return o;
             }
             
-            fixed4 frag (v2f i) : SV_Target
+            half4 frag (v2f i) : SV_Target
             {
                 float3 dataCoord = i.relVert + float3(0.5f, 0.5f, 0.5f);
                 // If the current fragment is outside the volume, simply colour it black.
                 // Note: Unity does not seem to have support for clamping texture coordinates to a border value, so we have to do this manually
                 if (dataCoord.x > 1.0f || dataCoord.y > 1.0f || dataCoord.z > 1.0f || dataCoord.x < 0.0f || dataCoord.y < 0.0f || dataCoord.z < 0.0f)
                 {
-                    return float4(0.0f, 0.0f, 0.0f, 1.0f);
+                    return half4(0.0f, 0.0f, 0.0f, 1.0f);
                 }
                 else
                 {
                     // Sample the volume texture.
                     float dataVal = _DataTex.Sample(sampler_DataTex, dataCoord);
-                    float4 col = _TFTex.Sample(sampler_TFTex, float2(dataVal, 0.0));
+                    half4 col = _TFTex.Sample(sampler_TFTex, float2(dataVal, 0.0));
                     col.a = 1.0f;
                     return col;
                 }
             }
-            ENDCG
+            ENDHLSL
         }
     }
 }

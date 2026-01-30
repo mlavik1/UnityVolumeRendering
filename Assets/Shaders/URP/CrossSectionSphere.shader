@@ -6,11 +6,6 @@ Shader "VolumeRendering/URP/CrossSectionSphere" {
 
         SubShader
         {
-            PackageRequirements
-            {
-                "com.unity.render-pipelines.universal":"[10.0,10.5.3]"
-            }
-
             Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
             LOD 100
 
@@ -18,7 +13,7 @@ Shader "VolumeRendering/URP/CrossSectionSphere" {
             {
                 Blend SrcAlpha OneMinusSrcAlpha
 
-                CGPROGRAM
+                HLSLPROGRAM
                 #pragma vertex vert
                 #pragma fragment frag
                 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -49,20 +44,20 @@ Shader "VolumeRendering/URP/CrossSectionSphere" {
                     return o;
                 }
 
-                fixed4 frag(v2f i) : SV_Target
+                half4 frag(v2f i) : SV_Target
                 {
                     // Calculate the rim effect
                     float3 viewDirection = normalize(_WorldSpaceCameraPos - i.worldPos);
                     float rim = 1.0 - saturate(dot(viewDirection, i.worldNormal));
                     rim = (rim >= (1.0 - _RimThickness)) ? 1.0 : 0.0;
 
-                    float4 col;
+                    half4 col;
                     col.rgb = _RimColor.rgb * rim;
                     col.a = rim * _RimColor.a;
 
                     return col;
                 }
-                ENDCG
+                ENDHLSL
             }
     }
         FallBack "Diffuse"

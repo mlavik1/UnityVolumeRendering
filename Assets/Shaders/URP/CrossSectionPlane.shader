@@ -6,11 +6,6 @@
     }
     SubShader
     {
-        PackageRequirements
-        {
-            "com.unity.render-pipelines.universal":"[10.0,10.5.3]"
-        }
-
         Tags { "Queue"="Transparent" "RenderType"="Transparent" "RenderPipeline" = "UniversalPipeline" }
         LOD 100
         ZWrite Off
@@ -19,7 +14,7 @@
 
         Pass
         {
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
 
@@ -51,13 +46,13 @@
                 return o;
             }
 
-            fixed4 frag (v2f i) : SV_Target
+            half4 frag (v2f i) : SV_Target
             {
                 // sample the texture
-                fixed4 col = _MainTex.Sample(sampler_MainTex, i.uv);
+                half4 col = _MainTex.Sample(sampler_MainTex, i.uv);
                 return col;
             }
-            ENDCG
+            ENDHLSL
         }
     }
 }

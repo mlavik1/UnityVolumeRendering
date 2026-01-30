@@ -20,10 +20,6 @@
 }
     SubShader
     {
-        PackageRequirements {
-            "com.unity.render-pipelines.universal":"[10.0,10.5.3]"
-        }
-
         Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
         LOD 100
         Cull Front
@@ -33,7 +29,7 @@
 
         Pass
         {
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma multi_compile MODE_DVR MODE_MIP MODE_SURF
             #pragma multi_compile __ TF2D_ON
             #pragma multi_compile __ CROSS_SECTION_ON
@@ -100,7 +96,7 @@
                 return o;
             }
 
-            ENDCG
+            ENDHLSL
         }
     }
 }

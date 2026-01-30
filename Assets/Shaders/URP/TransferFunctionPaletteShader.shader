@@ -6,11 +6,6 @@
     }
     SubShader
     {
-        PackageRequirements
-        {
-            "com.unity.render-pipelines.universal":"[10.0,10.5.3]"
-        }
-
         Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
         LOD 100
 
@@ -18,12 +13,10 @@
 
         Pass
         {
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            // make fog work
-            #pragma multi_compile_fog
-            
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             struct appdata
@@ -37,7 +30,6 @@
             {
                 UNITY_VERTEX_OUTPUT_STEREO
                 float2 uv : TEXCOORD0;
-                UNITY_FOG_COORDS(1)
                 float4 vertex : SV_POSITION;
             };
 
@@ -54,18 +46,18 @@
                 return o;
             }
             
-            fixed4 frag (v2f i) : SV_Target
+            half4 frag (v2f i) : SV_Target
             {
-                fixed4 col = _TFTex.Sample(sampler_TFTex, float2(i.uv.x, 0.0f));
+                half4 col = _TFTex.Sample(sampler_TFTex, float2(i.uv.x, 0.0f));
                 col.a = 1.0f;
 #if !UNITY_COLORSPACE_GAMMA
 #define INVERSA_GAMMA 0.4545454
-                col.rgb = pow(col.rgb, float3(INVERSA_GAMMA, INVERSA_GAMMA, INVERSA_GAMMA));
+                col.rgb = pow(col.rgb, half3(INVERSA_GAMMA, INVERSA_GAMMA, INVERSA_GAMMA));
 #endif
-                
+
                 return col;
             }
-            ENDCG
+            ENDHLSL
         }
     }
 }

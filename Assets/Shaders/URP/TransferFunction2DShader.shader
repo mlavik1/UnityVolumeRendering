@@ -6,11 +6,6 @@
     }
     SubShader
     {
-        PackageRequirements
-        {
-            "com.unity.render-pipelines.universal":"[10.0,10.5.3]"
-        }
-
         Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
         LOD 100
 
@@ -18,12 +13,10 @@
 
         Pass
         {
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            // make fog work
-            #pragma multi_compile_fog
-            
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             struct appdata
@@ -35,7 +28,6 @@
             struct v2f
             {
                 float2 uv : TEXCOORD0;
-                UNITY_FOG_COORDS(1)
                 float4 vertex : SV_POSITION;
             };
 
@@ -50,14 +42,14 @@
                 return o;
             }
             
-            fixed4 frag (v2f i) : SV_Target
+            half4 frag (v2f i) : SV_Target
             {
-                fixed4 col = _TFTex.Sample(sampler_TFTex, i.uv);
+                half4 col = _TFTex.Sample(sampler_TFTex, i.uv);
                 //col.a = 1.0f;
-                
+
                 return col;
             }
-            ENDCG
+            ENDHLSL
         }
     }
 }
