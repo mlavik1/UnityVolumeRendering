@@ -45,7 +45,6 @@
             #pragma fragment frag
 
             #include "../Include/URPIncludes.hlsl"
-            #include "../Include/BackwardsCompatibility.hlsl"
             #include "../Include/VolumeRendering.hlsl"
 
             #define AMBIENT_LIGHTING_FACTOR 0.2
