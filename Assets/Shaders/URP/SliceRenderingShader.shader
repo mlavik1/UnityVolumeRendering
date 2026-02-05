@@ -7,6 +7,7 @@
     }
     SubShader
     {
+        PackageRequirements { "com.unity.render-pipelines.universal" }
         Tags { "Queue" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
         LOD 100
         Cull Off
@@ -17,7 +18,7 @@
             #pragma vertex vert
             #pragma fragment frag
             
-            #include "../Include/URPIncludes.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             struct appdata
             {

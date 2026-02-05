@@ -7,6 +7,7 @@ Shader "VolumeRendering/HDRP/SliceRenderingShader"
     }
     SubShader
     {
+        PackageRequirements { "com.unity.render-pipelines.high-definition" }
         Tags { "Queue" = "Transparent" "RenderPipeline" = "HDRenderPipeline" }
         LOD 100
         Cull Off
@@ -17,7 +18,7 @@ Shader "VolumeRendering/HDRP/SliceRenderingShader"
             #pragma vertex vert
             #pragma fragment frag
 
-            #include "../Include/HDRPIncludes.hlsl"
+            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
 
             struct appdata
             {

@@ -41,6 +41,7 @@
             #pragma multi_compile __ CUBIC_INTERPOLATION_ON
             #pragma multi_compile __ SECONDARY_VOLUME_ON
             #pragma multi_compile MULTIVOLUME_NONE MULTIVOLUME_OVERLAY MULTIVOLUME_ISOLATE
+            #pragma multi_compile_instancing
             #pragma vertex vert
             #pragma fragment frag
 
@@ -80,6 +81,7 @@
                 frag_in o;
                 UNITY_SETUP_INSTANCE_ID(v);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+                UNITY_TRANSFER_INSTANCE_ID(v, o);
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
                 o.vertexLocal = v.vertex;

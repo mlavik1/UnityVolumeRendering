@@ -7,7 +7,8 @@ namespace UnityVolumeRendering
 {
     /// <summary>
     /// Automatically adds scripting define symbols when render pipeline packages are detected.
-    /// This allows shaders to use #ifdef UVR_URP and #ifdef UVR_HDRP to conditionally compile code.
+    /// This allows C# code to use #if UVR_URP and #if UVR_HDRP to conditionally compile code.
+    /// Shaders use PackageRequirements to handle render pipeline dependencies.
     /// Updates automatically on Unity load, when build target changes, and when packages are added/removed.
     /// </summary>
     [InitializeOnLoad]

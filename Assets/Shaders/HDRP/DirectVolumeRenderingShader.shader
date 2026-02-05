@@ -20,6 +20,7 @@ Shader "VolumeRendering/HDRP/VolumeRendering"
 }
     SubShader
     {
+        PackageRequirements { "com.unity.render-pipelines.high-definition" }
         Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "HDRenderPipeline" }
         LOD 100
         Cull Front
@@ -41,10 +42,11 @@ Shader "VolumeRendering/HDRP/VolumeRendering"
             #pragma multi_compile __ CUBIC_INTERPOLATION_ON
             #pragma multi_compile __ SECONDARY_VOLUME_ON
             #pragma multi_compile MULTIVOLUME_NONE MULTIVOLUME_OVERLAY MULTIVOLUME_ISOLATE
+            #pragma multi_compile_instancing
             #pragma vertex vert
             #pragma fragment frag
 
-            #include "../Include/HDRPIncludes.hlsl"
+            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
             #include "../Include/VolumeRendering.hlsl"
 
             #define AMBIENT_LIGHTING_FACTOR 0.2
@@ -52,6 +54,7 @@ Shader "VolumeRendering/HDRP/VolumeRendering"
 
             struct vert_in
             {
+                UNITY_VERTEX_INPUT_INSTANCE_ID
                 float4 vertex : POSITION;
                 float4 normal : NORMAL;
                 float2 uv : TEXCOORD0;
@@ -59,6 +62,7 @@ Shader "VolumeRendering/HDRP/VolumeRendering"
 
             struct frag_in
             {
+                UNITY_VERTEX_OUTPUT_STEREO
                 float4 vertex : SV_POSITION;
                 float2 uv : TEXCOORD0;
                 float3 vertexLocal : TEXCOORD1;
@@ -76,6 +80,8 @@ Shader "VolumeRendering/HDRP/VolumeRendering"
             frag_in vert (vert_in v)
             {
                 frag_in o;
+                UNITY_SETUP_INSTANCE_ID(v);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 float3 worldPos = TransformObjectToWorld(v.vertex.xyz);
                 o.vertex = TransformWorldToHClip(worldPos);
                 o.uv = v.uv;
@@ -86,6 +92,7 @@ Shader "VolumeRendering/HDRP/VolumeRendering"
 
             frag_out frag(frag_in i)
             {
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
                 volrend_result result = volrend(i.vertexLocal, i.uv);
                 frag_out o;
                 o.colour = result.colour;

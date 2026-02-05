@@ -6,6 +6,7 @@ Shader "VolumeRendering/HDRP/TransferFunctionPaletteShader"
     }
     SubShader
     {
+        PackageRequirements { "com.unity.render-pipelines.high-definition" }
         Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "HDRenderPipeline" }
         LOD 100
 
@@ -17,7 +18,7 @@ Shader "VolumeRendering/HDRP/TransferFunctionPaletteShader"
             #pragma vertex vert
             #pragma fragment frag
 
-            #include "../Include/HDRPIncludes.hlsl"
+            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
 
             struct appdata
             {
