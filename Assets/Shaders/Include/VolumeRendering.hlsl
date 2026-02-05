@@ -387,7 +387,7 @@ volrend_result volrend_mip(float3 vertexLocal, float2 uv)
 
 // Surface rendering mode
 // Draws the first point (closest to camera) with a density within the user-defined thresholds.
-volrend_result frag_surf(float3 vertexLocal, float2 uv)
+volrend_result volrend_surf(float3 vertexLocal, float2 uv)
 {
     #define MAX_NUM_STEPS 1024
     const int samplingRate = (int)(MAX_NUM_STEPS * _SamplingRateMultiplier);
