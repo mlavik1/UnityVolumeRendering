@@ -2,16 +2,6 @@
 #include "TricubicSampling.cginc"
 #include "BackwardsCompatibility.hlsl"
 
-// Main light direction - differs per render pipeline
-#if defined(UVR_RP_BUILTIN)
-    #define MAIN_LIGHT_DIRECTION_WS _WorldSpaceLightPos0.xyz
-#elif defined(UVR_RP_URP)
-    #define MAIN_LIGHT_DIRECTION_WS _MainLightPosition.xyz
-#else
-    // HDRP or unknown: fall back to zero (will use view direction)
-    #define MAIN_LIGHT_DIRECTION_WS float3(1, 0, 0)
-#endif
-
 #define AMBIENT_LIGHTING_FACTOR 0.2
 #define JITTER_FACTOR 5.0
 

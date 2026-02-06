@@ -1,7 +1,9 @@
 {
-    "name": "UnityVolumeRendering.Shaders",
-    "references": [],
-    "includePlatforms": [],
+    "name": "UnityVolumeRendering.Editor",
+    "references": [
+        "UnityVolumeRendering.Runtime"
+    ],
+    "includePlatforms": ["Editor"],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
