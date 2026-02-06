@@ -47,6 +47,7 @@
             #pragma fragment frag
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #define UVR_RP_URP
             #include "../Include/VolumeRendering.hlsl"
 
             #define AMBIENT_LIGHTING_FACTOR 0.2

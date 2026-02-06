@@ -47,6 +47,7 @@ Shader "VolumeRendering/HDRP/VolumeRendering"
             #pragma fragment frag
 
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
+            #define UVR_RP_HDRP
             #include "../Include/VolumeRendering.hlsl"
 
             #define AMBIENT_LIGHTING_FACTOR 0.2

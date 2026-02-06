@@ -46,6 +46,7 @@
             #pragma fragment frag
 
             #include "UnityCG.cginc"
+            #define UVR_RP_BUILTIN
             #include "../Include/VolumeRendering.hlsl"
 
             #define AMBIENT_LIGHTING_FACTOR 0.2
