@@ -26,12 +26,12 @@
     {
       "displayName": "Basic Demo",
       "description": "A sample scene demonstrating volume rendering with a camera controller and runtime GUI.",
-      "path": "Samples~/BasicDemo"
+      "path": "SampleProject~"
     },
     {
       "displayName": "Sample Data",
       "description": "Sample volume datasets (VisMale raw, PARCHG VASP) for testing imports.",
-      "path": "Samples~/SampleData"
+      "path": "SampleProject~/SampleData"
     }
   ]
 }
