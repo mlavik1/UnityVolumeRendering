@@ -3,7 +3,7 @@
 #include "BackwardsCompatibility.hlsl"
 
 #define AMBIENT_LIGHTING_FACTOR 0.2
-#define JITTER_FACTOR 5.0
+#define JITTER_FACTOR 1.0
 
 struct volrend_result
 {
@@ -212,6 +212,14 @@ float getNoise(float2 uv)
     return _NoiseTex.Sample(sampler_NoiseTex, uv).r;
 }
 
+// Interleaved Gradient Noise (Jimenez 2014)
+// Well-distributed procedural noise from screen-space pixel coordinates.
+float interleavedGradientNoise(float2 pixelCoord)
+{
+    float3 magic = float3(0.06711056, 0.00583715, 52.9829189);
+    return frac(magic.z * frac(dot(pixelCoord, magic.xy)));
+}
+
 float calculateShadow(float3 pos, float3 lightDir)
 {
 #if CUBIC_INTERPOLATION_ON
@@ -234,7 +242,7 @@ float localToDepth(float3 localPos)
 }
 
 // Direct Volume Rendering
-volrend_result volrend_dvr(float3 vertexLocal, float2 uv)
+volrend_result volrend_dvr(float3 vertexLocal, float2 uv, float4 screenPos)
 {
     #define MAX_NUM_STEPS 512
     #define OPACITY_THRESHOLD (1.0 - 1.0 / 255.0)
@@ -246,7 +254,7 @@ volrend_result volrend_dvr(float3 vertexLocal, float2 uv)
     float3 lightDir = normalize(ObjSpaceViewDir(float4(float3(0.0f, 0.0f, 0.0f), 0.0f)));
 
     // Create a small random offset in order to remove artifacts
-    ray.startPos += (JITTER_FACTOR * ray.direction * raymarchInfo.stepSize) * getNoise(float2(uv.x, uv.y)).r;
+    ray.startPos += (JITTER_FACTOR * ray.direction * raymarchInfo.stepSize) * interleavedGradientNoise(screenPos.xy);
 
     float4 col = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float tDepth = raymarchInfo.numStepsRecip * (raymarchInfo.numSteps - 1);
@@ -348,7 +356,7 @@ volrend_result volrend_dvr(float3 vertexLocal, float2 uv)
 }
 
 // Maximum Intensity Projection mode
-volrend_result volrend_mip(float3 vertexLocal, float2 uv)
+volrend_result volrend_mip(float3 vertexLocal, float2 uv, float4 screenPos)
 {
     #define MAX_NUM_STEPS 512
     const int samplingRate = (int)(MAX_NUM_STEPS * _SamplingRateMultiplier);
@@ -387,7 +395,7 @@ volrend_result volrend_mip(float3 vertexLocal, float2 uv)
 
 // Surface rendering mode
 // Draws the first point (closest to camera) with a density within the user-defined thresholds.
-volrend_result volrend_surf(float3 vertexLocal, float2 uv)
+volrend_result volrend_surf(float3 vertexLocal, float2 uv, float4 screenPos)
 {
     #define MAX_NUM_STEPS 1024
     const int samplingRate = (int)(MAX_NUM_STEPS * _SamplingRateMultiplier);
@@ -396,7 +404,7 @@ volrend_result volrend_surf(float3 vertexLocal, float2 uv)
     RaymarchInfo raymarchInfo = initRaymarch(ray, samplingRate);
 
     // Create a small random offset in order to remove artifacts
-    ray.startPos = ray.startPos + (JITTER_FACTOR * ray.direction * raymarchInfo.stepSize) * getNoise(float2(uv.x, uv.y)).r;
+    ray.startPos += (JITTER_FACTOR * ray.direction * raymarchInfo.stepSize) * interleavedGradientNoise(screenPos.xy);
 
     float4 col = float4(0,0,0,0);
     for (int iStep = 0; iStep < raymarchInfo.numSteps; iStep++)
@@ -457,13 +465,13 @@ volrend_result volrend_surf(float3 vertexLocal, float2 uv)
     return output;
 }
 
-volrend_result volrend(float3 vertexLocal, float2 uv)
+volrend_result volrend(float3 vertexLocal, float2 uv, float4 screenPos)
 {
 #if MODE_DVR
-    return volrend_dvr(vertexLocal, uv);
+    return volrend_dvr(vertexLocal, uv, screenPos);
 #elif MODE_MIP
-    return volrend_mip(vertexLocal, uv);
+    return volrend_mip(vertexLocal, uv, screenPos);
 #elif MODE_SURF
-    return volrend_surf(vertexLocal, uv);
+    return volrend_surf(vertexLocal, uv, screenPos);
 #endif
 }
