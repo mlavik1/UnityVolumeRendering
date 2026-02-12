@@ -50,9 +50,6 @@ Shader "VolumeRendering/HDRP/VolumeRendering"
             #define UVR_RP_HDRP
             #include "../Include/VolumeRendering.hlsl"
 
-            #define AMBIENT_LIGHTING_FACTOR 0.2
-            #define JITTER_FACTOR 5.0
-
             struct vert_in
             {
                 UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -94,7 +91,7 @@ Shader "VolumeRendering/HDRP/VolumeRendering"
             frag_out frag(frag_in i)
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
-                volrend_result result = volrend(i.vertexLocal, i.uv);
+                volrend_result result = volrend(i.vertexLocal, i.uv, i.vertex);
                 frag_out o;
                 o.colour = result.colour;
 #if DEPTHWRITE_ON
