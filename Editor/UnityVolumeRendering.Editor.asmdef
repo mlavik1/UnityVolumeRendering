@@ -1,9 +1,10 @@
 {
-    "name": "UnityVolumeRendering.Runtime",
+    "name": "UnityVolumeRendering.Editor",
+    "rootNamespace": "UnityVolumeRendering",
     "references": [
-        "UnityVolumeRendering.3rdParty"
+        "UnityVolumeRendering.Runtime"
     ],
-    "includePlatforms": [],
+    "includePlatforms": ["Editor"],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

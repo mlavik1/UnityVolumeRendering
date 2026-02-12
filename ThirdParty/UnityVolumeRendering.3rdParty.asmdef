@@ -1,5 +1,6 @@
 {
     "name": "UnityVolumeRendering.3rdParty",
+    "rootNamespace": "",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

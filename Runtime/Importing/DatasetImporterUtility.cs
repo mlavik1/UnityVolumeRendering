@@ -1,7 +1,6 @@
 using System.IO;
 using UnityEngine;
 using System;
-using UnityEditor;
 
 namespace UnityVolumeRendering
 {

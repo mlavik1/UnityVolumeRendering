@@ -7,18 +7,19 @@ I also have [a tutorial video that shows how to use the project](https://www.you
 
 **NEWS: This plugin has now been ported to Godot Engine**, thanks to Riccardo Lops: https://github.com/riccardolops/GodotVolumetricRendering
 
-![alt tag](Screenshots/front.jpg)
+![alt tag](Documentation~/Documentation~/Screenshots/front.jpg)
 
 Thanks to JetBrains for providing [open source license](https://www.jetbrains.com/community/opensource/#support) for [Rider](https://www.jetbrains.com/rider/) - the best C# IDE :)
 
 **`Documentation`** |
 ------------------- |
-[See full documentation here](Documentation/Documentation.md)|
+[See full documentation here](Documentation~/Documentation.md)|
 
 # Table of contents
 
-This Readme contains a quick introduction to the library. For more info, see the [complete documentation](Documentation/Documentation.md).
+This Readme contains a quick introduction to the library. For more info, see the [complete documentation](Documentation~/Documentation.md).
 
+- [Installation](#installation)
 - [Requirements](#requirements)
 - [How to use sample scene](#how-to-use-sample-scene)
 - [Step-by-step instructions](#step-by-step-instructions)
@@ -26,17 +27,45 @@ This Readme contains a quick introduction to the library. For more info, see the
 - [Isosurface Rendering](#isosurface-rendering)
 - [Importing DICOM and NRRD](#importing-dicom-and-nrrd)
 - [How to use in your own project](#how-to-use-in-your-own-project)
+- [Development Setup](#development-setup)
 - [FAQ (Frequently Asked Questions)](#faq-frequently-asked-questions)
 - [Contributing](#contributing)
 
+# Installation
+
+This project is distributed as a Unity Package Manager (UPM) package.
+
+**Via git URL (recommended):**
+
+Open the Package Manager window in Unity, click the "+" button, select "Add package from git URL..." and enter:
+```
+https://github.com/mlavik1/UnityVolumeRendering.git
+```
+
+To pin a specific version, append a tag:
+```
+https://github.com/mlavik1/UnityVolumeRendering.git#v1.0.0
+```
+
+**Via manifest.json:**
+
+Add the following to your project's `Packages/manifest.json`:
+```json
+"com.mlavik1.unityvolumerendering": "https://github.com/mlavik1/UnityVolumeRendering.git"
+```
+
+After installing, you can import the **Basic Demo** sample (scene + camera controller) and **Sample Data** (test datasets) from the Package Manager window.
+
 # Requirements
-- Unity 2018 1.5 or newer (should also work with some older versions, but I haven't tested)
+- Unity 6 (6000.0) or newer
 
 # How to use sample scene
-- Open "TestScene.unity"
+- Install the package (see [Installation](#installation))
+- In the Package Manager, find "Unity Volume Rendering" and import the "Basic Demo" and "Sample Data" samples
+- Open the imported "TestScene.unity"
 - Click "Volume Rendering" in the menu bar
 - Select "Load Raw dataset" (or something else, if you already have a dataset you want to import)
-- Pick a file in the "DataFiles" folder (I recommend VisMale.raw)
+- Pick the VisMale.raw file from the imported Sample Data
 - Click the "import"-button
 
 # Step-by-step instructions
@@ -46,13 +75,13 @@ This Readme contains a quick introduction to the library. For more info, see the
 
 In the menu bar, click "Volume Rendering" and "Load raw dataset"
 
-<img src="Screenshots/menubar2.png" width="200px">
+<img src="Documentation~/Screenshots/menubar2.png" width="200px">
 
 Then select the dataset you wish to import..
 
 In the next menu you can optionally set the import setting for the raw dataset. For the sample files you don't need to change anything.
 
-<img src="Screenshots/import.png" width="200px">
+<img src="Documentation~/Screenshots/import.png" width="200px">
 
 **DICOM:**
 
@@ -63,7 +92,7 @@ The dataset must be of 3D nature, and contain several files - each being a slice
 
 You can move the model like any other GameObject. Simply select it in the scene view or scene hierarchy, and move/rotate it like normal.
 
-<img src="Screenshots/movement.gif" width="400px">
+<img src="Documentation~/Screenshots/movement.gif" width="400px">
 
 **3. Changing the visualisation**
 
@@ -71,11 +100,11 @@ Select the model and find the "Volume Render Object" in the inspector.
 
 Here you can change the "Render mode":
 
-<img src="Screenshots/rendermode.png" width="200px">
+<img src="Documentation~/Screenshots/rendermode.png" width="200px">
 
 Example:
 
-<img src="Screenshots/rendermodes.gif" width="500px">
+<img src="Documentation~/Screenshots/rendermodes.gif" width="500px">
 
 There are 3 render modes:
 - Direct Volume Rendering (using transfer functions)
@@ -88,7 +117,7 @@ There are also some other settings that you can adjust:
 - Enable early ray termination: Optimisation (you usually want this on). Requires the above setting to be disabled.
 - Enable cubic interpolation: Use cubic interpolation of the 3D volume texture and gradient texture.
 
-<img src="Screenshots/volume-inspector-settings.jpg" width="300px">
+<img src="Documentation~/Screenshots/volume-inspector-settings.jpg" width="300px">
 
 ****
 
@@ -104,11 +133,11 @@ Direct volume rendering is the most standard rendering mode. It sends rays throu
 Isosurface rendering draws the first thing the ray hits, with a density higher than some threshold. You can set this threshold yourself, by selecting the object and changing the "Visible value range" in the inspector.
 These can also be used with direct volume rendering mode.
 
-<img src="Screenshots/isosurface.gif" width="500px">
+<img src="Documentation~/Screenshots/isosurface.gif" width="500px">
 
 # Importing DICOM and NRRD
 
-If you're on Windows or Linux, I recommend [enabling the SimpleITK importer](Documentation/SimpleITK/SimpleITK.md), which is a requirement for JPEG2000 compressed DICOM and NRRD.
+If you're on Windows or Linux, I recommend [enabling the SimpleITK importer](Documentation~/SimpleITK/SimpleITK.md), which is a requirement for JPEG2000 compressed DICOM and NRRD.
 
 # How to use in your own project
 - Create an instance of an importer (Directly, or indirectly using the `ImporterFactory`):<br>
@@ -118,7 +147,17 @@ If you're on Windows or Linux, I recommend [enabling the SimpleITK importer](Doc
 - Use _VolumeObjectFactory_ to create an object from the dataset:<br> 
 `VolumeRenderedObject obj = VolumeObjectFactory.CreateObject(dataset);`
 
-See the [importer documentation](Documentation/Scripting/Importing.md) for more detailed information.
+See the [importer documentation](Documentation~/Scripting/Importing.md) for more detailed information.
+
+# Development Setup
+
+To contribute or develop the package:
+
+1. Clone the repository
+2. Open `DevProject~/` as a Unity project
+3. Unity will automatically resolve the package from the repo root via the local file reference in `DevProject~/Packages/manifest.json`
+4. Edit scripts, shaders, etc. directly in the package folders - changes are immediately reflected
+5. To test samples, import them via the Package Manager window
 
 # FAQ (Frequently Asked Questions)
 - [How to preserve real world scale of my datasets?](#how-to-preserve-real-world-scale-of-my-datasets)
@@ -163,14 +202,14 @@ Yes, it's free even for commercial projects. The license ([MIT](https://chooseal
 
 ## How can I make it look better?
 - Try [enabling cubic sampling](https://github.com/mlavik1/UnityVolumeRendering/pull/121#issuecomment-1281289885) in the inspector.
-- Try [enabling shadow volumes](Documentation/General/VolumeRendering/ShadowVolumes.md) in the inspector.
-- Try increasing the value of "MAX_NUM_STEPS" in the [DirectVolumeRenderingShader.shader](https://github.com/mlavik1/UnityVolumeRendering/blob/master/Assets/Shaders/DirectVolumeRenderingShader.shader)
+- Try [enabling shadow volumes](Documentation~/General/VolumeRendering/ShadowVolumes.md) in the inspector.
+- Try increasing the value of "MAX_NUM_STEPS" in the DirectVolumeRenderingShader.shader (located at `Runtime/Shaders/BuiltIn/DirectVolumeRenderingShader.shader`)
 
 ## How can I get better rendering performance with lighting enabled?
 If you're on a platform that supports it (Windows, etc.), try [enabling DLSS (HDRP)](https://docs.unity3d.com/Packages/com.unity.render-pipelines.high-definition@12.0/manual/deep-learning-super-sampling-in-hdrp.html) or [FidelityFX Super Resolution (URP)](https://forum.unity.com/threads/amd-fidelityfx-super-resolution-fsr-preview-now-available.1141495/) and reduce the render scale.
 
 ## How can I raycast the scene to find an intersection?
-- See the [VolumeRaycasting documentation](Documentation/Scripting/VolumeRaycasting.md).
+- See the [VolumeRaycasting documentation](Documentation~/Scripting/VolumeRaycasting.md).
 
 ## I'm stuck! How can I get help?
 [Create an issue](https://github.com/mlavik1/UnityVolumeRendering/issues).
@@ -181,7 +220,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute.
 
 Thanks to [everyone who have contributed so far](CREDITS.md).
 
-See ACKNOWLEDGEMENTS.txt for libraries used by this project.
+See [Third Party Notices](Third%20Party%20Notices.md) for libraries used by this project.
 
 Rider C# IDE license kindly provided by JetBrains.
 

@@ -1,0 +1,37 @@
+{
+  "name": "com.mlavik1.unityvolumerendering",
+  "version": "1.0.0",
+  "displayName": "Unity Volume Rendering",
+  "description": "Volume rendering package for Unity. Direct volume rendering, MIP, and isosurface rendering. Imports DICOM, NIFTI, NRRD, VASP, and raw datasets. Supports Built-in, URP, and HDRP.",
+  "unity": "6000.0",
+  "license": "MIT",
+  "dependencies": {
+    "com.unity.modules.imageconversion": "1.0.0",
+    "com.unity.modules.imgui": "1.0.0",
+    "com.unity.modules.jsonserialize": "1.0.0"
+  },
+  "keywords": [
+    "volume-rendering",
+    "medical-imaging",
+    "dicom",
+    "nifti",
+    "raymarching",
+    "3d-visualization"
+  ],
+  "author": {
+    "name": "Matias Lavik",
+    "url": "https://github.com/mlavik1"
+  },
+  "samples": [
+    {
+      "displayName": "Basic Demo",
+      "description": "A sample scene demonstrating volume rendering with a camera controller and runtime GUI.",
+      "path": "Samples~/BasicDemo"
+    },
+    {
+      "displayName": "Sample Data",
+      "description": "Sample volume datasets (VisMale raw, PARCHG VASP) for testing imports.",
+      "path": "Samples~/SampleData"
+    }
+  ]
+}
