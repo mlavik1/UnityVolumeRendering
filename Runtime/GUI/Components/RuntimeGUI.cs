@@ -20,12 +20,12 @@ namespace UnityVolumeRendering
              // Show dataset import buttons
             if (GUILayout.Button("Import RAW dataset"))
             {
-                RuntimeFileBrowser.ShowOpenFileDialog(OnOpenRAWDatasetResultAsync, "DataFiles");
+                RuntimeFileBrowser.ShowOpenFileDialog(OnOpenRAWDatasetResultAsync, "SampleData");
             }
 
             if(GUILayout.Button("Import PARCHG dataset"))
             {
-                    RuntimeFileBrowser.ShowOpenFileDialog(OnOpenPARDatasetResultAsync, "DataFiles");
+                    RuntimeFileBrowser.ShowOpenFileDialog(OnOpenPARDatasetResultAsync, "SampleData");
             }
 
             if (GUILayout.Button("Import DICOM dataset"))

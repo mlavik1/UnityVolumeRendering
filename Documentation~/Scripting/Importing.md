@@ -43,7 +43,7 @@ The _RawDatasetImporter_ constructor takes the following parameters:
 - endianness: The byte [endianness](https://en.wikipedia.org/wiki/Endianness) of the dataset.
 - skipBytes: Number of bytes to skip before reading the content. This is used in cases where the dataset has a header. Some raw datasets formats store information about the dimension, format and endianness in a header. To import these datasets you can read the header yourself and pass this info to the  _RawDatasetImporter_ constructor. The skipBytes parameter should then be equal to the header size.
 
-All this info can be added to a ".ini"-file, which the importer will use (if it finds any). See the sample files (in the  "DataFiles" folder for an example).
+All this info can be added to a ".ini"-file, which the importer will use (if it finds any). See the sample files (in the  "SampleData" folder for an example).
 
 ## Image file importer
 

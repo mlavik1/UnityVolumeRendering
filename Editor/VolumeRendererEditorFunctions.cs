@@ -13,7 +13,7 @@ namespace UnityVolumeRendering
         [MenuItem("Volume Rendering/Load dataset/Load raw dataset")]
         private static void ShowDatasetImporter()
         {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "DataFiles", "");
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "SampleData", "");
             if (File.Exists(file))
             {
                 RAWDatasetImporterEditorWindow wnd = (RAWDatasetImporterEditorWindow)EditorWindow.GetWindow(typeof(RAWDatasetImporterEditorWindow));
@@ -103,7 +103,7 @@ namespace UnityVolumeRendering
                 return;
             }
 
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nrrd)", "DataFiles", "");
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nrrd)", "SampleData", "");
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
@@ -154,7 +154,7 @@ namespace UnityVolumeRendering
 
         private static async void ImportNIFTIDatasetAsync(bool spawnInScene)
         {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nii)", "DataFiles", "");
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nii)", "SampleData", "");
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
@@ -206,7 +206,7 @@ namespace UnityVolumeRendering
 
         private static async void ImporImageFileDatasetAsync(bool spawnInScene)
         {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "DataFiles", "");
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "SampleData", "");
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
@@ -258,7 +258,7 @@ namespace UnityVolumeRendering
 
         private static async void ImportParDatasetAsync(bool spawnInScene)
         {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "DataFiles", "");
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "SampleData", "");
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");

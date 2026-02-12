@@ -35,9 +35,9 @@ if assetstore_package:
         modified.write("This asset is governed by the Asset Store EULA; however, the following components are governed by the licenses indicated below:\n" + third_party_contents)
 
 if assetstore_package:
-    assets = ["Assets", "DataFiles", "Third-Party Notices.txt", "MANUAL.pdf"]
+    assets = ["Assets", "SampleData", "Third-Party Notices.txt", "MANUAL.pdf"]
 else:
-    assets = ["Assets", "DataFiles", "Third-Party Notices.txt", "CREDITS.md", "LICENSE", "README.md"]
+    assets = ["Assets", "SampleData", "Third-Party Notices.txt", "CREDITS.md", "LICENSE", "README.md"]
 
 for asset in assets:
     dest_asset = os.path.join(export_project_path, "Assets", plugin_folder_name, asset)
