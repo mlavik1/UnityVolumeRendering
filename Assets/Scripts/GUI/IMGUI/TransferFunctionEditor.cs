@@ -27,8 +27,8 @@ namespace UnityVolumeRendering
 
         public void Initialise()
         {
-            tfGUIMat = Resources.Load<Material>("TransferFunctionGUIMat");
-            tfPaletteGUIMat = Resources.Load<Material>("TransferFunctionPaletteGUIMat");
+            tfGUIMat = new Material(ShaderFactory.GetTransferFunctionShader());
+            tfPaletteGUIMat = new Material(ShaderFactory.GetTransferFunctionPaletteShader());
         }
 
         [Obsolete("Use SetTarget instead")]

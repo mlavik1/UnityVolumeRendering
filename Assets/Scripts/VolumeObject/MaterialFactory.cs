@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UnityVolumeRendering
 {
@@ -7,8 +8,7 @@ namespace UnityVolumeRendering
         [System.Obsolete("This method is deprecated, and will be removed. Use VolumeObjectFactory, or custom re-implementation.", false)]
         public static Material CreateMaterialDVR(VolumeDataset dataset)
         {
-            Shader shader = Shader.Find("VolumeRendering/DirectVolumeRenderingShader");
-            Material material = new Material(shader);
+            Material material = VolumeObjectFactory.CreateVolumeRenderingMaterial();
 
             const int noiseDimX = 512;
             const int noiseDimY = 512;

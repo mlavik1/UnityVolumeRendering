@@ -49,7 +49,7 @@ following papers:
 //! @param tex  3D texture
 //! @param texCoord  normalized 3D texture coordinate
 //! @param texSize  size of the texture
-float4 interpolateTricubicFast(sampler3D tex, float3 texCoord, float3 texSize)
+float4 interpolateTricubicFast(Texture3D tex, SamplerState samp, float3 texCoord, float3 texSize)
 {
 	// shift the coordinate from [0,1] to [-0.5, texSize-0.5]
 	float3 coord_grid = texCoord * texSize - 0.5;
@@ -65,23 +65,23 @@ float4 interpolateTricubicFast(sampler3D tex, float3 texCoord, float3 texSize)
 	float3 g0 = w0 + w1;
 	float3 g1 = w2 + w3;
 	float3 mult = 1.0 / texSize;
-	float3 h0 = mult * ((w1 / g0) - 0.5 + index);  //h0 = w1/g0 - 1, move from [-0.5, texSize-0.5] to [0,1]
-	float3 h1 = mult * ((w3 / g1) + 1.5 + index);  //h1 = w3/g1 + 1, move from [-0.5, texSize-0.5] to [0,1]
+	float3 h0 = mult * ((w1 / g0) - 0.5 + index);  //h0 = w1/g0 - 1, move from [-0.5, texSize-0.5] to [0,1] 
+	float3 h1 = mult * ((w3 / g1) + 1.5 + index);  //h1 = w3/g1 + 1, move from [-0.5, texSize-0.5] to [0,1] 
 
 	// fetch the eight linear interpolations
 	// weighting and fetching is interleaved for performance and stability reasons
-	float4 tex000 = tex3Dlod(tex, float4(h0, 0.0));
-	float4 tex100 = tex3Dlod(tex, float4(h1.x, h0.y, h0.z, 0.0));
+	float4 tex000 = tex.SampleLevel(samp, h0, 0);
+	float4 tex100 = tex.SampleLevel(samp, float3(h1.x, h0.y, h0.z), 0);
 	tex000 = lerp(tex100, tex000, g0.x);  //weigh along the x-direction
-	float4 tex010 = tex3Dlod(tex, float4(h0.x, h1.y, h0.z, 0.0));
-	float4 tex110 = tex3Dlod(tex, float4(h1.x, h1.y, h0.z, 0.0));
+	float4 tex010 = tex.SampleLevel(samp, float3(h0.x, h1.y, h0.z), 0);
+	float4 tex110 = tex.SampleLevel(samp, float3(h1.x, h1.y, h0.z), 0);
 	tex010 = lerp(tex110, tex010, g0.x);  //weigh along the x-direction
 	tex000 = lerp(tex010, tex000, g0.y);  //weigh along the y-direction
-	float4 tex001 = tex3Dlod(tex, float4(h0.x, h0.y, h1.z, 0.0));
-	float4 tex101 = tex3Dlod(tex, float4(h1.x, h0.y, h1.z, 0.0));
+	float4 tex001 = tex.SampleLevel(samp, float3(h0.x, h0.y, h1.z), 0);
+	float4 tex101 = tex.SampleLevel(samp, float3(h1.x, h0.y, h1.z), 0);
 	tex001 = lerp(tex101, tex001, g0.x);  //weigh along the x-direction
-	float4 tex011 = tex3Dlod(tex, float4(h0.x, h1.y, h1.z, 0.0));
-	float4 tex111 = tex3Dlod(tex, float4(h1, 0.0));
+	float4 tex011 = tex.SampleLevel(samp, float3(h0.x, h1.y, h1.z), 0);
+	float4 tex111 = tex.SampleLevel(samp, h1, 0);
 	tex011 = lerp(tex111, tex011, g0.x);  //weigh along the x-direction
 	tex001 = lerp(tex011, tex001, g0.y);  //weigh along the y-direction
 

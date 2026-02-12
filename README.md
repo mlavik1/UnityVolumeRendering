@@ -136,7 +136,7 @@ Imported datasets are automatically normalised, to make sure datasets where the 
 You can undy this simply by setting the scale of the outer GameObject (the one containing the `VolumeRenderedObject` component) to 1,1,1.
 
 ## Does this work in VR?
-Yes, however you will need to change "stereo rendering mode" to "multi pass" in the XR settings in Unity. See [#71](https://github.com/mlavik1/UnityVolumeRendering/issues/71).
+Yes! It should work in VR with both built-in and URP (and probably HDRP, though not tested).
 
 ### What about VR performance?
 Since VR requires two cameras to render each frame, you can expect worse performance. However, you can improve the FPS in two ways:

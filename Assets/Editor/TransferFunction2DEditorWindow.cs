@@ -41,7 +41,7 @@ namespace UnityVolumeRendering
 
         private void OnEnable()
         {
-            tfGUIMat = Resources.Load<Material>("TransferFunction2DGUIMat");
+            tfGUIMat = new Material(ShaderFactory.GetTransferFunction2DShader());
 
             volRendObject = SelectionHelper.GetSelectedVolumeObject();
             if (volRendObject == null)

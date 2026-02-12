@@ -92,7 +92,7 @@ namespace UnityVolumeRendering
             sliceRenderingPlane.transform.localRotation = Quaternion.identity;
             sliceRenderingPlane.transform.localScale = Vector3.one * 0.1f; // TODO: Change the plane mesh instead and use Vector3.one
             MeshRenderer sliceMeshRend = sliceRenderingPlane.GetComponent<MeshRenderer>();
-            sliceMeshRend.material = new Material(sliceMeshRend.sharedMaterial);
+            sliceMeshRend.material = new Material(ShaderFactory.GetSliceRenderingShader());
             Material sliceMat = sliceRenderingPlane.GetComponent<MeshRenderer>().sharedMaterial;
             sliceMat.SetTexture("_DataTex", dataset.GetDataTexture());
             sliceMat.SetTexture("_TFTex", transferFunction.GetTexture());
@@ -510,8 +510,7 @@ namespace UnityVolumeRendering
         {
             if (meshRenderer.sharedMaterial == null)
             {
-                meshRenderer.sharedMaterial = new Material(Shader.Find("VolumeRendering/DirectVolumeRenderingShader"));
-                meshRenderer.sharedMaterial.SetTexture("_DataTex", dataset.GetDataTexture());
+                meshRenderer.sharedMaterial = MaterialFactory.CreateMaterialDVR(dataset);
             }
             if (transferFunction == null)
             {

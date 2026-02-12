@@ -1,11 +1,19 @@
 ﻿using System;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UnityVolumeRendering
 {
     public class VolumeObjectFactory
     {
+        public static Material CreateVolumeRenderingMaterial()
+        {
+            Shader shader = ShaderFactory.GetVolumeRenderingShader();
+
+            return new Material(shader);
+        }
+
         public static VolumeRenderedObject CreateObject(VolumeDataset dataset)
         {
             GameObject outerObject = new GameObject("VolumeRenderedObject_" + dataset.datasetName);
@@ -15,6 +23,7 @@ namespace UnityVolumeRendering
             GameObject meshContainer = GameObject.Instantiate((GameObject)Resources.Load("VolumeContainer"));
             volObj.volumeContainerObject = meshContainer;
             MeshRenderer meshRenderer = meshContainer.GetComponent<MeshRenderer>();
+            meshRenderer.material = CreateVolumeRenderingMaterial();
 
             CreateObjectInternal(dataset, meshContainer, meshRenderer, volObj, outerObject);
 
@@ -31,6 +40,7 @@ namespace UnityVolumeRendering
             GameObject meshContainer = GameObject.Instantiate((GameObject)Resources.Load("VolumeContainer"));
             volObj.volumeContainerObject = meshContainer;
             MeshRenderer meshRenderer = meshContainer.GetComponent<MeshRenderer>();
+            meshRenderer.material = CreateVolumeRenderingMaterial();
 
             CreateObjectInternal(dataset,meshContainer, meshRenderer,volObj,outerObject) ;
 
@@ -80,6 +90,7 @@ namespace UnityVolumeRendering
         public static void SpawnCrossSectionPlane(VolumeRenderedObject volobj)
         {
             GameObject quad = GameObject.Instantiate((GameObject)Resources.Load("CrossSectionPlane"));
+            quad.GetComponent<MeshRenderer>().material = new Material(ShaderFactory.GetCrossSectionPlaneShader());
             quad.transform.rotation = Quaternion.Euler(270.0f, 0.0f, 0.0f);
             CrossSectionPlane csplane = quad.gameObject.GetComponent<CrossSectionPlane>();
             csplane.SetTargetObject(volobj);
@@ -93,6 +104,7 @@ namespace UnityVolumeRendering
         public static void SpawnCutoutBox(VolumeRenderedObject volobj)
         {
             GameObject obj = GameObject.Instantiate((GameObject)Resources.Load("CutoutBox"));
+            obj.GetComponent<MeshRenderer>().material = new Material(ShaderFactory.GetCrossSectionPlaneShader());
             obj.transform.rotation = Quaternion.Euler(270.0f, 0.0f, 0.0f);
             CutoutBox cbox = obj.gameObject.GetComponent<CutoutBox>();
             cbox.SetTargetObject(volobj);
@@ -105,6 +117,7 @@ namespace UnityVolumeRendering
         public static void SpawnCutoutSphere(VolumeRenderedObject volobj)
         {
             GameObject obj = GameObject.Instantiate((GameObject)Resources.Load("CutoutSphere"));
+            obj.GetComponent<MeshRenderer>().material = new Material(ShaderFactory.GetCrossSectionSphereShader());
             obj.transform.rotation = Quaternion.Euler(270.0f, 0.0f, 0.0f);
             CutoutSphere cSphere = obj.gameObject.GetComponent<CutoutSphere>();
             cSphere.SetTargetObject(volobj);
