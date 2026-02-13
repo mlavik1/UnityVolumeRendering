@@ -19,7 +19,7 @@ jobs:
         chmod a+x scripts/ci/activate-license.sh
         ./scripts/ci/activate-license.sh
         echo "Activation done. Packaging..."
-        python scripts/ExportUnityPackage.py /opt/unity/Editor/Unity -nodisplay
+        python3 scripts/ExportUnityPackage.py /opt/unity/Editor/Unity -nodisplay
       shell: bash
       env:
         UNITY_LICENSE: ${{ secrets.UNITY_LICENSE_BASE64 }}
@@ -40,7 +40,7 @@ jobs:
         chmod a+x scripts/ci/activate-license.sh
         ./scripts/ci/activate-license.sh
         echo "Activation done. Packaging..."
-        python scripts/ExportUnityPackage.py /opt/unity/Editor/Unity -nodisplay
+        python3 scripts/ExportUnityPackage.py /opt/unity/Editor/Unity -nodisplay
       shell: bash
       env:
         UNITY_LICENSE: ${{ secrets.UNITY_LICENSE_BASE64 }}
