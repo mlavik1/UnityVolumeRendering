@@ -153,19 +153,31 @@ namespace UnityVolumeRendering
             }
         }
 
-        private static string GetBinaryDirectoryPath()
+        private static string GetPluginRootPath()
         {
-            string dataPath = Application.dataPath;
+            // Try UPM package resolution first
+            var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(SimpleITKManager).Assembly);
+            if (packageInfo != null)
+            {
+                return packageInfo.resolvedPath;
+            }
+
+            // Fallback: search for magic file in Assets (for .unitypackage import).
+            // The file is at the plugin root, so its directory is the plugin root path.
             foreach (string file in Directory.EnumerateFiles(Application.dataPath, "*.*", SearchOption.AllDirectories))
             {
-                // Search for magic file stored in Assets directory.
-                // This is necessary for cases where the UVR plugin is stored in a subfolder (thatæs the case for the asset store version)
                 if (Path.GetFileName(file) == "DONOTREMOVE-PathSearchFile.txt")
                 {
-                    dataPath = Path.GetDirectoryName(file);
+                    return Path.GetDirectoryName(file);
                 }
             }
-            return Path.Combine(dataPath, "3rdparty", "SimpleITK"); // TODO: What is UVR is in a subfolder?
+
+            return Application.dataPath;
+        }
+
+        private static string GetBinaryDirectoryPath()
+        {
+            return Path.Combine(GetPluginRootPath(), "ThirdParty", "SimpleITK");
         }
     }
 }
