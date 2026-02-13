@@ -29,19 +29,35 @@ if assetstore_package:
     os.system("python scripts/DocsToPDF.py")
 
 if assetstore_package:
-    with open('Third-Party Notices.txt', 'r') as original:
+    with open('Third Party Notices.md', 'r') as original:
         third_party_contents = original.read()
-    with open('Third-Party Notices.txt', 'w') as modified:
+    with open('Third Party Notices.md', 'w') as modified:
         modified.write("This asset is governed by the Asset Store EULA; however, the following components are governed by the licenses indicated below:\n" + third_party_contents)
 
 if assetstore_package:
-    assets = ["Assets", "SampleData", "Third-Party Notices.txt", "MANUAL.pdf"]
+    assets = [
+        ("Runtime", "Runtime"),
+        ("Editor", "Editor"),
+        ("ThirdParty", "ThirdParty"),
+        (os.path.join("SampleProject~", "SampleData"), "SampleData"),
+        ("Third Party Notices.md", "Third Party Notices.md"),
+        (os.path.join("Documentation~", "MANUAL.pdf"), "MANUAL.pdf"),
+    ]
 else:
-    assets = ["Assets", "SampleData", "Third-Party Notices.txt", "CREDITS.md", "LICENSE", "README.md"]
+    assets = [
+        ("Runtime", "Runtime"),
+        ("Editor", "Editor"),
+        ("ThirdParty", "ThirdParty"),
+        (os.path.join("SampleProject~", "SampleData"), "SampleData"),
+        ("Third Party Notices.md", "Third Party Notices.md"),
+        ("CREDITS.md", "CREDITS.md"),
+        ("LICENSE.md", "LICENSE.md"),
+        ("README.md", "README.md"),
+    ]
 
-for asset in assets:
-    dest_asset = os.path.join(export_project_path, "Assets", plugin_folder_name, asset)
-    copy_filedir(asset, dest_asset)
+for src, dest_name in assets:
+    dest_asset = os.path.join(export_project_path, "Assets", plugin_folder_name, dest_name)
+    copy_filedir(src, dest_asset)
 
 command_string = "\"{unity_path}\" -projectPath {project_path} -exportPackage Assets {package_name} -batchmode -nographics -silent-crashes -quit".format(unity_path=unity_path, project_path=export_project_path, package_name=package_name)
 # Run through cvfb if no display available (building in container, etc.).
