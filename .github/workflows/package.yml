@@ -8,7 +8,7 @@ jobs:
     container:
       image: unityci/editor:ubuntu-2021.3.9f1-base-1.0.1
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
       with: 
         submodules: true
     - name: Package
@@ -20,7 +20,7 @@ jobs:
       shell: bash
       env:
         UNITY_LICENSE: ${{ secrets.UNITY_LICENSE_BASE64 }}
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: UnityVolumeRendering.unitypackage
         path: UnityVolumeRendering.unitypackage
