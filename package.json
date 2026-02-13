@@ -1,9 +1,9 @@
 {
-  "name": "com.mlavik1.unityvolumerendering",
+  "name": "com.mlavik1.easyvolumerenderer",
   "version": "1.0.0",
   "displayName": "Unity Volume Rendering",
   "description": "Volume rendering package for Unity. Direct volume rendering, MIP, and isosurface rendering. Imports DICOM, NIFTI, NRRD, VASP, and raw datasets. Supports Built-in, URP, and HDRP.",
-  "unity": "6000.0",
+  "unity": "2022.3",
   "license": "MIT",
   "dependencies": {
     "com.unity.modules.imageconversion": "1.0.0",
