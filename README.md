@@ -5,7 +5,7 @@ Have any questions? Create an issue or [contact me on Mastodon](https://fosstodo
 
 I also have [a tutorial video that shows how to use the project](https://www.youtube.com/watch?v=1pIvmhXPh0w)
 
-**NEWS: This plugin has now been ported to Godot Engine**, thanks to Riccardo Lops: https://github.com/riccardolops/GodotVolumetricRendering
+**NEWS: This plugin is now being ported to Godot Engine**, thanks to Riccardo Lops: https://github.com/riccardolops/GodotVolumetricRendering
 
 ![alt tag](Documentation~/Documentation~/Screenshots/front.jpg)
 
@@ -19,6 +19,7 @@ Thanks to JetBrains for providing [open source license](https://www.jetbrains.co
 
 This Readme contains a quick introduction to the library. For more info, see the [complete documentation](Documentation~/Documentation.md).
 
+- [Getting started](#getting-started)
 - [Installation](#installation)
 - [Requirements](#requirements)
 - [How to use sample scene](#how-to-use-sample-scene)
@@ -30,6 +31,12 @@ This Readme contains a quick introduction to the library. For more info, see the
 - [Development Setup](#development-setup)
 - [FAQ (Frequently Asked Questions)](#faq-frequently-asked-questions)
 - [Contributing](#contributing)
+
+# Getting started
+
+For a quick demo, simply clone this repository and open the [sample project](SampleProject~) in Unity.
+
+To use this plugin in your own project, see [Installation](#installation).
 
 # Installation
 
@@ -56,12 +63,16 @@ Add the following to your project's `Packages/manifest.json`:
 
 After installing, you can import the **Basic Demo** sample (scene + camera controller) and **Sample Data** (test datasets) from the Package Manager window.
 
+**As a submodule:**
+
+Add the repository as a git submodule, under "Packages".
+
 # Requirements
 - Unity 6 (6000.0) or newer
 
 # How to use sample scene
 - Install the package (see [Installation](#installation))
-- In the Package Manager, find "Unity Volume Rendering" and import the "Basic Demo" and "Sample Data" samples
+- In the Package Manager, find "Unity Volume Rendering", click the "Sampels" tab and import the "Basic Demo" and "Sample Data" samples
 - Open the imported "TestScene.unity"
 - Click "Volume Rendering" in the menu bar
 - Select "Load Raw dataset" (or something else, if you already have a dataset you want to import)
