@@ -1,0 +1,324 @@
+m_ProjectFiles:
+  m_ManifestFileStatus:
+    m_FilePath: C:/Projects/UnityVolumeRendering/DevProject~/Packages/manifest.json
+    m_PathExists: 1
+    m_ContentTrackingEnabled: 1
+    m_ModificationDate:
+      serializedVersion: 2
+      ticks: 639065306683952042
+    m_Hash: 3365804220
+  m_LockFileStatus:
+    m_FilePath: C:/Projects/UnityVolumeRendering/DevProject~/Packages/packages-lock.json
+    m_PathExists: 1
+    m_ContentTrackingEnabled: 1
+    m_ModificationDate:
+      serializedVersion: 2
+      ticks: 639065318838161137
+    m_Hash: 1269416999
+m_EmbeddedPackageManifests:
+  m_ManifestsStatus: {}
+m_LocalPackages:
+  m_LocalFileStatus:
+  - m_FilePath: C:\Projects\UnityVolumeRendering/package.json
+    m_PathExists: 1
+    m_ContentTrackingEnabled: 1
+    m_ModificationDate:
+      serializedVersion: 2
+      ticks: 639065306669134431
+    m_Hash: 2299803392
+  - m_FilePath: C:\Projects\UnityVolumeRendering
+    m_PathExists: 1
+    m_ContentTrackingEnabled: 1
+    m_ModificationDate:
+      serializedVersion: 2
+      ticks: 0
+    m_Hash: 0
+m_ProjectPath: C:/Projects/UnityVolumeRendering/DevProject~/Packages
+m_EditorVersion: 6000.0.25f1 (4859ab7b5a49)
+m_ResolvedPackages:
+- packageId: com.mlavik1.unityvolumerendering@file:C:\Projects\UnityVolumeRendering
+  testable: 0
+  isDirectDependency: 1
+  version: 1.0.0
+  source: 4
+  resolvedPath: C:\Projects\UnityVolumeRendering
+  assetPath: Packages/com.mlavik1.unityvolumerendering
+  name: com.mlavik1.unityvolumerendering
+  displayName: Unity Volume Rendering
+  author:
+    name: Matias Lavik
+    email: 
+    url: https://github.com/mlavik1
+  category: 
+  type: 
+  description: Volume rendering package for Unity. Direct volume rendering, MIP,
+    and isosurface rendering. Imports DICOM, NIFTI, NRRD, VASP, and raw datasets.
+    Supports Built-in, URP, and HDRP.
+  errors: []
+  versions:
+    all: []
+    compatible: []
+    recommended: 
+    deprecated: []
+  dependencies:
+  - name: com.unity.modules.imageconversion
+    version: 1.0.0
+  - name: com.unity.modules.imgui
+    version: 1.0.0
+  - name: com.unity.modules.jsonserialize
+    version: 1.0.0
+  resolvedDependencies:
+  - name: com.unity.modules.imageconversion
+    version: 1.0.0
+  - name: com.unity.modules.imgui
+    version: 1.0.0
+  - name: com.unity.modules.jsonserialize
+    version: 1.0.0
+  keywords:
+  - volume-rendering
+  - medical-imaging
+  - dicom
+  - nifti
+  - raymarching
+  - 3d-visualization
+  registry:
+    id: main
+    name: 
+    url: https://packages.unity.com
+    scopes: []
+    isDefault: 1
+    capabilities: 7
+    configSource: 0
+  hideInEditor: 1
+  entitlements:
+    licensingModel: 0
+  isAssetStorePackage: 0
+  datePublishedTicks: 0
+  documentationUrl: 
+  hasRepository: 0
+  repository:
+    type: 
+    url: 
+    revision: 
+    path: 
+  unityLifecycle:
+    version: 
+    nextVersion: 
+    recommendedVersion: 
+    isDeprecated: 0
+    deprecationMessage: 
+  isDeprecated: 0
+  deprecationMessage: 
+  git:
+    hash: 
+    revision: 
+  upmReserved: 
+  assetStore:
+    productId: 
+  fingerprint: 
+  editorCompatibility:
+    compatibilityLevel: 0
+    minimumPackageVersion: 
+    minimumUnityVersion: 6000.0.0a1
+- packageId: com.unity.modules.imageconversion@1.0.0
+  testable: 0
+  isDirectDependency: 1
+  version: 1.0.0
+  source: 2
+  resolvedPath: C:\Projects\UnityVolumeRendering\DevProject~\Library\PackageCache\com.unity.modules.imageconversion
+  assetPath: Packages/com.unity.modules.imageconversion
+  name: com.unity.modules.imageconversion
+  displayName: Image Conversion
+  author:
+    name: 
+    email: 
+    url: 
+  category: 
+  type: module
+  description: 'The ImageConversion module implements the ImageConversion class which
+    provides helper methods for converting image data. Scripting API: https://docs.unity3d.com/ScriptReference/UnityEngine.ImageConversionModule.html'
+  errors: []
+  versions:
+    all:
+    - 1.0.0
+    compatible:
+    - 1.0.0
+    recommended: 1.0.0
+    deprecated: []
+  dependencies: []
+  resolvedDependencies: []
+  keywords: []
+  registry:
+    id: main
+    name: 
+    url: https://packages.unity.com
+    scopes: []
+    isDefault: 1
+    capabilities: 7
+    configSource: 0
+  hideInEditor: 1
+  entitlements:
+    licensingModel: 0
+  isAssetStorePackage: 0
+  datePublishedTicks: 0
+  documentationUrl: 
+  hasRepository: 0
+  repository:
+    type: 
+    url: 
+    revision: 
+    path: 
+  unityLifecycle:
+    version: 1.0.0
+    nextVersion: 
+    recommendedVersion: 
+    isDeprecated: 0
+    deprecationMessage: 
+  isDeprecated: 0
+  deprecationMessage: 
+  git:
+    hash: 
+    revision: 
+  upmReserved: 
+  assetStore:
+    productId: 
+  fingerprint: 
+  editorCompatibility:
+    compatibilityLevel: 0
+    minimumPackageVersion: 1.0.0
+    minimumUnityVersion: 
+- packageId: com.unity.modules.imgui@1.0.0
+  testable: 0
+  isDirectDependency: 1
+  version: 1.0.0
+  source: 2
+  resolvedPath: C:\Projects\UnityVolumeRendering\DevProject~\Library\PackageCache\com.unity.modules.imgui
+  assetPath: Packages/com.unity.modules.imgui
+  name: com.unity.modules.imgui
+  displayName: IMGUI
+  author:
+    name: 
+    email: 
+    url: 
+  category: 
+  type: module
+  description: 'The IMGUI module provides Unity''s immediate mode GUI solution for
+    creating in-game and editor user interfaces. Scripting API: https://docs.unity3d.com/ScriptReference/UnityEngine.IMGUIModule.html'
+  errors: []
+  versions:
+    all:
+    - 1.0.0
+    compatible:
+    - 1.0.0
+    recommended: 1.0.0
+    deprecated: []
+  dependencies: []
+  resolvedDependencies: []
+  keywords: []
+  registry:
+    id: main
+    name: 
+    url: https://packages.unity.com
+    scopes: []
+    isDefault: 1
+    capabilities: 7
+    configSource: 0
+  hideInEditor: 1
+  entitlements:
+    licensingModel: 0
+  isAssetStorePackage: 0
+  datePublishedTicks: 0
+  documentationUrl: 
+  hasRepository: 0
+  repository:
+    type: 
+    url: 
+    revision: 
+    path: 
+  unityLifecycle:
+    version: 1.0.0
+    nextVersion: 
+    recommendedVersion: 
+    isDeprecated: 0
+    deprecationMessage: 
+  isDeprecated: 0
+  deprecationMessage: 
+  git:
+    hash: 
+    revision: 
+  upmReserved: 
+  assetStore:
+    productId: 
+  fingerprint: 
+  editorCompatibility:
+    compatibilityLevel: 0
+    minimumPackageVersion: 1.0.0
+    minimumUnityVersion: 
+- packageId: com.unity.modules.jsonserialize@1.0.0
+  testable: 0
+  isDirectDependency: 1
+  version: 1.0.0
+  source: 2
+  resolvedPath: C:\Projects\UnityVolumeRendering\DevProject~\Library\PackageCache\com.unity.modules.jsonserialize
+  assetPath: Packages/com.unity.modules.jsonserialize
+  name: com.unity.modules.jsonserialize
+  displayName: JSONSerialize
+  author:
+    name: 
+    email: 
+    url: 
+  category: 
+  type: module
+  description: 'The JSONSerialize module provides the JsonUtility class which lets
+    you serialize Unity Objects to JSON format. Scripting API: https://docs.unity3d.com/ScriptReference/UnityEngine.JSONSerializeModule.html'
+  errors: []
+  versions:
+    all:
+    - 1.0.0
+    compatible:
+    - 1.0.0
+    recommended: 1.0.0
+    deprecated: []
+  dependencies: []
+  resolvedDependencies: []
+  keywords: []
+  registry:
+    id: main
+    name: 
+    url: https://packages.unity.com
+    scopes: []
+    isDefault: 1
+    capabilities: 7
+    configSource: 0
+  hideInEditor: 1
+  entitlements:
+    licensingModel: 0
+  isAssetStorePackage: 0
+  datePublishedTicks: 0
+  documentationUrl: 
+  hasRepository: 0
+  repository:
+    type: 
+    url: 
+    revision: 
+    path: 
+  unityLifecycle:
+    version: 1.0.0
+    nextVersion: 
+    recommendedVersion: 
+    isDeprecated: 0
+    deprecationMessage: 
+  isDeprecated: 0
+  deprecationMessage: 
+  git:
+    hash: 
+    revision: 
+  upmReserved: 
+  assetStore:
+    productId: 
+  fingerprint: 
+  editorCompatibility:
+    compatibilityLevel: 0
+    minimumPackageVersion: 1.0.0
+    minimumUnityVersion: 
+m_BuiltInPackagesHash: ce9d365432c3c7d37915b458f258e4c77ff6bd35

@@ -1,0 +1,38 @@
+{
+  "context": {
+    "projectPath": "C:/Projects/UnityVolumeRendering/DevProject~/Packages",
+    "unityVersion": "6000.0.25f1"
+  },
+  "inputs": [
+    "C:\\Projects\\UnityVolumeRendering\\DevProject~\\Packages\\manifest.json",
+    "C:\\Projects\\UnityVolumeRendering\\DevProject~\\Packages\\packages-lock.json",
+    "C:\\Projects\\UnityVolumeRendering\\package.json"
+  ],
+  "outputs": {
+    "com.mlavik1.unityvolumerendering@file:C:\\Projects\\UnityVolumeRendering": {
+      "name": "com.mlavik1.unityvolumerendering",
+      "resolvedPath": "C:\\Projects\\UnityVolumeRendering",
+      "editorCompatibility": "6000.0.0a1",
+      "version": "1.0.0",
+      "source": "local"
+    },
+    "com.unity.modules.imageconversion@1.0.0": {
+      "name": "com.unity.modules.imageconversion",
+      "resolvedPath": "C:\\Projects\\UnityVolumeRendering\\DevProject~\\Library\\PackageCache\\com.unity.modules.imageconversion",
+      "version": "1.0.0",
+      "source": "builtin"
+    },
+    "com.unity.modules.imgui@1.0.0": {
+      "name": "com.unity.modules.imgui",
+      "resolvedPath": "C:\\Projects\\UnityVolumeRendering\\DevProject~\\Library\\PackageCache\\com.unity.modules.imgui",
+      "version": "1.0.0",
+      "source": "builtin"
+    },
+    "com.unity.modules.jsonserialize@1.0.0": {
+      "name": "com.unity.modules.jsonserialize",
+      "resolvedPath": "C:\\Projects\\UnityVolumeRendering\\DevProject~\\Library\\PackageCache\\com.unity.modules.jsonserialize",
+      "version": "1.0.0",
+      "source": "builtin"
+    }
+  }
+}
