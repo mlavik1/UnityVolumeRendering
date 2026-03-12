@@ -41,7 +41,7 @@ namespace UnityVolumeRendering
 
         private void OnEnable()
         {
-            tfGUIMat = new Material(ShaderFactory.GetTransferFunction2DShader());
+            tfGUIMat = new Material(Shader.Find("VolumeRendering/Builtin/TransferFunction2DShader"));
 
             volRendObject = SelectionHelper.GetSelectedVolumeObject();
             if (volRendObject == null)
@@ -85,7 +85,7 @@ namespace UnityVolumeRendering
             float bgWidth = Mathf.Min(this.position.width - 20.0f, (this.position.height - 250.0f) * 2.0f);
             // Draw the histogram
             Rect histRect = new Rect(0.0f, 0.0f, bgWidth, bgWidth * 0.5f);
-            Graphics.DrawTexture(histRect, hist2DTex);
+            GUI.DrawTexture(histRect, hist2DTex);
             // Draw the TF texture (showing the rectangles)
             tfGUIMat.SetTexture("_TFTex", tf2d.GetTexture());
             Graphics.DrawTexture(histRect, tf2d.GetTexture(), tfGUIMat);
