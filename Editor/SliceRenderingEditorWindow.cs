@@ -19,6 +19,7 @@ namespace UnityVolumeRendering
         private Texture rRotateIconTexture;
 
         private InputMode inputMode;
+        private Material previewMaterial;
 
         private enum InputMode
         {
@@ -110,7 +111,13 @@ namespace UnityVolumeRendering
                 
                 // Draw the slice view
                 Material mat = planeObj.GetComponent<MeshRenderer>().sharedMaterial;
-                Graphics.DrawTexture(bgRect, mat.GetTexture("_DataTex"), mat);
+                if (previewMaterial == null)
+                    previewMaterial = new Material(Shader.Find("VolumeRendering/Builtin/SliceRenderingShader"));
+                previewMaterial.SetTexture("_DataTex", mat.GetTexture("_DataTex"));
+                previewMaterial.SetTexture("_TFTex", mat.GetTexture("_TFTex"));
+                previewMaterial.SetMatrix("_parentInverseMat", mat.GetMatrix("_parentInverseMat"));
+                previewMaterial.SetMatrix("_planeMat", mat.GetMatrix("_planeMat"));
+                Graphics.DrawTexture(bgRect, mat.GetTexture("_DataTex"), previewMaterial);
 
                 Vector2 relMousePos = Event.current.mousePosition - bgRect.position;
                 Vector2 relMousePosNormalised = relMousePos / new Vector2(bgRect.width, bgRect.height);
