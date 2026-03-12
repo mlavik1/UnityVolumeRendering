@@ -4,6 +4,7 @@ Shader "VolumeRendering/HDRP/SliceRenderingShader"
     {
         _DataTex("Data Texture (Generated)", 3D) = "" {}
         _TFTex("Transfer Function Texture", 2D) = "white" {}
+        [HideInInspector] _MainTex ("Main Tex", 3D) = "" {}
     }
     SubShader
     {
