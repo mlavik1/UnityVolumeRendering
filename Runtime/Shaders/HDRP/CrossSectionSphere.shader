@@ -42,7 +42,7 @@ Shader "VolumeRendering/HDRP/CrossSectionSphere" {
                     float3 worldPos = TransformObjectToWorld(v.vertex.xyz);
                     o.vertex = TransformWorldToHClip(worldPos);
                     o.worldNormal = TransformObjectToWorldNormal(v.normal);
-                    o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+                    o.worldPos = mul(UNITY_MATRIX_M, v.vertex).xyz;
                     return o;
                 }
 

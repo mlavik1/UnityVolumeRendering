@@ -65,8 +65,8 @@ float3 getViewRayDir(float3 vertexLocal)
     else
     {
         // Orthographic
-        float3 camfwd = mul((float3x3)unity_CameraToWorld, float3(0,0,-1));
-        float4 camfwdobjspace = mul(unity_WorldToObject, camfwd);
+        float3 camfwd = mul((float3x3)UVR_MATRIX_CAMERA_TO_WORLD, float3(0,0,-1));
+        float4 camfwdobjspace = mul(UVR_MATRIX_WORLD_TO_OBJECT, camfwd);
         return normalize(camfwdobjspace);
     }
 }
@@ -183,7 +183,7 @@ float3 getGradient(float3 pos)
 float3 getLightDirection(float3 viewDir)
 {
 #if defined(USE_MAIN_LIGHT)
-    return normalize(mul(unity_WorldToObject, float4(MAIN_LIGHT_DIRECTION_WS, 0.0)).xyz);
+    return normalize(mul(UVR_MATRIX_WORLD_TO_OBJECT, float4(MAIN_LIGHT_DIRECTION_WS, 0.0)).xyz);
 #else
     return viewDir;
 #endif

@@ -12,6 +12,17 @@
     #define MAIN_LIGHT_DIRECTION_WS float3(1, 0, 0)
 #endif
 
+// Matrix compatibility - HDRP errors on legacy names
+#if defined(UVR_RP_HDRP)
+    #define UVR_MATRIX_CAMERA_TO_WORLD UNITY_MATRIX_I_V
+    #define UVR_MATRIX_WORLD_TO_OBJECT UNITY_MATRIX_I_M
+    #define UVR_MATRIX_OBJECT_TO_WORLD UNITY_MATRIX_M
+#else
+    #define UVR_MATRIX_CAMERA_TO_WORLD unity_CameraToWorld
+    #define UVR_MATRIX_WORLD_TO_OBJECT unity_WorldToObject
+    #define UVR_MATRIX_OBJECT_TO_WORLD unity_ObjectToWorld
+#endif
+
 // These functions are available in UnityCG.cginc (Built-in) but not in URP/HDRP
 // Only define them if not already available
 
