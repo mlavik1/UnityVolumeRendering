@@ -17,6 +17,7 @@ Shader "VolumeRendering/HDRP/CrossSectionSphere" {
                 HLSLPROGRAM
                 #pragma vertex vert
                 #pragma fragment frag
+                #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
 
                 float _RimThickness;
