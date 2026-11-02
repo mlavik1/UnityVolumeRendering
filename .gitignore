@@ -9,6 +9,17 @@ DevProject~/*.csproj
 DevProject~/*.sln
 DevProject~/Assets/AssetStoreTools*
 
+# Sample project generated files
+SampleProject~/[Ll]ibrary/
+SampleProject~/[Tt]emp/
+SampleProject~/[Oo]bj/
+SampleProject~/[Bb]uild/
+SampleProject~/[Bb]uilds/
+SampleProject~/[Ll]ogs/
+SampleProject~/[Uu]ser[Ss]ettings/
+SampleProject~/*.csproj
+SampleProject~/*.sln
+
 # Visual Studio cache directory
 .vs/
 
