@@ -68,7 +68,7 @@ After installing, you can import the **Basic Demo** sample (scene + camera contr
 Add the repository as a git submodule, under "Packages".
 
 # Requirements
-- Unity 6 (6000.0) or newer
+- Unity 2022.3 or newer
 
 # How to use sample scene
 - Install the package (see [Installation](#installation))
