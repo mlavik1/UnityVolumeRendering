@@ -6,8 +6,9 @@ using System.Net;
 using UnityEditor;
 using UnityEngine;
 using System.IO.Compression;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// Manager for the SimpleITK integration.
@@ -15,6 +16,7 @@ namespace UnityVolumeRendering
     ///  SimpleITK will be disabled by default and can be enabled through this class.
     /// The binaries will be downloaded automatically.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class SimpleITKManager
     {
         private static string SimpleITKDefinition = "UVR_USE_SIMPLEITK";

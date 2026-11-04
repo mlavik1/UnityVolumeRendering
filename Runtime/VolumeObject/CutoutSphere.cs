@@ -1,11 +1,13 @@
 ﻿using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// Cutout sphere.
     /// Used for cutting a model (cutout view).
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     [ExecuteInEditMode]
     public class CutoutSphere : MonoBehaviour, CrossSectionObject
     {

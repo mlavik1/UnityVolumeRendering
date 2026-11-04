@@ -1,8 +1,10 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class ValueRangeEditorWindow : EditorWindow
     {
         public static void ShowWindow()

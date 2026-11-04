@@ -1,11 +1,13 @@
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// Utility class for generating histograms fo rthe dataset.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class HistogramTextureGenerator
     {
         /// <summary>

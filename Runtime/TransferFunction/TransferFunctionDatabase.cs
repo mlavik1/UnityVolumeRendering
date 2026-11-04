@@ -1,9 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class TransferFunctionDatabase
     {
         [System.Serializable]

@@ -3,9 +3,11 @@ using System.Linq;
 using System;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class ImportSettingsEditorWindow : EditorWindow
     {
         public static void ShowWindow()

@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// This is a basic runtime GUI, that can be used during play mode.
     /// You can import datasets, and edit them.
     /// Add this component to an empty GameObject in your scene (it's already in the test scene) and click play to see the GUI.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class RuntimeGUI : MonoBehaviour
     {
         private void OnGUI()

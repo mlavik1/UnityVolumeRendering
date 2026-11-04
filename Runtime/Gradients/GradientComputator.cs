@@ -4,9 +4,11 @@ using itk.simple;
 using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public abstract class GradientComputator
     {
         protected float[] data;
@@ -51,6 +53,7 @@ namespace UnityVolumeRendering
         public abstract Vector3 ComputeGradient(int x, int y, int z, float minValue, float maxRange);
     }
 
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class GradientComputatorFactory
     {
         public static GradientComputator CreateGradientComputator(VolumeDataset dataset, GradientType gradientType)

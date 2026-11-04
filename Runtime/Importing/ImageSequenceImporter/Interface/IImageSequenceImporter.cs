@@ -1,24 +1,29 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public enum ImageSequenceFormat
     {
         ImageSequence,
         DICOM
     }
 
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public interface IImageSequenceFile
     {
         string GetFilePath();
     }
 
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public interface IImageSequenceSeries
     {
         IEnumerable<IImageSequenceFile> GetFiles();
     }
 
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public struct ImageSequenceImportSettings
     {
         public IProgressHandler progressHandler
@@ -41,6 +46,7 @@ namespace UnityVolumeRendering
     /// Importer for image sequence datasets, such as DICOM and image sequences.
     /// These datasets usually contain one file per slice.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public interface IImageSequenceImporter
     {
         /// <summary>

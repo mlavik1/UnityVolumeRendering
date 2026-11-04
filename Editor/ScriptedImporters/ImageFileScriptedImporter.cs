@@ -1,8 +1,9 @@
 #if UNITY_2020_2_OR_NEWER
 using UnityEngine;
 using UnityEditor.AssetImporters;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// ScriptedImporter for image file datasets (NRRD, NIFTI, VASP).
@@ -14,6 +15,7 @@ namespace UnityVolumeRendering
 #else
     [ScriptedImporter(1, new string[]{"nii.gz", "nii", "vasp"})]
 #endif
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class ImageFileScriptedImporter : ScriptedImporter
     {
         public override void OnImportAsset(AssetImportContext ctx)

@@ -6,13 +6,15 @@ using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// SimpleITK-based DICOM importer.
     /// Has support for JPEG2000 and more.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class SimpleITKDICOMImporter : IImageSequenceImporter
     {
         public class ImageSequenceSlice : IImageSequenceFile

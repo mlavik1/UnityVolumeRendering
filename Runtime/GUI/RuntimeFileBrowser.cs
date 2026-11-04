@@ -1,13 +1,15 @@
 ﻿using System;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// Runtime filebrowser.
     /// Opens a save/load file/directory browser that can be used during play-mode.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public partial class RuntimeFileBrowser
     {
         public struct DialogResult

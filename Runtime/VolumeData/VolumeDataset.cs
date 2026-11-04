@@ -4,12 +4,14 @@ using System.Threading.Tasks;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// An imported dataset. Contains a 3D pixel array of density values.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     [Serializable]
     public class VolumeDataset : ScriptableObject, ISerializationCallbackReceiver
     {

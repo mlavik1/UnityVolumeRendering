@@ -1,8 +1,10 @@
 using System;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public enum GradientType
     {
         CentralDifference,
@@ -11,6 +13,7 @@ namespace UnityVolumeRendering
         SmoothedSobel
     }
 
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class GradientTypeUtils
     {
         public static GradientType GetDefaultGradientType()

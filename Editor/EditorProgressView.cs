@@ -1,8 +1,10 @@
 #if UNITY_2020_1_OR_NEWER
 using UnityEditor;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class EditorProgressView : IProgressView
     {
         private int progressId = -1;
@@ -48,8 +50,9 @@ namespace UnityVolumeRendering
     }
 }
 #else
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class EditorProgressView : IProgressView
     {
         public void StartProgress(string title, string description)

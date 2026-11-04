@@ -2,9 +2,11 @@
 using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class TransferFunction2DEditorWindow : EditorWindow
     {
         private Texture2D hist2DTex = null;

@@ -2,9 +2,11 @@
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class VolumeObjectFactory
     {
         public static Material CreateVolumeRenderingMaterial()

@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     [System.Serializable]
     public struct TFColourControlPoint
     {
@@ -15,6 +17,7 @@ namespace UnityVolumeRendering
         }
     }
 
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     [System.Serializable]
     public struct TFAlphaControlPoint
     {

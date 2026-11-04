@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public enum ImageFileFormat
     {
         VASP,
@@ -15,6 +17,7 @@ namespace UnityVolumeRendering
     /// Interface for single file dataset importers (NRRD, NIFTI, etc.).
     /// These datasets contain only one single file.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public interface IImageFileImporter
     {
         VolumeDataset Import(String filePath);

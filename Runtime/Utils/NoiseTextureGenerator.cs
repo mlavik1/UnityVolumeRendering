@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class NoiseTextureGenerator
     {
         public static Texture2D GenerateNoiseTexture(int noiseDimX, int noiseDimY)

@@ -3,10 +3,12 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.Rendering;
+using UnityEngine.Scripting.APIUpdating;
 using LightType = UnityEngine.LightType;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     [ExecuteInEditMode]
     [RequireComponent(typeof(VolumeRenderedObject))]
     public class ShadowVolumeManager : MonoBehaviour

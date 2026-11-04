@@ -2,7 +2,7 @@
 using System.IO;
 using UnityEngine;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     public partial class RuntimeFileBrowser
     {

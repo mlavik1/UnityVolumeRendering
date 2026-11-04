@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEditor.AssetImporters;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     [CustomEditor(typeof(RawScriptedImporter))]
     public class RawScriptedImporterEditor : ScriptedImporterEditor

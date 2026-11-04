@@ -1,9 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     [Serializable]
     public class TransferFunction : ScriptableObject
     {

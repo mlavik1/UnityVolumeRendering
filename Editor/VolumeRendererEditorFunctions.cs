@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class VolumeRendererEditorFunctions
     {
         [MenuItem("Volume Rendering/Load dataset/Load raw dataset")]

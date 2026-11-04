@@ -1,11 +1,13 @@
 ﻿using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// Cross section plane.
     /// Used for cutting a model (cross section view).
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     [ExecuteInEditMode]
     public class CrossSectionPlane : MonoBehaviour, CrossSectionObject
     {

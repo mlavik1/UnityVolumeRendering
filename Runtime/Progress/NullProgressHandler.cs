@@ -1,8 +1,11 @@
-namespace UnityVolumeRendering
+using UnityEngine.Scripting.APIUpdating;
+
+namespace MingRay
 {
     /// <summary>
     /// Default progress handler, used when a progress handler is needed but none was provider by the user.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class NullProgressHandler : IProgressHandler
     {
         public static readonly IProgressHandler instance = new NullProgressHandler();

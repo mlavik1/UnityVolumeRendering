@@ -6,12 +6,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using openDicom.Encoding;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// Converts a directory of image slices into a VolumeDataset for volumetric rendering.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class ImageSequenceImporter : IImageSequenceImporter
     {
         public class ImageSequenceFile : IImageSequenceFile

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.IO;
 using UnityEngine.Events;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     [CustomEditor(typeof(VolumeRenderedObject))]
     public class VolumeRenderedObjectCustomInspector : Editor, IProgressView

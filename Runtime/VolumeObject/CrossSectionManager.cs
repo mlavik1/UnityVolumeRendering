@@ -1,8 +1,10 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public enum CrossSectionType
     {
         Plane = 1,
@@ -12,6 +14,7 @@ namespace UnityVolumeRendering
         SphereExclusive = 5
     }
 
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public struct CrossSectionData
     {
         public CrossSectionType type;
@@ -21,6 +24,7 @@ namespace UnityVolumeRendering
     /// <summary>
     /// Manager for all cross section objects (planes and boxes).
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     [ExecuteInEditMode]
     public class CrossSectionManager : MonoBehaviour
     {

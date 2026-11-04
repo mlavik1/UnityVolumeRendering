@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class CrossSectionPlaneEditorWindow : EditorWindow
     {
         private void OnGUI()

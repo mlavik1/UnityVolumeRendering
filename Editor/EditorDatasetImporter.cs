@@ -4,9 +4,11 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     [System.Obsolete("This will be removed. Use ImporterFactory and VolumeObjectFactory instead.")]
     public class EditorDatasetImporter
     {

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// Camera controller for sample scene.

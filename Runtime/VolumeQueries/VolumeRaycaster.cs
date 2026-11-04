@@ -1,8 +1,10 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public struct RaycastHit
     {
         public VolumeRenderedObject volumeObject;
@@ -13,6 +15,7 @@ namespace UnityVolumeRendering
     /// <summary>
     /// Volume raycaster, for raycasting datasets.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class VolumeRaycaster
     {
         /// <summary>

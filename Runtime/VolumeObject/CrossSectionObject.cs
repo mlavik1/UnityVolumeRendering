@@ -1,6 +1,7 @@
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// Interface for cross section objects.
@@ -9,6 +10,7 @@ namespace UnityVolumeRendering
     /// <br/>
     /// CrossSectionObjects can be added to the <see cref="CrossSectionManager"/>.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public interface CrossSectionObject
     {
         /// <summary>

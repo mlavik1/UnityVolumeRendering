@@ -1,9 +1,11 @@
 using System.IO;
 using UnityEngine;
 using System;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public enum DatasetType
     {
         Unknown,
@@ -15,6 +17,7 @@ namespace UnityVolumeRendering
         ImageSequence
     }
 
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class DatasetImporterUtility
     {
         public static DatasetType GetDatasetType(string filePath)

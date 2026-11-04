@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// This class handles drag-and-drop of <see cref="VolumeDataset"/> assets into the scene view or scene hierarchy.
