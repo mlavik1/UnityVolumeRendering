@@ -1,4 +1,4 @@
-# UnityVolumeRendering
+# MingRay (UnityVolumeRendering)
 A volume renderer, made in Unity3D.
 I have written a [tutorial explaining the basic implementation](https://matiaslavik.codeberg.page/volume-renderer/).
 Have any questions? Create an issue or [contact me on Mastodon](https://fosstodon.org/@unityvolrend) or **微信**: mati31415.
@@ -58,7 +58,7 @@ https://github.com/mlavik1/UnityVolumeRendering.git#v1.0.0
 
 Add the following to your project's `Packages/manifest.json`:
 ```json
-"com.mlavik1.unityvolumerendering": "https://github.com/mlavik1/UnityVolumeRendering.git"
+"com.mlavik1.mingray": "https://github.com/mlavik1/UnityVolumeRendering.git"
 ```
 
 After installing, you can import the **Basic Demo** sample (scene + camera controller) and **Sample Data** (test datasets) from the Package Manager window.
