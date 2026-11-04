@@ -34,7 +34,7 @@ This Readme contains a quick introduction to the library. For more info, see the
 
 # Getting started
 
-For a quick demo, simply clone this repository and open the [sample project](SampleProject~) in Unity.
+For a quick demo, clone this repository, open the [sample project](SampleProject~) in Unity, and optionally import the "Basic Demo" and "Sample Data" samples from the Package Manager (see [How to use sample scene](#how-to-use-sample-scene)).
 
 To use this plugin in your own project, see [Installation](#installation).
 
@@ -72,9 +72,9 @@ Add the repository as a git submodule, under "Packages".
 
 # How to use sample scene
 - Install the package (see [Installation](#installation))
-- In the Package Manager, find "Unity Volume Rendering", click the "Sampels" tab and import the "Basic Demo" and "Sample Data" samples
+- In the Package Manager, find "MingRay Volume Renderer", click the "Samples" tab and import the "Basic Demo" and "Sample Data" samples
 - Open the imported "TestScene.unity"
-- Click "Volume Rendering" in the menu bar
+- Click "Tools" -> "MingRay" in the menu bar
 - Select "Load Raw dataset" (or something else, if you already have a dataset you want to import)
 - Pick the VisMale.raw file from the imported Sample Data
 - Click the "import"-button
@@ -165,8 +165,8 @@ See the [importer documentation](Documentation~/Scripting/Importing.md) for more
 To contribute or develop the package:
 
 1. Clone the repository
-2. Open `DevProject~/` as a Unity project
-3. Unity will automatically resolve the package from the repo root via the local file reference in `DevProject~/Packages/manifest.json`
+2. Open `SampleProject~/` as a Unity project
+3. Unity will automatically resolve the package from the repo root via the local file reference in `SampleProject~/Packages/manifest.json`
 4. Edit scripts, shaders, etc. directly in the package folders - changes are immediately reflected
 5. To test samples, import them via the Package Manager window
 

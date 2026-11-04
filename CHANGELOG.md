@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `Assets/Scenes/` and sample scripts -> `Samples~/BasicDemo/`
   - `DataFiles/` -> `Samples~/SampleData/`
   - `Documentation/` -> `Documentation~/`
-  - Development Unity project -> `DevProject~/`
+  - Development Unity project -> `SampleProject~/`
 
 ### Fixed
 - Removed unused `using UnityEditor;` directives from `DatasetImporterUtility.cs`
@@ -34,4 +34,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 If you were previously using this project by cloning the repository and opening
 it as a Unity project, you now have two options:
 1. **Recommended**: Install via UPM git URL in your own project.
-2. **For development**: Open `DevProject~/` as your Unity project.
+2. **For development**: Open `SampleProject~/` as your Unity project.

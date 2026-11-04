@@ -39,7 +39,7 @@ if assetstore_package:
         ("Runtime", "Runtime"),
         ("Editor", "Editor"),
         ("ThirdParty", "ThirdParty"),
-        (os.path.join("SampleProject~", "SampleData"), "SampleData"),
+        (os.path.join("Samples~", "SampleData"), "SampleData"),
         ("Third Party Notices.md", "Third Party Notices.md"),
         (os.path.join("Documentation~", "MANUAL.pdf"), "MANUAL.pdf"),
     ]
@@ -48,7 +48,7 @@ else:
         ("Runtime", "Runtime"),
         ("Editor", "Editor"),
         ("ThirdParty", "ThirdParty"),
-        (os.path.join("SampleProject~", "SampleData"), "SampleData"),
+        (os.path.join("Samples~", "SampleData"), "SampleData"),
         ("Third Party Notices.md", "Third Party Notices.md"),
         ("CREDITS.md", "CREDITS.md"),
         ("LICENSE.md", "LICENSE.md"),

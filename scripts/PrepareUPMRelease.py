@@ -22,8 +22,7 @@ include = [
     "Editor",
     "ThirdParty",
     "Documentation~",
-    "SampleProject~/Assets",
-    "SampleProject~/SampleData",
+    "Samples~",
 ]
 exclude = [
     "ThirdParty/SimpleITK",
