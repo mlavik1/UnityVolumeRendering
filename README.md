@@ -51,7 +51,7 @@ https://github.com/mlavik1/UnityVolumeRendering.git
 
 To pin a specific version, append a tag:
 ```
-https://github.com/mlavik1/UnityVolumeRendering.git#v1.0.0
+https://github.com/mlavik1/UnityVolumeRendering.git#v2.0.0
 ```
 
 **Via manifest.json:**
