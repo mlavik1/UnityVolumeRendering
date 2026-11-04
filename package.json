@@ -1,7 +1,7 @@
 {
-  "name": "com.mlavik1.easyvolumerenderer",
+  "name": "com.mlavik1.mingray",
   "version": "1.8.0",
-  "displayName": "Easy Volume Renderer",
+  "displayName": "MingRay Volume Renderer",
   "description": "Volume rendering package for Unity. Direct volume rendering, MIP, and isosurface rendering. Imports DICOM, NIFTI, NRRD, VASP, and raw datasets. Supports Built-in, URP, and HDRP.",
   "unity": "2022.3",
   "license": "MIT",
