@@ -74,8 +74,7 @@ Add the repository as a git submodule, under "Packages".
 - Install the package (see [Installation](#installation))
 - In the Package Manager, find "MingRay Volume Renderer", click the "Samples" tab and import the "Basic Demo" and "Sample Data" samples
 - Open the imported "TestScene.unity"
-- Click "Tools" -> "MingRay" in the menu bar
-- Select "Load Raw dataset" (or something else, if you already have a dataset you want to import)
+- In the menu bar, click "Tools" -> "MingRay" -> "Load dataset" -> "Load raw dataset" (or another format, if you already have a dataset you want to import)
 - Pick the VisMale.raw file from the imported Sample Data
 - Click the "import"-button
 
@@ -84,7 +83,7 @@ Add the repository as a git submodule, under "Packages".
 
 **Raw datasets:**
 
-In the menu bar, click "Volume Rendering" and "Load raw dataset"
+In the menu bar, click "Tools" -> "MingRay" -> "Load dataset" -> "Load raw dataset"
 
 <img src="Documentation~/Screenshots/menubar2.png" width="200px">
 
@@ -96,7 +95,7 @@ In the next menu you can optionally set the import setting for the raw dataset. 
 
 **DICOM:**
 
-To import a DICOM dataset, click "Volume Rendering" and "Load DICOM" and select the folder containing your DICOM files.
+To import a DICOM dataset, click "Tools" -> "MingRay" -> "Load dataset" -> "Load DICOM" and select the folder containing your DICOM files.
 The dataset must be of 3D nature, and contain several files - each being a slice along the Z axis.
 
 **2. Moving the model**
@@ -135,7 +134,7 @@ There are also some other settings that you can adjust:
 # Direct Volume Rendering
 
 Direct volume rendering is the most standard rendering mode. It sends rays through the dataset, and uses "transfer functions" (1D or 2D) to determine the colour and opacity. Transfer functions map density (2D: also gradient magnitude) to a colour and opacity.
-- **Modifying transfer functions**: Click "Volume Rendering" in the menu bar and select "1D Transfer Function" or "2D Transfer Function"
+- **Modifying transfer functions**: In the menu bar, click "Tools" -> "MingRay" and select "1D Transfer Function" or "2D Transfer Function"
   - **1D Transfer Function**: X-axis represents density and Y-axis represents alpha (opaccity). Move the grey alpha knots to create a curve for opacity by density. Right-click to add new alpha knots. The bottom gradient-coloured panel maps colour to density. Right-click to add new knots and click on an existing colour knot to modify its colour.
   - **2D Transfer Function**: X-axis represents density and Y-axis represents gradient magnitude. Click "add rectangle" to add a new rectangle-shape. Move the four sliders (bottom left) to modify size/position. Modify the two sliders to the right to change min/max alpha/opacity. Each rectangle can have one colour (see colour picker).
 

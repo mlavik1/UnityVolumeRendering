@@ -10,7 +10,7 @@
 
 <!-- /TOC -->
 
-You can spawn cross section tools from the Volume Rendering menu option.
+You can spawn cross section tools from "Tools" -> "MingRay" -> "Cross section" in the menu bar.
 
 <img src="menu-cross-section.png" width="400px">
 

@@ -10,7 +10,7 @@ This project optionally uses SimpleITK for the above formats. There is another f
 Since SimpleITK is a native library, that requires you to download some large binaries for each target platform, it has been disabled by default.
 
 To enable SimpleITK, you simply have to do the following:
-1. In Unity's top toolbar, click "Volume rendering" and then "Settings", to open the settings menu.
+1. In Unity's top toolbar, click "Tools" -> "MingRay" -> "Settings", to open the settings menu.
 2. In the settings menu, click "Enable SimpleITK"
 
 <img src="settings-toolbar.jpg" width="150px">

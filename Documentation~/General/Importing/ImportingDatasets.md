@@ -4,7 +4,7 @@
 <!-- TOC -->
 
 - [Importing datasets in the editor](#importing-datasets-in-the-editor)
-    - [Importing datasets through the "Volume Rendering" menu bar option](#importing-datasets-through-the-volume-rendering-menu-bar-option)
+    - [Importing datasets through the menu bar](#importing-datasets-through-the-menu-bar)
         - [Raw datasets](#raw-datasets)
             - [ini files](#ini-files)
         - [DICOM datasets](#dicom-datasets)
@@ -21,13 +21,13 @@
 For documentation on how to import datasets from code, see [Importing datasets form code](../../Scripting/Importing.md).
 
 There are several ways to import datasets into the editor:
-1. [Through "Volume Rendering" -> "Load dataset" in the menu bar.](#importing-datasets-through-the-volume-rendering-menu-bar-option)
+1. [Through "Tools" -> "MingRay" -> "Load dataset" in the menu bar.](#importing-datasets-through-the-menu-bar)
 2. [By drag-and-drop dataset into the "Assets" directory](#importing-datasets-by-drag-and-drop-into-the-assets-folder) (only RAW/NRRD/NIFTI, Unity 2020.2+)
-3. [Right click in "Assets" directory and choose "Volume Rendering" -> "Import dataset"](#importing-datasets-by-right-clicking-in-the-assets-folder)
+3. [Right click in "Assets" directory and choose "MingRay" -> "Import dataset"](#importing-datasets-by-right-clicking-in-the-assets-folder)
 
-## Importing datasets through the "Volume Rendering" menu bar option
+## Importing datasets through the menu bar
 
-Click "Volume Rendering" in the menu bar and then "Load dataset" and select which dataset you want to import
+In the menu bar, click "Tools" -> "MingRay" -> "Load dataset" and select which dataset you want to import
 
 <img src="menu-bar-import.png" width="500px">
 
@@ -101,7 +101,7 @@ To use these datasets, you can either:
 
 ## Importing datasets by right clicking in the Assets folder
 
-You can also import datasets by right clicking in "Assets" directory and choosing "Volume Rendering" -> "Import dataset"
+You can also import datasets by right clicking in "Assets" directory and choosing "MingRay" -> "Import dataset"
 
 All datasets (also DICOM) can be imported this way.
 
