@@ -1,4 +1,5 @@
-Shader "VolumeRendering/HDRP/TransferFunction2DShader"
+﻿// Render pipeline agnostic shader, used by the 2D transfer function editor GUI.
+Shader "VolumeRendering/TransferFunction2DShader"
 {
     Properties
     {
@@ -6,8 +7,7 @@ Shader "VolumeRendering/HDRP/TransferFunction2DShader"
     }
     SubShader
     {
-        PackageRequirements { "com.unity.render-pipelines.high-definition" }
-        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "HDRenderPipeline" }
+        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" }
         LOD 100
 
         Blend SrcAlpha OneMinusSrcAlpha
@@ -18,8 +18,9 @@ Shader "VolumeRendering/HDRP/TransferFunction2DShader"
             #pragma vertex vert
             #pragma fragment frag
 
-            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
-            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
+            // Built-in shader variables, set by the engine in all render pipelines.
+            float4x4 unity_ObjectToWorld;
+            float4x4 unity_MatrixVP;
 
             struct appdata
             {
@@ -38,18 +39,14 @@ Shader "VolumeRendering/HDRP/TransferFunction2DShader"
             v2f vert (appdata v)
             {
                 v2f o;
-                float3 worldPos = TransformObjectToWorld(v.vertex.xyz);
-                o.vertex = TransformWorldToHClip(worldPos);
+                o.vertex = mul(unity_MatrixVP, mul(unity_ObjectToWorld, float4(v.vertex.xyz, 1.0f)));
                 o.uv = v.uv;
                 return o;
             }
 
-            half4 frag (v2f i) : SV_Target
+            float4 frag (v2f i) : SV_Target
             {
-                half4 col = _TFTex.Sample(sampler_TFTex, i.uv);
-                //col.a = 1.0f;
-
-                return col;
+                return _TFTex.Sample(sampler_TFTex, i.uv);
             }
             ENDHLSL
         }

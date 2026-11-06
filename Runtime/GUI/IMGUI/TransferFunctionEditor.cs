@@ -29,8 +29,8 @@ namespace MingRay
 
         public void Initialise()
         {
-            tfGUIMat = new Material(Shader.Find("VolumeRendering/Builtin/TransferFunctionShader"));
-            tfPaletteGUIMat = new Material(Shader.Find("VolumeRendering/Builtin/TransferFunctionPaletteShader"));
+            tfGUIMat = new Material(ShaderFactory.GetTransferFunctionShader());
+            tfPaletteGUIMat = new Material(ShaderFactory.GetTransferFunctionPaletteShader());
         }
 
         [Obsolete("Use SetTarget instead")]

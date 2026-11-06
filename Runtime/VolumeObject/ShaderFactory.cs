@@ -73,31 +73,28 @@ namespace MingRay
             );
         }
 
+        // The transfer function GUI shaders are render pipeline agnostic (same shader for all pipelines).
+
         public static Shader GetTransferFunctionShader()
         {
-            return GetShaderByPipeline(
-                "VolumeRendering/Builtin/TransferFunctionShader",
-                "VolumeRendering/URP/TransferFunctionShader",
-                "VolumeRendering/HDRP/TransferFunctionShader"
-            );
+            return FindShader("VolumeRendering/TransferFunctionShader");
         }
 
         public static Shader GetTransferFunction2DShader()
         {
-            return GetShaderByPipeline(
-                "VolumeRendering/Builtin/TransferFunction2DShader",
-                "VolumeRendering/URP/TransferFunction2DShader",
-                "VolumeRendering/HDRP/TransferFunction2DShader"
-            );
+            return FindShader("VolumeRendering/TransferFunction2DShader");
         }
 
         public static Shader GetTransferFunctionPaletteShader()
         {
-            return GetShaderByPipeline(
-                "VolumeRendering/Builtin/TransferFunctionPaletteShader",
-                "VolumeRendering/URP/TransferFunctionPaletteShader",
-                "VolumeRendering/HDRP/TransferFunctionPaletteShader"
-            );
+            return FindShader("VolumeRendering/TransferFunctionPaletteShader");
+        }
+
+        private static Shader FindShader(string path)
+        {
+            Shader shader = Shader.Find(path);
+            Debug.Assert(shader != null, $"Could not find shader: '{path}'");
+            return shader;
         }
     }
 }

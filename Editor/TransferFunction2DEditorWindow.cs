@@ -43,7 +43,7 @@ namespace MingRay
 
         private void OnEnable()
         {
-            tfGUIMat = new Material(Shader.Find("VolumeRendering/Builtin/TransferFunction2DShader"));
+            tfGUIMat = new Material(ShaderFactory.GetTransferFunction2DShader());
 
             volRendObject = SelectionHelper.GetSelectedVolumeObject();
             if (volRendObject == null)

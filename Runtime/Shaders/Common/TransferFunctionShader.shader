@@ -1,4 +1,5 @@
-﻿Shader "VolumeRendering/URP/TransferFunctionShader"
+﻿// Render pipeline agnostic shader, used by the transfer function editor GUI.
+Shader "VolumeRendering/TransferFunctionShader"
 {
     Properties
     {
@@ -7,8 +8,7 @@
     }
     SubShader
     {
-        PackageRequirements { "com.unity.render-pipelines.universal" }
-        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
+        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" }
         LOD 100
 
         Blend SrcAlpha OneMinusSrcAlpha
@@ -18,8 +18,10 @@
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            // Built-in shader variables, set by the engine in all render pipelines.
+            float4x4 unity_ObjectToWorld;
+            float4x4 unity_MatrixVP;
 
             struct appdata
             {
@@ -41,24 +43,23 @@
             v2f vert (appdata v)
             {
                 v2f o;
-                float3 worldPos = TransformObjectToWorld(v.vertex.xyz);
-                o.vertex = TransformWorldToHClip(worldPos);
-                o.uv = v.uv;
+                o.vertex = mul(unity_MatrixVP, mul(unity_ObjectToWorld, float4(v.vertex.xyz, 1.0f)));
+                o.uv = v.uv * _TFTex_ST.xy + _TFTex_ST.zw; // Applies zoom
                 return o;
             }
-            
-            half4 frag (v2f i) : SV_Target
+
+            float4 frag (v2f i) : SV_Target
             {
                 float density = i.uv.x;
                 float histY = _HistTex.Sample(sampler_HistTex, float2(density, 0.0f)).r;
-                half4 tfCol = _TFTex.Sample(sampler_TFTex, float2(density, 0.0f));
-                half4 histCol = histY > i.uv.y ? half4(1.0f, 1.0f, 1.0f, 1.0f) : half4(0.0f, 0.0f, 0.0f, 0.0f);
+                float4 tfCol = _TFTex.Sample(sampler_TFTex, float2(density, 0.0f));
+                float4 histCol = histY > i.uv.y ? float4(1.0f, 1.0f, 1.0f, 1.0f) : float4(0.0f, 0.0f, 0.0f, 0.0f);
 
                 float alpha = tfCol.a;
                 if (i.uv.y > alpha)
                     tfCol.a = 0.0f;
 
-                half4 col = histCol * 0.5f + tfCol * 0.7f;
+                float4 col = histCol * 0.5f + tfCol * 0.7f;
 
                 return col;
             }
