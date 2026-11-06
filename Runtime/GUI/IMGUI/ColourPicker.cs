@@ -1,7 +1,9 @@
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public partial class GUIUtils
     {
         private static ColourPickerPopup colourPicker = null; // TODO: Not static?

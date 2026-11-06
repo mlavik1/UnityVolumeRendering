@@ -3,9 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public static class AsyncHelper
     {
         /// <summary>

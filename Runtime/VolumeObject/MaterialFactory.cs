@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class MaterialFactory
     {
         [System.Obsolete("This method is deprecated, and will be removed. Use VolumeObjectFactory, or custom re-implementation.", false)]

@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// Progress handler, for tracking the progress of long (async) actions, such as import.
@@ -13,6 +14,7 @@ namespace UnityVolumeRendering
     /// - (optionally) call StartStage() and EndStage() to create a sub-stage to track the progress of.
     /// - Call Finish() or Fail() when done.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class ProgressHandler : IProgressHandler, IDisposable
     {
         private class ProgressStage

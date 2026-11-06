@@ -1,11 +1,13 @@
 using System.IO;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// Runtime (play mode) GUI for editing a slice orientation.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class EditSliceGUI : MonoBehaviour
     {
         public SlicingPlane slicingPlane;

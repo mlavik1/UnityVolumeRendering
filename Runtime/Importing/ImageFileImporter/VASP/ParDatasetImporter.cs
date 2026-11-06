@@ -20,9 +20,11 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using System.Threading.Tasks;
 using System.Globalization;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class ParDatasetImporter : IImageFileImporter
     {
         string filePath;

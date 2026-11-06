@@ -1,6 +1,6 @@
 {
     "name": "UnityVolumeRendering.Editor",
-    "rootNamespace": "UnityVolumeRendering",
+    "rootNamespace": "MingRay",
     "references": [
         "UnityVolumeRendering.Runtime"
     ],

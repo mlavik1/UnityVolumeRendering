@@ -3,12 +3,14 @@ using UnityEditor;
 using System.IO;
 using System;
 using System.Threading.Tasks;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// Editor window for importing datasets.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class RAWDatasetImporterEditorWindow : EditorWindow
     {
         private string fileToImport;

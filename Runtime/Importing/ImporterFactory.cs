@@ -1,13 +1,15 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// Factory for creating importers, for each format.
     /// Use this if you only want to import a dataset, without deciding which importer to use.
     /// Some dataset formats can be imported using several different importers, in which case this factory will return the best alternative.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class ImporterFactory
     {
         /// <summary>

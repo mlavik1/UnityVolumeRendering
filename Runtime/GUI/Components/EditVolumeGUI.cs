@@ -1,11 +1,13 @@
 ﻿using System.IO;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// Rutnime (play mode) GUI for editing a volume's visualisation.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class EditVolumeGUI : MonoBehaviour
     {
         public VolumeRenderedObject targetObject;

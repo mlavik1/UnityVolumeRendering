@@ -5,9 +5,11 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class EditorDatasetImportUtils
     {
         public static async Task<VolumeDataset[]> ImportDicomDirectoryAsync(string dir, ProgressHandler progressHandler)

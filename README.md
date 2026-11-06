@@ -1,4 +1,4 @@
-# UnityVolumeRendering
+# MingRay (UnityVolumeRendering)
 A volume renderer, made in Unity3D.
 I have written a [tutorial explaining the basic implementation](https://matiaslavik.codeberg.page/volume-renderer/).
 Have any questions? Create an issue or [contact me on Mastodon](https://fosstodon.org/@unityvolrend) or **微信**: mati31415.
@@ -34,7 +34,7 @@ This Readme contains a quick introduction to the library. For more info, see the
 
 # Getting started
 
-For a quick demo, simply clone this repository and open the [sample project](SampleProject~) in Unity.
+For a quick demo, clone this repository, open the [sample project](SampleProject~) in Unity, and optionally import the "Basic Demo" and "Sample Data" samples from the Package Manager (see [How to use sample scene](#how-to-use-sample-scene)).
 
 To use this plugin in your own project, see [Installation](#installation).
 
@@ -51,14 +51,14 @@ https://github.com/mlavik1/UnityVolumeRendering.git
 
 To pin a specific version, append a tag:
 ```
-https://github.com/mlavik1/UnityVolumeRendering.git#v1.0.0
+https://github.com/mlavik1/UnityVolumeRendering.git#v2.0.0
 ```
 
 **Via manifest.json:**
 
 Add the following to your project's `Packages/manifest.json`:
 ```json
-"com.mlavik1.unityvolumerendering": "https://github.com/mlavik1/UnityVolumeRendering.git"
+"com.mlavik1.mingray": "https://github.com/mlavik1/UnityVolumeRendering.git"
 ```
 
 After installing, you can import the **Basic Demo** sample (scene + camera controller) and **Sample Data** (test datasets) from the Package Manager window.
@@ -68,14 +68,13 @@ After installing, you can import the **Basic Demo** sample (scene + camera contr
 Add the repository as a git submodule, under "Packages".
 
 # Requirements
-- Unity 6 (6000.0) or newer
+- Unity 2022.3 or newer
 
 # How to use sample scene
 - Install the package (see [Installation](#installation))
-- In the Package Manager, find "Unity Volume Rendering", click the "Sampels" tab and import the "Basic Demo" and "Sample Data" samples
+- In the Package Manager, find "MingRay Volume Renderer", click the "Samples" tab and import the "Basic Demo" and "Sample Data" samples
 - Open the imported "TestScene.unity"
-- Click "Volume Rendering" in the menu bar
-- Select "Load Raw dataset" (or something else, if you already have a dataset you want to import)
+- In the menu bar, click "Tools" -> "MingRay" -> "Load dataset" -> "Load raw dataset" (or another format, if you already have a dataset you want to import)
 - Pick the VisMale.raw file from the imported Sample Data
 - Click the "import"-button
 
@@ -84,7 +83,7 @@ Add the repository as a git submodule, under "Packages".
 
 **Raw datasets:**
 
-In the menu bar, click "Volume Rendering" and "Load raw dataset"
+In the menu bar, click "Tools" -> "MingRay" -> "Load dataset" -> "Load raw dataset"
 
 <img src="Documentation~/Screenshots/menubar2.png" width="200px">
 
@@ -96,7 +95,7 @@ In the next menu you can optionally set the import setting for the raw dataset. 
 
 **DICOM:**
 
-To import a DICOM dataset, click "Volume Rendering" and "Load DICOM" and select the folder containing your DICOM files.
+To import a DICOM dataset, click "Tools" -> "MingRay" -> "Load dataset" -> "Load DICOM" and select the folder containing your DICOM files.
 The dataset must be of 3D nature, and contain several files - each being a slice along the Z axis.
 
 **2. Moving the model**
@@ -135,7 +134,7 @@ There are also some other settings that you can adjust:
 # Direct Volume Rendering
 
 Direct volume rendering is the most standard rendering mode. It sends rays through the dataset, and uses "transfer functions" (1D or 2D) to determine the colour and opacity. Transfer functions map density (2D: also gradient magnitude) to a colour and opacity.
-- **Modifying transfer functions**: Click "Volume Rendering" in the menu bar and select "1D Transfer Function" or "2D Transfer Function"
+- **Modifying transfer functions**: In the menu bar, click "Tools" -> "MingRay" and select "1D Transfer Function" or "2D Transfer Function"
   - **1D Transfer Function**: X-axis represents density and Y-axis represents alpha (opaccity). Move the grey alpha knots to create a curve for opacity by density. Right-click to add new alpha knots. The bottom gradient-coloured panel maps colour to density. Right-click to add new knots and click on an existing colour knot to modify its colour.
   - **2D Transfer Function**: X-axis represents density and Y-axis represents gradient magnitude. Click "add rectangle" to add a new rectangle-shape. Move the four sliders (bottom left) to modify size/position. Modify the two sliders to the right to change min/max alpha/opacity. Each rectangle can have one colour (see colour picker).
 
@@ -165,8 +164,8 @@ See the [importer documentation](Documentation~/Scripting/Importing.md) for more
 To contribute or develop the package:
 
 1. Clone the repository
-2. Open `DevProject~/` as a Unity project
-3. Unity will automatically resolve the package from the repo root via the local file reference in `DevProject~/Packages/manifest.json`
+2. Open `SampleProject~/` as a Unity project
+3. Unity will automatically resolve the package from the repo root via the local file reference in `SampleProject~/Packages/manifest.json`
 4. Edit scripts, shaders, etc. directly in the package folders - changes are immediately reflected
 5. To test samples, import them via the Package Manager window
 

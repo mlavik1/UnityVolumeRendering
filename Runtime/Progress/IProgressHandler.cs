@@ -1,10 +1,13 @@
-namespace UnityVolumeRendering
+using UnityEngine.Scripting.APIUpdating;
+
+namespace MingRay
 {
     /// <summary>
     /// Interface for progress handlers.
     /// Used for tracking the progress of long-lasting async operations, such as model import.
     /// Normally you will want to use <see cref="ProgressHandler"/>.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public interface IProgressHandler
     {
         void StartStage(float weight, string description = "");

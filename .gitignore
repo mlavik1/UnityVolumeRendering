@@ -19,6 +19,8 @@ SampleProject~/[Ll]ogs/
 SampleProject~/[Uu]ser[Ss]ettings/
 SampleProject~/*.csproj
 SampleProject~/*.sln
+SampleProject~/Assets/Samples/
+SampleProject~/Assets/Samples.meta
 
 # Visual Studio cache directory
 .vs/
@@ -48,3 +50,4 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+Release~/

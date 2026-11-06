@@ -4,7 +4,7 @@ You can use transfer functions to apply different colours and opacities to diffe
 
 Ttransfer functions will map density (and optionally gradient magnitude) to a selected colour/opacity, enabling you to highlight parts of the dataset (skin, bones, etc.).
 
-You can open the transfer function editors from the "Volume Rendering" menu bar option in the editor:
+You can open the transfer function editors from "Tools" -> "MingRay" -> "1D Transfer Function" / "2D Transfer Function" in the menu bar:
 
 <img src="menubar-tf1d.png" width="400px">
 

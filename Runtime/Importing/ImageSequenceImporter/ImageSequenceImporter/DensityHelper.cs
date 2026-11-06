@@ -1,8 +1,10 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public static class DensityHelper
     {
         public static DensitySource IdentifyDensitySource(Color[] voxels)

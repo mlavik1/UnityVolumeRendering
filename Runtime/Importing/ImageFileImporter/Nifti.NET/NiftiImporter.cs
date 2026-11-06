@@ -5,12 +5,14 @@ using System.Collections.Generic;
 using System.IO;
 using Nifti.NET;
 using System.Threading.Tasks;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// SimpleITK-based DICOM importer.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class NiftiImporter : IImageFileImporter
     {
         public VolumeDataset Import(string filePath)

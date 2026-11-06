@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class DatasetIniData
     {
         public int dimX = 0;
@@ -24,6 +26,7 @@ namespace UnityVolumeRendering
     ///   format:uint8
     /// "skip" defines how many bytes to skip (file header) - it should be 0 if the file has no header, which is often the case.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class DatasetIniReader
     {
         public static DatasetIniData ParseIniFile(string filePath)

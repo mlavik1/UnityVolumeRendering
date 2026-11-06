@@ -6,7 +6,7 @@ The slice renderer can be used to create a axis aligned (or free transform) slic
 
 ## How to open the slice renderer window
 
-You can open the slice renderer window from the "Volume Rendering" menu bar option:
+You can open the slice renderer window from "Tools" -> "MingRay" -> "Slice renderer" in the menu bar:
 
 <img src="menubar-slice-renderer.png" width="200px">
 

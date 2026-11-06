@@ -2,9 +2,11 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     [Serializable]
     public enum DataContentFormat
     {
@@ -16,6 +18,7 @@ namespace UnityVolumeRendering
         Uint32
     }
 
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     [Serializable]
     public enum Endianness
     {
@@ -23,6 +26,7 @@ namespace UnityVolumeRendering
         BigEndian
     }
 
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class RawDatasetImporter
     {
         string filePath;

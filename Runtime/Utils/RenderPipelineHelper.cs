@@ -1,12 +1,14 @@
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// Supported render pipeline types in Unity.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public enum RenderPipelineType
     {
         /// <summary>
@@ -34,6 +36,7 @@ namespace UnityVolumeRendering
     /// Utility class for detecting the active render pipeline at runtime.
     /// Provides type-based detection that is more reliable than string-based checking.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public static class RenderPipelineHelper
     {
         /// <summary>

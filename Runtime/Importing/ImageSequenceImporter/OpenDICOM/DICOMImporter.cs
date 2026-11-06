@@ -10,13 +10,15 @@ using openDicom.Image;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Data;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// DICOM importer.
     /// Reads a 3D DICOM dataset from a list of DICOM files.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class DICOMImporter : IImageSequenceImporter
     {
         public class DICOMSliceFile : IImageSequenceFile

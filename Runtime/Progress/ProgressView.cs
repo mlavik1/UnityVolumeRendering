@@ -1,10 +1,13 @@
-namespace UnityVolumeRendering
+using UnityEngine.Scripting.APIUpdating;
+
+namespace MingRay
 {
     /// <summary>
     /// Interface for the view of a progress.
     /// Can be attached to a <see cref="ProgressHandler"/>..
     /// Implement this interface if you wish you update your own progress bar GUI, or execute some code based on current progress.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public interface IProgressView
     {
         /// <summary>

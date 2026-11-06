@@ -4,7 +4,7 @@ This window exposes some dataset and import-related settings, for using the plug
 
 ## How to open the settings window
 
-You can open the settings window from the "Volume Rendering" menu bar option:
+You can open the settings window from "Tools" -> "MingRay" -> "Settings" in the menu bar:
 
 <img src="menubar-settings.png" width="200px">
 

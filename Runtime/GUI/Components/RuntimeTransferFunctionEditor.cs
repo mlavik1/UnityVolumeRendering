@@ -1,7 +1,9 @@
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class RuntimeTransferFunctionEditor : MonoBehaviour
     {
         private static RuntimeTransferFunctionEditor instance = null;

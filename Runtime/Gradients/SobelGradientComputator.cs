@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Drawing;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class SobelGradientComputator : GradientComputator
     {
         public SobelGradientComputator(VolumeDataset dataset, bool smootheDataValues) : base(dataset, smootheDataValues)

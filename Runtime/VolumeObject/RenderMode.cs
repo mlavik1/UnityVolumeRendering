@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public enum RenderMode
     {
         DirectVolumeRendering,
@@ -9,6 +11,7 @@ namespace UnityVolumeRendering
         IsosurfaceRendering
     }
 
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public enum TFRenderMode
     {
         [InspectorName("1D Transfer Function")]

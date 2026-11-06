@@ -1,8 +1,10 @@
 using System;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class CentralDifferenceGradientComputator : GradientComputator
     {
         public CentralDifferenceGradientComputator(VolumeDataset dataset, bool smootheDataValues) : base(dataset, smootheDataValues)

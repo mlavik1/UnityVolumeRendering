@@ -1,5 +1,8 @@
-namespace UnityVolumeRendering
+using UnityEngine.Scripting.APIUpdating;
+
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class DatasetFormatUtilities
     {
         public static ImageFileFormat GetImageFileFormat(string filePath)

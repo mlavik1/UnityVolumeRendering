@@ -5,12 +5,14 @@ using itk.simple;
 using System.Runtime.InteropServices;
 using System.IO;
 using System.Threading.Tasks;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// SimpleITK-based DICOM importer.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class SimpleITKImageFileImporter : IImageFileImporter
     {
         public VolumeDataset Import(string filePath)

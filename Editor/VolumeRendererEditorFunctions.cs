@@ -5,15 +5,20 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class VolumeRendererEditorFunctions
     {
-        [MenuItem("Volume Rendering/Load dataset/Load raw dataset")]
-        private static void ShowDatasetImporter()
+        internal const string MenuRoot = "Tools/MingRay/";
+        internal const string AssetsMenuRoot = "Assets/MingRay/";
+
+        [MenuItem(MenuRoot + "Load dataset/Load raw dataset", priority = 0)]
+        internal static void ShowDatasetImporter()
         {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "SampleData", "");
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load", EditorPathUtils.GetSampleDataPath(), "");
             if (File.Exists(file))
             {
                 RAWDatasetImporterEditorWindow wnd = (RAWDatasetImporterEditorWindow)EditorWindow.GetWindow(typeof(RAWDatasetImporterEditorWindow));
@@ -30,14 +35,14 @@ namespace UnityVolumeRendering
             }
         }
 
-        [MenuItem("Volume Rendering/Load dataset/Load DICOM")]
-        private static void ShowDICOMImporter()
+        [MenuItem(MenuRoot + "Load dataset/Load DICOM", priority = 1)]
+        internal static void ShowDICOMImporter()
         {
             DicomImportAsync(true);
         }
 
-        [MenuItem("Assets/Volume Rendering/Import dataset/Import DICOM")]
-        private static void ImportDICOMAsset()
+        [MenuItem(AssetsMenuRoot + "Import dataset/Import DICOM")]
+        internal static void ImportDICOMAsset()
         {
             DicomImportAsync(false);
         }
@@ -79,14 +84,14 @@ namespace UnityVolumeRendering
             }
         }
 
-        [MenuItem("Volume Rendering/Load dataset/Load NRRD dataset")]
-        private static void ShowNRRDDatasetImporter()
+        [MenuItem(MenuRoot + "Load dataset/Load NRRD dataset", priority = 3)]
+        internal static void ShowNRRDDatasetImporter()
         {
             ImportNRRDDatasetAsync(true);
         }
 
-        [MenuItem("Assets/Volume Rendering/Import dataset/Import NRRD")]
-        private static void ImportNRRDAsset()
+        [MenuItem(AssetsMenuRoot + "Import dataset/Import NRRD")]
+        internal static void ImportNRRDAsset()
         {
             ImportNRRDDatasetAsync(false);
         }
@@ -103,7 +108,7 @@ namespace UnityVolumeRendering
                 return;
             }
 
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nrrd)", "SampleData", "");
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nrrd)", EditorPathUtils.GetSampleDataPath(), "");
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
@@ -140,21 +145,21 @@ namespace UnityVolumeRendering
             }
         }
 
-        [MenuItem("Volume Rendering/Load dataset/Load NIFTI dataset")]
-        private static void ShowNIFTIDatasetImporter()
+        [MenuItem(MenuRoot + "Load dataset/Load NIFTI dataset", priority = 2)]
+        internal static void ShowNIFTIDatasetImporter()
         {
             ImportNIFTIDatasetAsync(true);
         }
 
-        [MenuItem("Assets/Volume Rendering/Import dataset/Import NIFTI")]
-        private static void ImportNIFTIAsset()
+        [MenuItem(AssetsMenuRoot + "Import dataset/Import NIFTI")]
+        internal static void ImportNIFTIAsset()
         {
             ImportNIFTIDatasetAsync(false);
         }
 
         private static async void ImportNIFTIDatasetAsync(bool spawnInScene)
         {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nii)", "SampleData", "");
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nii)", EditorPathUtils.GetSampleDataPath(), "");
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
@@ -192,21 +197,21 @@ namespace UnityVolumeRendering
             }
         }
 
-        [MenuItem("Volume Rendering/Load dataset/Load image file")]
-        private static void ShowImageFileImporter()
+        [MenuItem(MenuRoot + "Load dataset/Load image file", priority = 4)]
+        internal static void ShowImageFileImporter()
         {
             ImporImageFileDatasetAsync(true);
         }
 
-        [MenuItem("Assets/Volume Rendering/Import dataset/Import image file")]
-        private static void ImportImageFileAsset()
+        [MenuItem(AssetsMenuRoot + "Import dataset/Import image file")]
+        internal static void ImportImageFileAsset()
         {
             ImporImageFileDatasetAsync(false);
         }
 
         private static async void ImporImageFileDatasetAsync(bool spawnInScene)
         {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "SampleData", "");
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load", EditorPathUtils.GetSampleDataPath(), "");
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
@@ -244,21 +249,21 @@ namespace UnityVolumeRendering
             }
         }
 
-        [MenuItem("Volume Rendering/Load dataset/Load PARCHG dataset")]
-        private static void ShowParDatasetImporter()
+        [MenuItem(MenuRoot + "Load dataset/Load PARCHG dataset", priority = 6)]
+        internal static void ShowParDatasetImporter()
         {
             ImportParDatasetAsync(true);
         }
 
-        [MenuItem("Assets/Volume Rendering/Import dataset/Import PARCHG")]
-        private static void ImportParAsset()
+        [MenuItem(AssetsMenuRoot + "Import dataset/Import PARCHG")]
+        internal static void ImportParAsset()
         {
             ImportParDatasetAsync(false);
         }
 
         private static async void ImportParDatasetAsync(bool spawnInScene)
         {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "SampleData", "");
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load", EditorPathUtils.GetSampleDataPath(), "");
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
@@ -296,8 +301,8 @@ namespace UnityVolumeRendering
             }
         }
 
-        [MenuItem("Volume Rendering/Load dataset/Load image sequence")]
-        private static void ShowSequenceImporter()
+        [MenuItem(MenuRoot + "Load dataset/Load image sequence", priority = 5)]
+        internal static void ShowSequenceImporter()
         {
             ImportSequenceAsync();
         }
@@ -336,8 +341,8 @@ namespace UnityVolumeRendering
             }
         }
 
-        [MenuItem("Volume Rendering/Cross section/Cross section plane")]
-        private static void OnMenuItemClick()
+        [MenuItem(MenuRoot + "Cross section/Cross section plane", priority = 20)]
+        internal static void SpawnCrossSectionPlane()
         {
             VolumeRenderedObject[] objects = GameObject.FindObjectsOfType<VolumeRenderedObject>();
             if (objects.Length == 1)
@@ -349,23 +354,23 @@ namespace UnityVolumeRendering
             }
         }
 
-        [MenuItem("Volume Rendering/Cross section/Box cutout")]
-        private static void SpawnCutoutBox()
+        [MenuItem(MenuRoot + "Cross section/Box cutout", priority = 21)]
+        internal static void SpawnCutoutBox()
         {
             VolumeRenderedObject[] objects = GameObject.FindObjectsOfType<VolumeRenderedObject>();
             if (objects.Length == 1)
                 VolumeObjectFactory.SpawnCutoutBox(objects[0]);
         }
-        [MenuItem("Volume Rendering/Cross section/Sphere cutout")]
-        private static void SpawnCutoutSphere()
+        [MenuItem(MenuRoot + "Cross section/Sphere cutout", priority = 22)]
+        internal static void SpawnCutoutSphere()
         {
             VolumeRenderedObject[] objects = GameObject.FindObjectsOfType<VolumeRenderedObject>();
             if (objects.Length == 1)
                 VolumeObjectFactory.SpawnCutoutSphere(objects[0]);
         }
 
-        [MenuItem("Volume Rendering/1D Transfer Function")]
-        private static void Show1DTFWindow()
+        [MenuItem(MenuRoot + "1D Transfer Function", priority = 40)]
+        internal static void Show1DTFWindow()
         {
             VolumeRenderedObject volRendObj = SelectionHelper.GetSelectedVolumeObject();
             if (volRendObj != null)
@@ -379,26 +384,26 @@ namespace UnityVolumeRendering
             }
         }
 
-        [MenuItem("Volume Rendering/2D Transfer Function")]
-        private static void Show2DTFWindow()
+        [MenuItem(MenuRoot + "2D Transfer Function", priority = 41)]
+        internal static void Show2DTFWindow()
         {
             TransferFunction2DEditorWindow.ShowWindow();
         }
 
-        [MenuItem("Volume Rendering/Slice renderer")]
-        private static void ShowSliceRenderer()
+        [MenuItem(MenuRoot + "Slice renderer", priority = 42)]
+        internal static void ShowSliceRenderer()
         {
             SliceRenderingEditorWindow.ShowWindow();
         }
 
-        [MenuItem("Volume Rendering/Value range")]
-        private static void ShowValueRangeWindow()
+        [MenuItem(MenuRoot + "Value range", priority = 43)]
+        internal static void ShowValueRangeWindow()
         {
             ValueRangeEditorWindow.ShowWindow();
         }
 
-        [MenuItem("Volume Rendering/Settings")]
-        private static void ShowSettingsWindow()
+        [MenuItem(MenuRoot + "Settings", priority = 60)]
+        internal static void ShowSettingsWindow()
         {
             ImportSettingsEditorWindow.ShowWindow();
         }

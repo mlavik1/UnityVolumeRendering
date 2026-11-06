@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public enum CutoutType
     {
         Inclusive, Exclusive
@@ -11,6 +13,7 @@ namespace UnityVolumeRendering
     /// Cutout box.
     /// Used for cutting a model (cutout view).
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     [ExecuteInEditMode]
     public class CutoutBox : MonoBehaviour, CrossSectionObject
     {

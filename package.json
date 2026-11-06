@@ -1,9 +1,10 @@
 {
-  "name": "com.mlavik1.easyvolumerenderer",
-  "version": "1.8.0",
-  "displayName": "Easy Volume Renderer",
+  "name": "com.mlavik1.mingray",
+  "version": "2.0.0",
+  "displayName": "MingRay Volume Renderer",
   "description": "Volume rendering package for Unity. Direct volume rendering, MIP, and isosurface rendering. Imports DICOM, NIFTI, NRRD, VASP, and raw datasets. Supports Built-in, URP, and HDRP.",
   "unity": "2022.3",
+  "unityRelease": "0f1",
   "license": "MIT",
   "dependencies": {
     "com.unity.modules.imageconversion": "1.0.0",
@@ -26,12 +27,12 @@
     {
       "displayName": "Basic Demo",
       "description": "A sample scene demonstrating volume rendering with a camera controller and runtime GUI.",
-      "path": "SampleProject~/Assets"
+      "path": "Samples~/BasicDemo"
     },
     {
       "displayName": "Sample Data",
       "description": "Sample volume datasets (VisMale raw, PARCHG VASP) for testing imports.",
-      "path": "SampleProject~/SampleData"
+      "path": "Samples~/SampleData"
     }
   ]
 }

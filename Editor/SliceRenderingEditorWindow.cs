@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Linq;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class SliceRenderingEditorWindow : EditorWindow
     {
         private int selectedPlaneIndex = -1;

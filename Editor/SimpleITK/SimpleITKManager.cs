@@ -6,8 +6,9 @@ using System.Net;
 using UnityEditor;
 using UnityEngine;
 using System.IO.Compression;
+using UnityEngine.Scripting.APIUpdating;
 
-namespace UnityVolumeRendering
+namespace MingRay
 {
     /// <summary>
     /// Manager for the SimpleITK integration.
@@ -15,6 +16,7 @@ namespace UnityVolumeRendering
     ///  SimpleITK will be disabled by default and can be enabled through this class.
     /// The binaries will be downloaded automatically.
     /// </summary>
+    [MovedFrom(true, sourceNamespace: "UnityVolumeRendering")]
     public class SimpleITKManager
     {
         private static string SimpleITKDefinition = "UVR_USE_SIMPLEITK";
@@ -153,31 +155,9 @@ namespace UnityVolumeRendering
             }
         }
 
-        private static string GetPluginRootPath()
-        {
-            // Try UPM package resolution first
-            var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(SimpleITKManager).Assembly);
-            if (packageInfo != null)
-            {
-                return packageInfo.resolvedPath;
-            }
-
-            // Fallback: search for magic file in Assets (for .unitypackage import).
-            // The file is at the plugin root, so its directory is the plugin root path.
-            foreach (string file in Directory.EnumerateFiles(Application.dataPath, "*.*", SearchOption.AllDirectories))
-            {
-                if (Path.GetFileName(file) == "DONOTREMOVE-PathSearchFile.txt")
-                {
-                    return Path.GetDirectoryName(file);
-                }
-            }
-
-            return Application.dataPath;
-        }
-
         private static string GetBinaryDirectoryPath()
         {
-            return Path.Combine(GetPluginRootPath(), "ThirdParty", "SimpleITK");
+            return Path.Combine(EditorPathUtils.GetPluginRootPath(), "ThirdParty", "SimpleITK");
         }
     }
 }
