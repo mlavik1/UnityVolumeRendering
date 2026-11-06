@@ -91,7 +91,7 @@ namespace MingRay
 
             int maxValue = (int)histogramData.Max();
 
-            Texture2D texture = new Texture2D(sampleCount, 1, TextureFormat.RGBA32, false);
+            Texture2D texture = new Texture2D(sampleCount, 1, TextureFormat.RGBA32, false, true);
             for (int iSample = 0; iSample < sampleCount; iSample++)
             {
                 histogramCols[iSample] = new Color(Mathf.Log10((float)histogramData[iSample]) / Mathf.Log10((float)maxValue), 0.0f, 0.0f, 1.0f);
