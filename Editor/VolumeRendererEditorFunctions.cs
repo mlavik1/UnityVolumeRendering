@@ -18,7 +18,7 @@ namespace MingRay
         [MenuItem(MenuRoot + "Load dataset/Load raw dataset", priority = 0)]
         internal static void ShowDatasetImporter()
         {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "SampleData", "");
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load", EditorPathUtils.GetSampleDataPath(), "");
             if (File.Exists(file))
             {
                 RAWDatasetImporterEditorWindow wnd = (RAWDatasetImporterEditorWindow)EditorWindow.GetWindow(typeof(RAWDatasetImporterEditorWindow));
@@ -108,7 +108,7 @@ namespace MingRay
                 return;
             }
 
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nrrd)", "SampleData", "");
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nrrd)", EditorPathUtils.GetSampleDataPath(), "");
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
@@ -159,7 +159,7 @@ namespace MingRay
 
         private static async void ImportNIFTIDatasetAsync(bool spawnInScene)
         {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nii)", "SampleData", "");
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load (.nii)", EditorPathUtils.GetSampleDataPath(), "");
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
@@ -211,7 +211,7 @@ namespace MingRay
 
         private static async void ImporImageFileDatasetAsync(bool spawnInScene)
         {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "SampleData", "");
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load", EditorPathUtils.GetSampleDataPath(), "");
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");
@@ -263,7 +263,7 @@ namespace MingRay
 
         private static async void ImportParDatasetAsync(bool spawnInScene)
         {
-            string file = EditorUtility.OpenFilePanel("Select a dataset to load", "SampleData", "");
+            string file = EditorUtility.OpenFilePanel("Select a dataset to load", EditorPathUtils.GetSampleDataPath(), "");
             if (File.Exists(file))
             {
                 Debug.Log("Async dataset load. Hold on.");

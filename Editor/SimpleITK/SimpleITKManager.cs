@@ -155,31 +155,9 @@ namespace MingRay
             }
         }
 
-        private static string GetPluginRootPath()
-        {
-            // Try UPM package resolution first
-            var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(SimpleITKManager).Assembly);
-            if (packageInfo != null)
-            {
-                return packageInfo.resolvedPath;
-            }
-
-            // Fallback: search for magic file in Assets (for .unitypackage import).
-            // The file is at the plugin root, so its directory is the plugin root path.
-            foreach (string file in Directory.EnumerateFiles(Application.dataPath, "*.*", SearchOption.AllDirectories))
-            {
-                if (Path.GetFileName(file) == "DONOTREMOVE-PathSearchFile.txt")
-                {
-                    return Path.GetDirectoryName(file);
-                }
-            }
-
-            return Application.dataPath;
-        }
-
         private static string GetBinaryDirectoryPath()
         {
-            return Path.Combine(GetPluginRootPath(), "ThirdParty", "SimpleITK");
+            return Path.Combine(EditorPathUtils.GetPluginRootPath(), "ThirdParty", "SimpleITK");
         }
     }
 }
