@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
 
@@ -52,26 +53,55 @@ namespace MingRay
             }
         }
 
+        public static void RegisterImageSequenceImporter(ImageSequenceFormat format, Type importerType)
+        {
+            if (importerType != null && !typeof(IImageSequenceImporter).IsAssignableFrom(importerType))
+                throw new ArgumentException($"{importerType} does not implement {nameof(IImageSequenceImporter)}");
+            lock (registryLock)
+            {
+                if (importerType != null)
+                    imageSequenceImporters[format] = importerType;
+                else
+                    imageSequenceImporters.Remove(format);
+            }
+        }
+
+        public static void RegisterImageFileImporter(ImageFileFormat format, Type importerType)
+        {
+            if (importerType != null && !typeof(IImageFileImporter).IsAssignableFrom(importerType))
+                throw new ArgumentException($"{importerType} does not implement {nameof(IImageFileImporter)}");
+            lock (registryLock)
+            {
+                if (importerType != null)
+                    imageFileImporters[format] = importerType;
+                else
+                    imageFileImporters.Remove(format);
+            }
+        }
+
+        public static bool HasImageFileImporter(ImageFileFormat format)
+        {
+            return GetImageFileImporterType(format) != null;
+        }
+
+        private static readonly object registryLock = new object();
+        private static readonly Dictionary<ImageSequenceFormat, Type> imageSequenceImporters = new Dictionary<ImageSequenceFormat, Type>();
+        private static readonly Dictionary<ImageFileFormat, Type> imageFileImporters = new Dictionary<ImageFileFormat, Type>();
+
         private static Type GetImageSequenceImporterType(ImageSequenceFormat format)
         {
+            lock (registryLock)
+            {
+                if (imageSequenceImporters.TryGetValue(format, out Type registeredType))
+                    return registeredType;
+            }
+
             switch (format)
             {
                 case ImageSequenceFormat.ImageSequence:
-                    {
-                        #if UVR_USE_SIMPLEITK
-                        return typeof(SimpleITKImageSequenceImporter);
-                        #else
-                        return typeof(ImageSequenceImporter);
-                        #endif
-                    }
+                    return typeof(ImageSequenceImporter);
                 case ImageSequenceFormat.DICOM:
-                    {
-                        #if UVR_USE_SIMPLEITK
-                        return typeof(SimpleITKDICOMImporter);
-                        #else
-                        return typeof(DICOMImporter);
-                        #endif
-                    }
+                    return typeof(DICOMImporter);
                 default:
                     return null;
             }
@@ -79,36 +109,18 @@ namespace MingRay
 
         private static Type GetImageFileImporterType(ImageFileFormat format)
         {
+            lock (registryLock)
+            {
+                if (imageFileImporters.TryGetValue(format, out Type registeredType))
+                    return registeredType;
+            }
+
             switch (format)
             {
                 case ImageFileFormat.VASP:
-                    {
-                        return typeof(ParDatasetImporter);
-                    }
-                case ImageFileFormat.NRRD:
-                    {
-                        #if UVR_USE_SIMPLEITK
-                        return typeof(SimpleITKImageFileImporter);
-                        #else
-                        return null;
-                        #endif
-                    }
+                    return typeof(ParDatasetImporter);
                 case ImageFileFormat.NIFTI:
-                    {
-                        #if UVR_USE_SIMPLEITK
-                        return typeof(SimpleITKImageFileImporter);
-                        #else
-                        return typeof(NiftiImporter);
-                        #endif
-                    }
-                case ImageFileFormat.Unknown:
-                    {
-#if UVR_USE_SIMPLEITK
-                        return typeof(SimpleITKImageFileImporter);
-#else
-                        return null;
-#endif
-                    }
+                    return typeof(NiftiImporter);
                 default:
                     return null;
             }

@@ -10,7 +10,7 @@ namespace MingRay
     /// Allows you to import datasets as assets by dragging them into the project view.
     /// Imported dataset assets can be dragged-and-dropped into the scene view/hierarchy, or spawned from code.
     /// </summary>
-#if UVR_USE_SIMPLEITK
+#if UVR_SIMPLEITK
     [ScriptedImporter(1, new string[]{"nrrd", "nii.gz", "nii", "vasp"})]
 #else
     [ScriptedImporter(1, new string[]{"nii.gz", "nii", "vasp"})]
@@ -24,6 +24,8 @@ namespace MingRay
 
             ImageFileFormat format = GetImageFileFormat(ctx.assetPath);
             IImageFileImporter importer = ImporterFactory.CreateImageFileImporter(format);
+            if (importer == null)
+                return;
             VolumeDataset dataset = importer.Import(ctx.assetPath);
             
             if (dataset)

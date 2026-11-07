@@ -22,5 +22,5 @@ jobs:
         UNITY_LICENSE: ${{ secrets.UNITY_LICENSE_BASE64 }}
     - uses: actions/upload-artifact@v4
       with:
-        name: UnityVolumeRendering.unitypackage
-        path: UnityVolumeRendering.unitypackage
+        name: MingRay.unitypackage
+        path: MingRay.unitypackage

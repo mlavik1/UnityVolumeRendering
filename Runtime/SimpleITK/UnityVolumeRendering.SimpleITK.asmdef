@@ -1,0 +1,31 @@
+{
+    "name": "UnityVolumeRendering.SimpleITK",
+    "rootNamespace": "MingRay",
+    "references": [
+        "UnityVolumeRendering.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor",
+        "LinuxStandalone64",
+        "macOSStandalone",
+        "WindowsStandalone64"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "SimpleITKCSharpManaged.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UVR_SIMPLEITK"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.mlavik1.mingray.simpleitk",
+            "expression": "",
+            "define": "UVR_SIMPLEITK"
+        }
+    ],
+    "noEngineReferences": false
+}

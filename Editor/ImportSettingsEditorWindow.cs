@@ -65,7 +65,6 @@ namespace MingRay
             {
                 if (GUILayout.Button("Enable SimpleITK"))
                 {
-                    SimpleITKManager.DownloadBinaries();
                     SimpleITKManager.EnableSITK(true);
                 }
             }

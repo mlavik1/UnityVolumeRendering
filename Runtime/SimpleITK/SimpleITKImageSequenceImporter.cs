@@ -1,5 +1,4 @@
-﻿#if UVR_USE_SIMPLEITK
-using UnityEngine;
+﻿using UnityEngine;
 using System;
 using itk.simple;
 using System.Runtime.InteropServices;
@@ -166,4 +165,3 @@ namespace MingRay
         }
     }
 }
-#endif

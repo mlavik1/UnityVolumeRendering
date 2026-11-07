@@ -21,6 +21,11 @@
             "name": "com.unity.render-pipelines.high-definition",
             "expression": "",
             "define": "UVR_HDRP"
+        },
+        {
+            "name": "com.mlavik1.mingray.simpleitk",
+            "expression": "",
+            "define": "UVR_SIMPLEITK"
         }
     ],
     "noEngineReferences": false

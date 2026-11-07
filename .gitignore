@@ -51,3 +51,6 @@ sysinfo.txt
 *.apk
 *.unitypackage
 Release~/
+
+# SimpleITK binaries (downloaded on demand)
+SampleProject~/Packages/com.mlavik1.mingray.simpleitk/

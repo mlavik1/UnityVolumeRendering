@@ -16,7 +16,11 @@ To enable SimpleITK, you simply have to do the following:
 <img src="settings-toolbar.jpg" width="150px">
 <img src="settings.jpg" width="300px">
 
-This will automatically download the SimpleITK binaries, and enable support for SimpleITK in the code. The `ImporterFactory` class will then return the SimpleITK-based importer implementations.
+This will automatically download the SimpleITK binaries into an embedded package at `Packages/com.mlavik1.mingray.simpleitk` in your project. While that package exists, the optional `UnityVolumeRendering.SimpleITK` assembly is compiled, and the `ImporterFactory` class will return the SimpleITK-based importer implementations.
+
+The binaries are not part of the MingRay package itself.
+
+To disable SimpleITK, click "Disable SimpleITK" in the settings menu, or delete the `Packages/com.mlavik1.mingray.simpleitk` folder.
 
 ## Supported platforms
 

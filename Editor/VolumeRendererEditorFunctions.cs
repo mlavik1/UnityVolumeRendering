@@ -98,7 +98,7 @@ namespace MingRay
 
         private static async void ImportNRRDDatasetAsync(bool spawnInScene)
         {
-            if (!SimpleITKManager.IsSITKEnabled())
+            if (!ImporterFactory.HasImageFileImporter(ImageFileFormat.NRRD))
             {
                 if (EditorUtility.DisplayDialog("Missing SimpleITK", "You need to download SimpleITK to load NRRD datasets from the import settings menu.\n" +
                     "Do you want to open the import settings menu?", "Yes", "No"))
