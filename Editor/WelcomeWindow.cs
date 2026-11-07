@@ -5,8 +5,7 @@ using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 namespace MingRay
 {
     /// <summary>
-    /// Welcome popup, telling the user where to find things and what changed in the rename.
-    /// Opens automatically the first time each version of the package is loaded.
+    /// Welcome popup. Opens automatically the first time each version of the package is loaded.
     /// </summary>
     public class WelcomeWindow : EditorWindow
     {
@@ -18,7 +17,7 @@ namespace MingRay
         [MenuItem(VolumeRendererEditorFunctions.MenuRoot + "Welcome", priority = 2001)]
         public static void ShowWindow()
         {
-            WelcomeWindow wnd = GetWindow<WelcomeWindow>(true, "Welcome to MingRay", true);
+            WelcomeWindow wnd = GetWindow<WelcomeWindow>(true, "MingRay Volume Renderer", true);
             wnd.minSize = new Vector2(440.0f, 400.0f);
             wnd.maxSize = wnd.minSize;
             wnd.Show();
@@ -41,13 +40,13 @@ namespace MingRay
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Where to find things", EditorStyles.boldLabel);
             Bullet("Menu bar: \"Tools > MingRay\"");
-            Bullet("MingRay panel: all actions in one place, docked next to the Inspector. Open it with the button below or from \"Tools > MingRay > MingRay Panel\".");
+            Bullet("MingRay panel: all actions in one place. Open it with the button below or from \"Tools > MingRay > MingRay Panel\".");
             Bullet("Import datasets as assets: right-click in the Project window and choose \"MingRay > Import dataset\".");
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Formerly \"Unity Volume Rendering\"", EditorStyles.boldLabel);
             Bullet("The \"Volume Rendering\" menu has moved to \"Tools > MingRay\".");
-            Bullet("The namespace changed from \"UnityVolumeRendering\" to \"MingRay\". Unity's API Updater will offer to update your scripts automatically.");
+            Bullet("The namespace changed from \"UnityVolumeRendering\" to \"MingRay\".");
 
             GUILayout.FlexibleSpace();
 

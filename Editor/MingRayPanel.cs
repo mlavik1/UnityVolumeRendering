@@ -7,7 +7,6 @@ namespace MingRay
 {
     /// <summary>
     /// Dockable panel with shortcuts to the most common actions.
-    /// Opens as a tab next to the Inspector.
     /// </summary>
     public class MingRayPanel : EditorWindow
     {
@@ -21,12 +20,18 @@ namespace MingRay
         [MenuItem(VolumeRendererEditorFunctions.MenuRoot + "MingRay Panel", priority = 2000)]
         public static void ShowWindow()
         {
-            // Dock next to the Inspector if possible.
-            Type inspectorType = typeof(Editor).Assembly.GetType("UnityEditor.InspectorWindow");
-            MingRayPanel wnd = inspectorType != null
-                ? GetWindow<MingRayPanel>("MingRay", true, inspectorType)
-                : GetWindow<MingRayPanel>("MingRay", true);
+            if (HasOpenInstances<MingRayPanel>())
+            {
+                GetWindow<MingRayPanel>().Focus();
+                return;
+            }
+
+            MingRayPanel wnd = CreateInstance<MingRayPanel>();
+            wnd.titleContent = new GUIContent("MingRay");
+            Vector2 size = new Vector2(300.0f, 450.0f);
             wnd.minSize = new Vector2(250.0f, 300.0f);
+            Rect mainWindow = EditorGUIUtility.GetMainWindowPosition();
+            wnd.position = new Rect(mainWindow.center - size * 0.5f, size);
             wnd.Show();
         }
 
