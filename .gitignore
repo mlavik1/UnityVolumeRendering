@@ -54,3 +54,12 @@ Release~/
 
 # SimpleITK binaries (downloaded on demand)
 SampleProject~/Packages/com.mlavik1.mingray.simpleitk/
+
+# Accidental Unity project at package root / failed export
+/Library/
+/Library.meta
+/Temp/
+/Logs/
+/UserSettings/
+/tmp-package-export/
+/tmp-package-export.meta

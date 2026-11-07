@@ -13,7 +13,6 @@ package_root = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__
 include = [
     "package.json",
     "README.md",
-    "CHANGELOG.md",
     "LICENSE.md",
     "CREDITS.md",
     "Third Party Notices.md",

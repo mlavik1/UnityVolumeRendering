@@ -40,7 +40,6 @@ assets = [
     (os.path.join("Samples~", "BasicDemo"), "BasicDemo"),
     ("DONOTREMOVE-PathSearchFile.txt", "DONOTREMOVE-PathSearchFile.txt"),
     ("Third Party Notices.md", "Third Party Notices.md"),
-    ("CHANGELOG.md", "CHANGELOG.md"),
     ("CREDITS.md", "CREDITS.md"),
     ("LICENSE.md", "LICENSE.md"),
     ("README.md", "README.md"),
