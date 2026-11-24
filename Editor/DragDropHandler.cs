@@ -14,12 +14,15 @@ namespace MingRay
         [InitializeOnLoadMethod]
         static void OnLoad()
         {
-            // Scene view
+#if UNITY_6000_3_OR_NEWER
+            DragAndDrop.AddDropHandlerV2(OnSceneDrop);
+            DragAndDrop.AddDropHandlerV2(OnHierarchyDrop);
+            DragAndDrop.AddDropHandlerV2(OnProjectBrowserDrop);
+#else
             DragAndDrop.AddDropHandler(OnSceneDrop);
-            // Scene hierarchy
             DragAndDrop.AddDropHandler(OnHierarchyDrop);
-            // Project browser
             DragAndDrop.AddDropHandler(OnProjectBrowserDrop);
+#endif
         }
 
         private static DragAndDropVisualMode OnSceneDrop(Object dropUpon, Vector3 worldPosition, Vector2 viewportPosition, Transform parentForDraggedObjects, bool perform)
@@ -37,7 +40,11 @@ namespace MingRay
             return DragAndDropVisualMode.Move;
         }
 
-        private static DragAndDropVisualMode OnHierarchyDrop(int dropTargetInstanceID, HierarchyDropFlags dropMode, Transform parentForDraggedObjects, bool perform)
+#if UNITY_6000_3_OR_NEWER
+        private static DragAndDropVisualMode OnHierarchyDrop(EntityId dropTargetId, HierarchyDropFlags dropMode, Transform parentForDraggedObjects, bool perform)
+#else
+        private static DragAndDropVisualMode OnHierarchyDrop(int dropTargetId, HierarchyDropFlags dropMode, Transform parentForDraggedObjects, bool perform)
+#endif
         {
             if (DragAndDrop.objectReferences.Length == 0 || !(DragAndDrop.objectReferences[0] is VolumeDataset))
             {
@@ -48,7 +55,11 @@ namespace MingRay
             {
                 VolumeDataset datasetAsset = (VolumeDataset)DragAndDrop.objectReferences[0];
                 VolumeRenderedObject spawnedObject = VolumeObjectFactory.CreateObject(datasetAsset);
-                GameObject parentObject = (GameObject)EditorUtility.InstanceIDToObject(dropTargetInstanceID);
+#if UNITY_6000_3_OR_NEWER
+                GameObject parentObject = EditorUtility.EntityIdToObject(dropTargetId) as GameObject;
+#else
+                GameObject parentObject = EditorUtility.InstanceIDToObject(dropTargetId) as GameObject;
+#endif
                 if (parentObject)
                 {
                     spawnedObject.gameObject.transform.SetParent(parentObject.transform);
@@ -58,7 +69,11 @@ namespace MingRay
             return DragAndDropVisualMode.Move;
         }
 
+#if UNITY_6000_3_OR_NEWER
+        private static DragAndDropVisualMode OnProjectBrowserDrop(EntityId dragId, string dropUponPath, bool perform)
+#else
         private static DragAndDropVisualMode OnProjectBrowserDrop(int dragInstanceId, string dropUponPath, bool perform)
+#endif
         {
             bool shouldHandle = DragAndDrop.objectReferences.Any(obj =>
                 obj is GameObject && (obj as GameObject).GetComponentsInChildren<VolumeRenderedObject>().Length > 0);
